@@ -27,8 +27,8 @@ user_middleware = UserMiddleware()
 dp.message.middleware(session_middleware)
 dp.message.middleware(user_middleware)
 
-dp.callback_query.middleware(session_middleware)
-dp.callback_query.middleware(user_middleware)
+#dp.callback_query.middleware(session_middleware)
+#dp.callback_query.middleware(user_middleware)
 
 
 async def main():

@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.models.user import UserAlchemy
 from aiogram.types import User as UserTelegram
 
-from helpers.db import get_or_create_user
-
+from database.dao.user import UserAlchemyDAO
 
 class UserMiddleware(BaseMiddleware):
     """
@@ -35,7 +34,9 @@ class UserMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         async with session.begin():
-            user_alchemy: UserAlchemy = await get_or_create_user(session, user_tg)
+            user_alchemy: UserAlchemy = await UserAlchemyDAO.get_or_create_user(
+                session, user_tg.id, user_tg.username
+            )
 
         data["user_alchemy"] = user_alchemy
         return await handler(event, data)

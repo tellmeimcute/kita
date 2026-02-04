@@ -9,6 +9,10 @@ def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
         return "video", msg.video.file_id
     elif msg.photo:
         return "photo", msg.photo[-1].file_id
+    elif msg.animation:
+        return "document", msg.animation.file_id
+    elif msg.document:
+        return "document", msg.document.file_id
     return None, None
 
 

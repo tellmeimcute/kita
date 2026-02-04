@@ -15,6 +15,9 @@ class Suggestion(AbstractModel):
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
-    author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")
+    
+    # None если еще не рассмотрено.
+    accepted: Mapped[bool | None] = mapped_column(default=None)
 
+    author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")
     media: Mapped[List['Media']] = relationship(back_populates="suggestion")

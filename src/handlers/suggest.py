@@ -9,15 +9,14 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models.suggestion import Suggestion
-from database.models.user import UserAlchemy
+from database.models import UserAlchemy, Suggestion
 from middlewares.media_group import MediaGroutMiddleware
 
-from helpers.db import get_last_suggestions, get_suggestions_count
+from database.dao.user import UserAlchemyDAO
+from database.dao.suggestion import SuggestionDAO
+
 from helpers.utils import build_album_suggestions
 
 ADMIN_TGID = 1574316170
@@ -53,7 +52,7 @@ async def start(message: Message, user_alchemy: UserAlchemy, session: AsyncSessi
 @router.message(F.text == "Предложить пост")
 async def propose_post(message: Message, state: FSMContext):
     await state.set_state(PostStates.waiting_for_post)
-    await message.answer("Отправьте текст поста")
+    await message.answer("Отправьте картинки/видео/gif одним постом.")
 
 
 ###
@@ -73,7 +72,9 @@ async def suggestion_logic(
     suggestion, medias, media_group = build_album_suggestions(album, user_id, media_group_id)
 
     if not len(medias):
-        return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео.")
+        return await bot.send_message(
+            chat_id=user_id, text="Отправьте картинки/видео/gif."
+        )
 
     await bot.send_message(
         chat_id=ADMIN_TGID, text=f"Новый пост от @{username} ({user_id}):"
@@ -95,7 +96,10 @@ async def process_single_post(
 ):
     user_id = message.from_user.id
     username = message.from_user.username
-    await suggestion_logic(session, bot, (message,), state, user_id, username)
+    album = (message,)
+    await suggestion_logic(
+        session, bot, album, state, user_id, username
+    )
 
 
 @router.message(PostStates.waiting_for_post, F.media_group_id)
@@ -122,8 +126,8 @@ async def statistic(message: Message, session: AsyncSession):
     user_id = message.from_user.id
 
     async with session.begin():
-        user_suggestions = await get_last_suggestions(session, user_id)
-        user_suggestions_count = await get_suggestions_count(session, user_id)
+        user_suggestions = await SuggestionDAO.get(session, Suggestion.author_id == user_id, Suggestion.id.desc())
+        user_suggestions_count = await SuggestionDAO.count(session, Suggestion.author_id == user_id)
 
     await message.answer(
         f"Постов предожено: {user_suggestions_count}.\n{user_suggestions}"
@@ -135,19 +139,15 @@ async def statistic(message: Message, session: AsyncSession):
 #
 @router.message(Command("get_suggestion"))
 async def get_suggestion(message: Message, session: AsyncSession, command: CommandObject):
-    suggestion_id = command.args[-1]
+    if message.from_user.id != ADMIN_TGID:
+        return
+
+    suggestion_id = command.args
 
     async with session.begin():
-        stmt = (
-            select(Suggestion).
-            options(
-                selectinload(Suggestion.media)
-            ).
-            where(Suggestion.id == suggestion_id)
+        suggestion: Suggestion = await SuggestionDAO.get_one_or_none_with_children(
+            session, Suggestion.media, Suggestion.id == suggestion_id
         )
-
-        result = await session.execute(stmt)
-        suggestion = result.scalar_one_or_none()
 
     if not suggestion:
         return
@@ -160,10 +160,10 @@ async def get_suggestion(message: Message, session: AsyncSession, command: Comma
     for media in medias:
         media_group.add(type=media.filetype, media=media.telegram_file_id)
 
+    author = await UserAlchemyDAO.get_one_or_none_by_id(session, suggestion.author_id)
     await message.bot.send_message(
         message.chat.id,
-        f"Пост ({suggestion.id}), "
-        f"от ({suggestion.author_id}):"
+        f"Предложка от @{author.username} ({suggestion.author_id}):"
     )
 
     await message.bot.send_media_group(
