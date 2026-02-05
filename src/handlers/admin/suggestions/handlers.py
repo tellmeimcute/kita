@@ -1,6 +1,7 @@
 
 
-from aiogram import Router
+from aiogram import Router, F, Bot
+from aiogram.filters import MagicData
 
 from aiogram.types import Message
 from aiogram.filters import Command, CommandObject
@@ -15,14 +16,19 @@ from database.dao.user import UserAlchemyDAO
 from config import Config
 
 router = Router(name="suggestions_admin")
+
+router.message.filter(
+    MagicData(F.event.from_user.id == F.config.ADMIN_ID)
+)
 #router.message.middleware()
 
-@router.message(Command("get_suggestion"))
+@router.message(Command("предложка", prefix='/!'))
 async def get_suggestion(
     message: Message, 
     session: AsyncSession,
     config: Config, 
-    command: CommandObject
+    command: CommandObject,
+    bot: Bot
 ):
     if message.from_user.id != config.ADMIN_ID:
         return
@@ -36,8 +42,8 @@ async def get_suggestion(
 
     if not suggestion:
         return
+    
     medias = suggestion.media
-
     media_group = MediaGroupBuilder(
         caption=suggestion.caption
     )
@@ -46,12 +52,12 @@ async def get_suggestion(
         media_group.add(type=media.filetype, media=media.telegram_file_id)
 
     author = await UserAlchemyDAO.get_one_or_none_by_id(session, suggestion.author_id)
-    await message.bot.send_message(
+    await bot.send_message(
         message.chat.id,
         f"Предложка от @{author.username} ({suggestion.author_id}):"
     )
 
-    await message.bot.send_media_group(
+    await bot.send_media_group(
         message.chat.id,
         media=media_group.build()
     )
