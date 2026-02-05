@@ -3,14 +3,13 @@ from typing import List
 
 from aiogram import F, Router, Bot
 from middlewares.media_group import MediaGroutMiddleware
-from .state import PostStates
-from .logics import suggestion_logic, statistic_logic
-
-
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
+
+from .state import PostStates
+from .logics import suggestion_logic, statistic_logic
 
 router = Router(name="suggestions_user")
 router.message.middleware(MediaGroutMiddleware(latency=0.25))

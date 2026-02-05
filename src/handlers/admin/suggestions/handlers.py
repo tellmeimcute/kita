@@ -10,19 +10,17 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Suggestion
-from database.dao.suggestion import SuggestionDAO
-from database.dao.user import UserAlchemyDAO
+from database.dao import SuggestionDAO, UserAlchemyDAO
 
 from config import Config
 
 router = Router(name="suggestions_admin")
-
 router.message.filter(
     MagicData(F.event.from_user.id == F.config.ADMIN_ID)
 )
 #router.message.middleware()
 
-@router.message(Command("предложка", prefix='/!'))
+@router.message(Command("предложка", "get_suggestion", prefix='/!'))
 async def get_suggestion(
     message: Message, 
     session: AsyncSession,

@@ -6,7 +6,7 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Suggestion
-from database.dao.suggestion import SuggestionDAO
+from database.dao import SuggestionDAO
 
 from helpers.utils import build_album_suggestions
 
