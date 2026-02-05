@@ -10,14 +10,15 @@ from database.db_manager import DatabaseManager
 from middlewares.session import SessionMiddleware
 from middlewares.user import UserMiddleware
 
-from handlers.suggest import router as suggest_router
+from handlers import handlers_router
+
 from config import config
 
 logging.basicConfig(level=logging.INFO)
 
 db = DatabaseManager()
-dp = Dispatcher()
-dp.include_router(suggest_router)
+dp = Dispatcher(config=config)
+dp.include_router(handlers_router)
 
 bot = Bot(config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties())
 
