@@ -5,11 +5,8 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
-from database.db_manager import DatabaseManager
-
-from middlewares.session import SessionMiddleware
-from middlewares.user import UserMiddleware
-
+from database import DatabaseManager
+from middlewares import SessionMiddleware, UserMiddleware
 from handlers import handlers_router
 
 from config import config

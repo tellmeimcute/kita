@@ -2,10 +2,11 @@
 from typing import List
 
 from aiogram import F, Router, Bot
-from middlewares.media_group import MediaGroutMiddleware
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from middlewares import MediaGroutMiddleware
 from config import Config
 
 from .state import PostStates
