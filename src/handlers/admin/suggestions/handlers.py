@@ -1,10 +1,8 @@
 
-from typing import List
 
-from aiogram import F, Router, Bot
+from aiogram import Router
 
 from aiogram.types import Message
-from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, CommandObject
 from aiogram.utils.media_group import MediaGroupBuilder
 
