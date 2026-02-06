@@ -1,7 +1,7 @@
 
 from typing import Sequence, Generic, TypeVar, Any
 
-from sqlalchemy import select, Result, func, ColumnElement
+from sqlalchemy import select, update, Result, func, ColumnElement
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,7 +44,7 @@ class BaseDao(Generic[T]):
         filters: ColumnElement[bool],
         children: Sequence[Any] | Any = None,
         order_by: Any = None
-    ):
+    ) -> T | None:
         options = None
         if not isinstance(children, Sequence):
             children = (children,)
@@ -81,3 +81,14 @@ class BaseDao(Generic[T]):
     ) -> Sequence[T]:
         result = await cls.get_result(session, filters, None, order_by, offset, limit)
         return result.scalars().all()
+    
+
+    @classmethod
+    async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
+        stmt = (
+            update(cls.model)
+            .where(cls.model.id == data_id)
+            .values(data)
+        )
+
+        await session.execute(stmt)

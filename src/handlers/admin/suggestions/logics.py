@@ -17,11 +17,9 @@ async def get_suggestions_logic(
     suggestion_id: int
 ):
     async with session.begin():
-        suggestion: Suggestion = await SuggestionDAO.get_one_or_none(
+        suggestion = await SuggestionDAO.get_one_or_none(
             session, Suggestion.id == suggestion_id, (Suggestion.media, Suggestion.author)
         )
-
-        #author = await UserAlchemyDAO.get_one_or_none_by_id(session, suggestion.author_id)
 
     if not suggestion:
         return
@@ -51,7 +49,7 @@ async def show_last_suggestion(
     bot: Bot
 ) -> int | None:
     async with session.begin():
-        suggestion: Result = await SuggestionDAO.get_one_or_none(
+        suggestion = await SuggestionDAO.get_one_or_none(
             session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author)
         )
 
@@ -76,17 +74,3 @@ async def show_last_suggestion(
     )
 
     return suggestion.id
-
-
-async def change_accepted_state_suggestion(
-    message: Message,
-    session: AsyncSession,
-    suggestion_id: int,
-    is_accepted: bool
-):
-    async with session.begin():
-        suggestion: Result = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_id)
-        suggestion.accepted = is_accepted
-        await session.merge(suggestion)
-    
-    #await message.answer(f"suggestion {suggestion_id} {"accepted" if is_accepted else "declined"}.")

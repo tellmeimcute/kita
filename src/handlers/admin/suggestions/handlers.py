@@ -7,12 +7,12 @@ from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from database.dao import SuggestionDAO
 
 from .state import SuggestionViewer
 
 from .logics import (
-    get_suggestions_logic, show_last_suggestion,
-    change_accepted_state_suggestion
+    get_suggestions_logic, show_last_suggestion
 )
 
 router = Router(name="suggestions_admin")
@@ -62,10 +62,10 @@ async def show_suggestions_admin_menu(
     await state.set_data({"last": last_suggestion_id})
 
 @router.message(
-    (F.text.lower() == "принять") | (F.text.lower() == "отклонить"),
-    SuggestionViewer.in_viewer
+    SuggestionViewer.in_viewer,
+    (F.text.lower() == "принять") | (F.text.lower() == "отклонить")
 )
-async def accept_cur_suggestion(
+async def accept_deny_suggestion(
     message: Message, 
     session: AsyncSession,
     state: FSMContext,
@@ -76,7 +76,9 @@ async def accept_cur_suggestion(
 
     data = await state.get_data()
     cur_id: int = data["last"]
-    await change_accepted_state_suggestion(message, session, cur_id, is_accepted)
+
+    async with session.begin():
+        await SuggestionDAO.update_by_id(session, cur_id, {"accepted": is_accepted})
 
     last_suggestion_id = await show_last_suggestion(message, session, bot)
     if not last_suggestion_id:
@@ -84,6 +86,3 @@ async def accept_cur_suggestion(
         return await message.answer("Предложка закончилась!", reply_markup=ReplyKeyboardRemove())
         
     await state.set_data({"last": last_suggestion_id})
-
-
-
