@@ -5,12 +5,13 @@ from aiogram.filters import MagicData
 from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.media_group import MediaGroupBuilder
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import SuggestionDAO
+from config import Config
 
 from .state import SuggestionViewer
-
 from .logics import (
     get_suggestions_logic, show_last_suggestion
 )
@@ -54,12 +55,13 @@ async def show_suggestions_admin_menu(
         reply_markup=keyboard
     )
 
-    last_suggestion_id = await show_last_suggestion(message, session, bot)
-    if not last_suggestion_id:
+    raw_suggestion = await show_last_suggestion(message, session, bot)
+    if not raw_suggestion:
         return await message.answer("Нет не рассмотренной предложки :(")
 
+    suggestion, media_group = raw_suggestion
     await state.set_state(SuggestionViewer.in_viewer)
-    await state.set_data({"last": last_suggestion_id})
+    await state.set_data({"last": suggestion.id, "media_group": media_group})
 
 @router.message(
     SuggestionViewer.in_viewer,
@@ -69,7 +71,8 @@ async def accept_deny_suggestion(
     message: Message, 
     session: AsyncSession,
     state: FSMContext,
-    bot: Bot
+    bot: Bot,
+    config: Config
 ):
     text = message.text.lower()
     is_accepted = True if text == "принять" else False
@@ -77,12 +80,22 @@ async def accept_deny_suggestion(
     data = await state.get_data()
     cur_id: int = data["last"]
 
+    # Запостить.
+    if is_accepted:
+        media_group: MediaGroupBuilder = data["media_group"]
+        suggestion_caption = f"{media_group.caption if media_group.caption else ""}"
+        media_group.caption = f"#предложка\n{suggestion_caption}"
+        await bot.send_media_group(config.CHANNEL_ID, media=media_group.build())
+
+    # Обновить в базе.
     async with session.begin():
         await SuggestionDAO.update_by_id(session, cur_id, {"accepted": is_accepted})
 
-    last_suggestion_id = await show_last_suggestion(message, session, bot)
-    if not last_suggestion_id:
+    # Получаем новый (следующий) suggestion
+    raw_suggestion = await show_last_suggestion(message, session, bot)
+    if not raw_suggestion:
         await state.clear()
         return await message.answer("Предложка закончилась!", reply_markup=ReplyKeyboardRemove())
-        
-    await state.set_data({"last": last_suggestion_id})
+    
+    suggestion, media_group = raw_suggestion
+    await state.set_data({"last": suggestion.id, "media_group": media_group})

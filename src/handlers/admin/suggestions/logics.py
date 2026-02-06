@@ -1,14 +1,14 @@
 
+from typing import Tuple
 from aiogram import Bot
 
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Suggestion
-from database.dao import SuggestionDAO, UserAlchemyDAO
+from database.dao import SuggestionDAO
 
 async def get_suggestions_logic(
     message: Message, 
@@ -47,7 +47,8 @@ async def show_last_suggestion(
     message: Message,
     session: AsyncSession,
     bot: Bot
-) -> int | None:
+) -> Tuple[Suggestion, MediaGroupBuilder] | None:
+    
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none(
             session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author)
@@ -64,7 +65,6 @@ async def show_last_suggestion(
     )
 
     media_group = MediaGroupBuilder(caption=caption)
-
     for media in suggestion.media:
         media_group.add(type=media.filetype, media=media.telegram_file_id)
 
@@ -73,4 +73,6 @@ async def show_last_suggestion(
         media=media_group.build()
     )
 
-    return suggestion.id
+    # оригинальную капцу перед возвратом
+    media_group.caption = suggestion.caption
+    return suggestion, media_group
