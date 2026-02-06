@@ -13,6 +13,49 @@ class BaseDao(Generic[T]):
     model: type[T]
 
     @classmethod
+    async def get_result(
+        cls,
+        session: AsyncSession,
+        filters: ColumnElement[bool] | None = None,
+        options: Sequence[Any] | None = None,
+        order_by: Any = None,
+        offset: int = 0,
+        limit: int = 5
+    ) -> Result:
+        
+        stmt = (
+            select(cls.model)
+            .where(filters)
+            .offset(offset)
+            .limit(limit)
+            .order_by(order_by)
+        )
+
+        if options:
+            stmt = stmt.options(*options)
+
+        result: Result = await session.execute(stmt)
+        return result
+
+    @classmethod
+    async def get_one_or_none(
+        cls, 
+        session: AsyncSession,
+        filters: ColumnElement[bool],
+        children: Sequence[Any] | Any = None,
+        order_by: Any = None
+    ):
+        options = None
+        if not isinstance(children, Sequence):
+            children = (children,)
+
+        if children:
+            options = (selectinload(child) for child in children)
+
+        result: Result = await cls.get_result(session, filters, options, order_by, limit=1)
+        return result.scalars().first()
+
+    @classmethod
     async def get_one_or_none_by_id(cls, session: AsyncSession, data_id: int) -> T | None:
         return await session.scalar(
             select(cls.model).where(cls.model.id == data_id)
@@ -36,28 +79,5 @@ class BaseDao(Generic[T]):
         offset: int = 0,
         limit: int = 5
     ) -> Sequence[T]:
-        stmt = (
-            select(cls.model)
-            .where(filters)
-            .order_by(order_by)
-            .offset(offset)
-            .limit(limit)
-        )
-
-        result: Result = await session.execute(stmt)
+        result = await cls.get_result(session, filters, None, order_by, offset, limit)
         return result.scalars().all()
-    
-    @classmethod
-    async def get_one_or_none_with_children(
-        cls, session: AsyncSession, child: Any, filters: ColumnElement[bool]
-    ) -> T | None:
-        stmt = (
-            select(cls.model)
-            .options(
-                selectinload(child)
-            )
-            .where(filters)
-        )
-
-        result: Result = await session.execute(stmt)
-        return result.scalar_one_or_none()

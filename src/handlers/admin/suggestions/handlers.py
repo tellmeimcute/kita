@@ -2,60 +2,88 @@
 
 from aiogram import Router, F, Bot
 from aiogram.filters import MagicData
-
-from aiogram.types import Message
+from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.filters import Command, CommandObject
-from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram.fsm.context import FSMContext
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Suggestion
-from database.dao import SuggestionDAO, UserAlchemyDAO
+from .state import SuggestionViewer
 
-from config import Config
+from .logics import (
+    get_suggestions_logic, show_last_suggestion,
+    change_accepted_state_suggestion
+)
 
 router = Router(name="suggestions_admin")
 router.message.filter(
     MagicData(F.event.from_user.id == F.config.ADMIN_ID)
 )
+
 #router.message.middleware()
 
-@router.message(Command("предложка", "get_suggestion", prefix='/!'))
+@router.message(Command("get_suggestion", prefix='/!'))
 async def get_suggestion(
     message: Message, 
     session: AsyncSession,
-    config: Config, 
     command: CommandObject,
     bot: Bot
 ):
-    if message.from_user.id != config.ADMIN_ID:
-        return
-
     suggestion_id = command.args
+    await get_suggestions_logic(message, session, bot, suggestion_id)
 
-    async with session.begin():
-        suggestion: Suggestion = await SuggestionDAO.get_one_or_none_with_children(
-            session, Suggestion.media, Suggestion.id == suggestion_id
-        )
 
-    if not suggestion:
-        return
-    
-    medias = suggestion.media
-    media_group = MediaGroupBuilder(
-        caption=suggestion.caption
+@router.message(F.text.lower() == "смотреть предложку")
+async def show_suggestions_admin_menu(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+    bot: Bot
+):
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="Принять")],
+            [KeyboardButton(text="Отклонить")],
+        ],
+        resize_keyboard=True,
+        is_persistent=True,
     )
 
-    for media in medias:
-        media_group.add(type=media.filetype, media=media.telegram_file_id)
-
-    author = await UserAlchemyDAO.get_one_or_none_by_id(session, suggestion.author_id)
-    await bot.send_message(
-        message.chat.id,
-        f"Предложка от @{author.username} ({suggestion.author_id}):"
+    await message.answer(
+        "Начинаем просмотр...",
+        reply_markup=keyboard
     )
 
-    await bot.send_media_group(
-        message.chat.id,
-        media=media_group.build()
-    )
+    last_suggestion_id = await show_last_suggestion(message, session, bot)
+    if not last_suggestion_id:
+        return await message.answer("Нет не рассмотренной предложки :(")
+
+    await state.set_state(SuggestionViewer.in_viewer)
+    await state.set_data({"last": last_suggestion_id})
+
+@router.message(
+    (F.text.lower() == "принять") | (F.text.lower() == "отклонить"),
+    SuggestionViewer.in_viewer
+)
+async def accept_cur_suggestion(
+    message: Message, 
+    session: AsyncSession,
+    state: FSMContext,
+    bot: Bot
+):
+    text = message.text.lower()
+    is_accepted = True if text == "принять" else False
+
+    data = await state.get_data()
+    cur_id: int = data["last"]
+    await change_accepted_state_suggestion(message, session, cur_id, is_accepted)
+
+    last_suggestion_id = await show_last_suggestion(message, session, bot)
+    if not last_suggestion_id:
+        await state.clear()
+        return await message.answer("Предложка закончилась!", reply_markup=ReplyKeyboardRemove())
+        
+    await state.set_data({"last": last_suggestion_id})
+
+
+
