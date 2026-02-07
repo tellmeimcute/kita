@@ -12,3 +12,6 @@ wheels/
 
 # sqlite db
 *.db
+
+# ruff 
+.ruff_cache
