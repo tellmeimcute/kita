@@ -60,7 +60,7 @@ async def show_last_suggestion(
     caption = (
         f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
         f"ID: {suggestion.id}\n"
-        f"Original caption:\n"
+        f"Оригинальная подпись:\n"
         f"{suggestion.caption}"
     )
 

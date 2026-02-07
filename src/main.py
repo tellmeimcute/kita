@@ -4,6 +4,7 @@ import asyncio
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
 from database import DatabaseManager
 from middlewares import SessionMiddleware, UserMiddleware
@@ -17,7 +18,7 @@ db = DatabaseManager()
 dp = Dispatcher(config=config)
 dp.include_router(handlers_router)
 
-bot = Bot(config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties())
+bot = Bot(config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 session_middleware = SessionMiddleware(db.session_maker)
 user_middleware = UserMiddleware()

@@ -82,7 +82,6 @@ class BaseDao(Generic[T]):
         result = await cls.get_result(session, filters, None, order_by, offset, limit)
         return result.scalars().all()
     
-
     @classmethod
     async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
         stmt = (
