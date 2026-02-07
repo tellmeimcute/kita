@@ -1,8 +1,10 @@
-from typing import List, Tuple, Sequence
+from typing import List, Sequence, Tuple
+
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from database.models import Suggestion, Media
+from database.models import Media, Suggestion
+
 
 def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
     if msg.video:

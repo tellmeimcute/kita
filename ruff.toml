@@ -1,0 +1,55 @@
+target-version = "py313"
+ 
+# Основные настройки
+line-length = 99 # Максимальная длина строки для кода
+indent-width = 4 # Ширина отступа
+ 
+# Каталоги, которые следует учитывать при разрешении импорта из first/third-party источников
+src = ["src"]
+ 
+# Настройки линтера
+[lint]
+# Нестабильные и находящиеся в предварительной версии правила
+preview = true
+# Правила, которые должен применять линтер
+select = [
+    # "C", # TODO: mccabe - code complecity
+    "A", # flake8-annotations
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "E", # pycodestyle errors
+    "F", # pyflakes
+    "I", # isort
+    "PERF", # perflint
+    "PL", # pylint
+    "Q", # flake8-quotes
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "T10", # flake8-debugger
+    "T20", # flake8-print
+    "UP", # pyupgrade
+]
+# Игнорирование конкретных предупреждений линтера
+ignore = [
+    "C408",  # Ненужный вызов dict, list и т.д.
+    "RUF001", # Игнорирование похожих символов с разными ASCII
+    "RUF002", # Игнорирование похожих символов с разными ASCII
+    "RUF003", # Игнорирование похожих символов с разными ASCII
+    "S110",  # try-except-pass
+    "PLR0917", # too-many-positional-arguments (Telegram API design)
+]
+
+# Ошибки, которые могут быть исправлены автоматически
+fixable = [
+    "I", # cортировка испортов
+]
+ 
+# Настройки форматтера
+[format]
+quote-style = "double"
+indent-style = "space"
+ 
+# Дополнительные настройки для плагинов
+[lint.flake8-bandit]
+check-typed-exception = true # Проверка типизированных исключений

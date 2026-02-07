@@ -1,22 +1,18 @@
 
 
-from aiogram import Router, F, Bot
-from aiogram.filters import MagicData
-from aiogram.types import Message
-from aiogram.filters import Command, CommandObject
+from aiogram import Bot, F, Router
+from aiogram.filters import Command, CommandObject, MagicData
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
-
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from config import Config
 from database.dao import SuggestionDAO
 from handlers.keyboards import accept_decline_kb, main_kb
 
-from config import Config
-
+from .logics import get_suggestions_logic, show_last_suggestion
 from .state import SuggestionViewer
-from .logics import (
-    get_suggestions_logic, show_last_suggestion
-)
 
 router = Router(name="suggestions_admin")
 router.message.filter(

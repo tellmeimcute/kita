@@ -1,13 +1,12 @@
 
-from aiogram import Router, F
-from aiogram.filters import CommandStart, Command
+from aiogram import F, Router
+from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-
 from aiogram.utils.formatting import Bold, Text
-from handlers.keyboards import main_kb
 
 from config import Config
+from handlers.keyboards import main_kb
 
 router = Router(name="start_handlers")
 

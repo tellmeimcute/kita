@@ -1,10 +1,9 @@
-from aiogram import BaseMiddleware
-from aiogram.types import CallbackQuery, Message, TelegramObject
-
-
 import asyncio
 from time import time
 from typing import Any, Awaitable, Callable, Dict, List, Union
+
+from aiogram import BaseMiddleware
+from aiogram.types import CallbackQuery, Message, TelegramObject
 
 
 class MediaGroutMiddleware(BaseMiddleware):

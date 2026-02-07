@@ -1,8 +1,7 @@
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from database.models.abstract_model import AbstractModel
 from config import config
+from database.models.abstract_model import AbstractModel
 
 
 class DatabaseManager:

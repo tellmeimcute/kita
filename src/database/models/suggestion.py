@@ -1,9 +1,11 @@
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .abstract_model import AbstractModel
+
 if TYPE_CHECKING:
     from .media import Media
     from .user import UserAlchemy

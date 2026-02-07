@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao.base import BaseDao
 from database.models import UserAlchemy
 
+
 class UserAlchemyDAO(BaseDao[UserAlchemy]):
     model = UserAlchemy
 

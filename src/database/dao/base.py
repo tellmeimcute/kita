@@ -1,9 +1,9 @@
 
-from typing import Sequence, Generic, TypeVar, Any
+from typing import Any, Generic, Sequence, TypeVar
 
-from sqlalchemy import select, update, Result, func, ColumnElement
-from sqlalchemy.orm import selectinload
+from sqlalchemy import ColumnElement, Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from database.models.abstract_model import AbstractModel
 

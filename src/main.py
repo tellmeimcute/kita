@@ -1,16 +1,14 @@
-import logging
-
 import asyncio
+import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-from database import DatabaseManager
-from middlewares import SessionMiddleware, UserMiddleware
-from handlers import handlers_router
-
 from config import config
+from database import DatabaseManager
+from handlers import handlers_router
+from middlewares import SessionMiddleware, UserMiddleware
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,8 +1,5 @@
 from sqlalchemy import inspect
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import as_declarative
-from sqlalchemy.orm import declared_attr
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import Mapped, as_declarative, declared_attr, mapped_column
 
 
 @as_declarative()

@@ -1,13 +1,13 @@
 from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery, TelegramObject
-
-from sqlalchemy.ext.asyncio import AsyncSession
-from database.models.user import UserAlchemy
+from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as UserTelegram
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao.user import UserAlchemyDAO
+from database.models.user import UserAlchemy
+
 
 class UserMiddleware(BaseMiddleware):
     """

@@ -1,7 +1,6 @@
 
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-
 accept_decline_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Принять"), KeyboardButton(text="Отклонить")],

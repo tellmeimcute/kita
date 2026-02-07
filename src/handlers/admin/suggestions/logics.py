@@ -1,14 +1,14 @@
 
 from typing import Tuple
-from aiogram import Bot
 
+from aiogram import Bot
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Suggestion
 from database.dao import SuggestionDAO
+from database.models import Suggestion
+
 
 async def get_suggestions_logic(
     message: Message, 

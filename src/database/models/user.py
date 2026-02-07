@@ -2,10 +2,10 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .abstract_model import AbstractModel
+
 if TYPE_CHECKING:
     from .suggestion import Suggestion
 

@@ -1,19 +1,17 @@
 
 from typing import List
 
-from aiogram import F, Router, Bot
-from aiogram.types import Message
+from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Suggestion
-from database.dao import SuggestionDAO
-
-from middlewares import MediaGroutMiddleware
-from handlers.keyboards import cancel_kb, main_kb
-
-from helpers.utils import build_album_suggestions
 from config import Config
+from database.dao import SuggestionDAO
+from database.models import Suggestion
+from handlers.keyboards import cancel_kb, main_kb
+from helpers.utils import build_album_suggestions
+from middlewares import MediaGroutMiddleware
 
 from .state import PostStates
 
