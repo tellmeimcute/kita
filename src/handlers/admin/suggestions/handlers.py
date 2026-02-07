@@ -8,10 +8,11 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
+from database.models import Suggestion
 from database.dao import SuggestionDAO
 from handlers.keyboards import accept_decline_kb, main_kb
 
-from .logics import get_suggestions_logic, show_last_suggestion
+from .logics import get_suggestions_logic, get_active_suggestion, post_in_channel
 from .state import SuggestionViewer
 
 router = Router(name="suggestions_admin")
@@ -39,7 +40,7 @@ async def show_suggestions_admin_menu(
     state: FSMContext,
     bot: Bot
 ):
-    raw_suggestion = await show_last_suggestion(message, session, bot)
+    raw_suggestion = await get_active_suggestion(session)
     if not raw_suggestion:
         return await message.answer("Нет не рассмотренной предложки :(", reply_markup=main_kb)
 
@@ -49,7 +50,9 @@ async def show_suggestions_admin_menu(
     await bot.send_media_group(message.chat.id, media_group.build())
 
     await state.set_state(SuggestionViewer.in_viewer)
-    await state.set_data({"last": suggestion.id, "media_group": media_group})
+    await state.set_data(
+        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
+    )
 
 @router.message(
     SuggestionViewer.in_viewer,
@@ -61,7 +64,7 @@ async def accept_deny_suggestion(
     state: FSMContext,
     bot: Bot,
     config: Config,
-    with_og_caption: bool = True,
+    with_caption: bool = True,
     is_accepted: bool | None = None
 ):
     text = message.text.lower()
@@ -73,20 +76,16 @@ async def accept_deny_suggestion(
 
     # Запостить.
     if is_accepted:
-        media_group: MediaGroupBuilder = data["media_group"]
-        suggestion_caption = "#предложка"
-        if with_og_caption and media_group.caption:
-            suggestion_caption = f"{media_group.caption}\n\n{suggestion_caption}"
-
-        media_group.caption = f"{suggestion_caption}"
-        await bot.send_media_group(config.CHANNEL_ID, media=media_group.build())
+        cur_media_group: MediaGroupBuilder = data["media_group"]
+        cur_suggestion: Suggestion = data["suggestion"]
+        await post_in_channel(bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption)
 
     # Обновить в базе.
     async with session.begin():
         await SuggestionDAO.update_by_id(session, cur_suggestion_id, {"accepted": is_accepted})
 
     # Получаем новый (следующий) suggestion
-    raw_suggestion = await show_last_suggestion(message, session, bot)
+    raw_suggestion = await get_active_suggestion(session)
     if not raw_suggestion:
         await state.clear()
         return await message.answer("Предложка закончилась!", reply_markup=main_kb)
@@ -94,7 +93,9 @@ async def accept_deny_suggestion(
     suggestion, media_group = raw_suggestion
     await bot.send_media_group(message.chat.id, media_group.build())
     
-    await state.set_data({"last": suggestion.id, "media_group": media_group})
+    await state.set_data(
+        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
+    )
 
 @router.message(
     SuggestionViewer.in_viewer,

@@ -81,12 +81,10 @@ async def statistic(message: Message, session: AsyncSession):
     user_id = message.from_user.id
 
     async with session.begin():
-        user_suggestions = await SuggestionDAO.get(session, Suggestion.author_id == user_id, Suggestion.id.desc())
         user_suggestions_count = await SuggestionDAO.count(session, Suggestion.author_id == user_id)
-
-    accepted_suggestions = [s for s in user_suggestions if s.accepted]
+        accepted_suggestions = await SuggestionDAO.count(session, (Suggestion.author_id == user_id) & (Suggestion.accepted == True))
 
     await message.answer(
         f"Постов предожено: {user_suggestions_count}\n\n"
-        f"✅ Принято: {len(accepted_suggestions)}\n"
+        f"✅ Принято: {accepted_suggestions}\n"
     )
