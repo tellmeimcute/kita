@@ -30,7 +30,7 @@ dp.message.middleware(user_middleware)
 
 async def main():
     # не использовать в проде
-    await db.start_dev()
+    #await db.start_dev()
 
     try:
         await bot.delete_webhook(drop_pending_updates=True)

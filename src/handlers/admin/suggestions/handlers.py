@@ -39,13 +39,15 @@ async def show_suggestions_admin_menu(
     state: FSMContext,
     bot: Bot
 ):
-    await message.answer("Начинаем просмотр...", reply_markup=accept_decline_kb)
-
     raw_suggestion = await show_last_suggestion(message, session, bot)
     if not raw_suggestion:
         return await message.answer("Нет не рассмотренной предложки :(", reply_markup=main_kb)
 
+    await message.answer("Начинаем просмотр...", reply_markup=accept_decline_kb)
+
     suggestion, media_group = raw_suggestion
+    await bot.send_media_group(message.chat.id, media_group.build())
+
     await state.set_state(SuggestionViewer.in_viewer)
     await state.set_data({"last": suggestion.id, "media_group": media_group})
 
@@ -90,6 +92,8 @@ async def accept_deny_suggestion(
         return await message.answer("Предложка закончилась!", reply_markup=main_kb)
     
     suggestion, media_group = raw_suggestion
+    await bot.send_media_group(message.chat.id, media_group.build())
+    
     await state.set_data({"last": suggestion.id, "media_group": media_group})
 
 @router.message(

@@ -68,11 +68,11 @@ async def show_last_suggestion(
     for media in suggestion.media:
         media_group.add(type=media.filetype, media=media.telegram_file_id)
 
-    await bot.send_media_group(
-        message.chat.id,
-        media=media_group.build()
-    )
+    # await bot.send_media_group(
+    #     message.chat.id,
+    #     media=media_group.build()
+    # )
 
-    # оригинальную капцу перед возвратом
+    # оригинальную капчу перед возвратом
     media_group.caption = suggestion.caption
     return suggestion, media_group
