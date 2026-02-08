@@ -6,7 +6,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 
-class MediaGroutMiddleware(BaseMiddleware):
+class MediaGroupMiddleware(BaseMiddleware):
     """
     Помещает в album все обьекты media group
     Дополнительно шлет media_group_id

@@ -16,5 +16,5 @@ class Media(AbstractModel):
     filetype: Mapped[str] = mapped_column()
     telegram_file_id: Mapped[str] = mapped_column()
 
-    suggestion_id: Mapped[int] = mapped_column(ForeignKey("suggestion.id"))
+    suggestion_id: Mapped[int] = mapped_column(ForeignKey("suggestion.id"), index=True)
     suggestion: Mapped["Suggestion"] = relationship(back_populates="media")

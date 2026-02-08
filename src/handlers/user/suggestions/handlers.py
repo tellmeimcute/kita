@@ -16,14 +16,14 @@ from database.models import Suggestion, UserAlchemy
 from database.roles import UserRole
 from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.utils import build_album_suggestions
-from middlewares import MediaGroutMiddleware
+from middlewares import MediaGroupMiddleware
 
 from .state import PostStates
 
 logger = getLogger("user_suggestions")
 
 router = Router(name="suggestions_user")
-router.message.middleware(MediaGroutMiddleware(latency=0.25))
+router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 @router.message(F.text == "Предложить пост")
 async def suggest_post(message: Message, state: FSMContext):
