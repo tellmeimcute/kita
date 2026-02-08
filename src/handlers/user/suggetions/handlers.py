@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO
-from database.models import Suggestion
-from handlers.keyboards import cancel_kb, main_kb
+from database.models import Suggestion, UserAlchemy
+from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.utils import build_album_suggestions
 from middlewares import MediaGroutMiddleware
 
@@ -33,6 +33,7 @@ async def process_suggestion(
     state: FSMContext, 
     session: AsyncSession,
     bot: Bot,
+    user_alchemy: UserAlchemy,
     config: Config,
     media_group_id: int | None = None,
     album: List[Message] | None = None,
@@ -56,6 +57,7 @@ async def process_suggestion(
 
     await bot.send_media_group(chat_id=config.ADMIN_ID, media=media_group.build())
 
+    main_kb = get_main_kb_by_role(user_alchemy.role)
     await bot.send_message(chat_id=user_id, text="Отправлено.", reply_markup=main_kb)
     await state.clear()
 
@@ -69,11 +71,14 @@ async def process_media_group_suggestion(
     state: FSMContext,
     session: AsyncSession,
     album: List[Message],
+    user_alchemy: UserAlchemy,
     media_group_id: str,
     bot: Bot,
     config: Config
 ):
-    await process_suggestion(message, state, session, bot, config, media_group_id, album)
+    await process_suggestion(
+        message, state, session, bot, user_alchemy, config, media_group_id, album
+    )
 
 
 @router.message(F.text == "Статистика")

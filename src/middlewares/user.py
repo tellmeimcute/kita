@@ -5,9 +5,11 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as UserTelegram
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.dao.user import UserAlchemyDAO
-from database.models.user import UserAlchemy
+from database.dao import UserAlchemyDAO
+from database.models import UserAlchemy
+from database.roles import UserRole
 
+from config import Config
 
 class UserMiddleware(BaseMiddleware):
     """
@@ -33,9 +35,15 @@ class UserMiddleware(BaseMiddleware):
         if not user_tg:
             return await handler(event, data)
 
+        config: Config = data["config"]
+
+        user_role = UserRole.USER
+        if user_tg.id == config.ADMIN_ID:
+            user_role = UserRole.ADMIN
+
         async with session.begin():
             user_alchemy: UserAlchemy = await UserAlchemyDAO.get_or_create_user(
-                session, user_tg.id, user_tg.username
+                session, user_tg.id, user_tg.username, user_role
             )
 
         data["user_alchemy"] = user_alchemy
