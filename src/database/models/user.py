@@ -18,9 +18,17 @@ class UserAlchemy(AbstractModel):
     username: Mapped[str] = mapped_column()
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]),
+        Enum(
+            UserRole,
+            native_enum=True, 
+            values_callable=lambda obj: [e.value for e in obj]
+        ),
         default=UserRole.USER,
         server_default=UserRole.USER.value
     )
 
     suggestions: Mapped[list["Suggestion"]] = relationship(back_populates="author")
+
+    @property
+    def is_admin(self):
+        return self.role == UserRole.ADMIN

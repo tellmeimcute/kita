@@ -13,15 +13,15 @@ from database.dao import SuggestionDAO
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
 from middlewares import AdminMiddleware
 
-from .logics import get_suggestions_logic, get_active_suggestion, post_in_channel
 from .state import SuggestionViewer
+from .logics import (
+    get_suggestion_by_id,
+    get_active_suggestion,
+    post_in_channel,
+    update_review_state
+)
 
 router = Router(name="suggestions_admin")
-
-# router.message.filter(
-#     MagicData(F.event.from_user.id == F.config.ADMIN_ID)
-# )
-
 router.message.middleware(AdminMiddleware())
 
 @router.message(Command("get_suggestion", prefix='/!'))
@@ -32,7 +32,20 @@ async def get_suggestion(
     bot: Bot
 ):
     suggestion_id = command.args
-    await get_suggestions_logic(message, session, bot, suggestion_id)
+    raw_suggestion = await get_suggestion_by_id(session, suggestion_id)
+    if not raw_suggestion:
+        return await message.answer(f"Предложки с ID {suggestion_id} не найдено :(")
+
+    suggestion, media_group = raw_suggestion
+    await bot.send_message(
+        message.chat.id,
+        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):"
+    )
+
+    await bot.send_media_group(
+        message.chat.id,
+        media=media_group.build()
+    )
 
 
 @router.message(F.text.lower() == "смотреть предложку")
@@ -50,17 +63,14 @@ async def show_suggestions_admin_menu(
 
     await message.answer("Начинаем просмотр...", reply_markup=accept_decline_kb)
 
-    suggestion, media_group = raw_suggestion
-    await bot.send_media_group(message.chat.id, media_group.build())
-
     await state.set_state(SuggestionViewer.in_viewer)
-    await state.set_data(
-        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
-    )
+
+    chat_id = message.chat.id
+    await update_review_state(*raw_suggestion, chat_id, bot, state)
+
 
 @router.message(
-    SuggestionViewer.in_viewer,
-    (F.text.lower() == "принять") | (F.text.lower() == "отклонить")
+    SuggestionViewer.in_viewer, (F.text.lower() == "принять") | (F.text.lower() == "отклонить")
 )
 async def accept_deny_suggestion(
     message: Message, 
@@ -95,12 +105,9 @@ async def accept_deny_suggestion(
         main_kb = get_main_kb_by_role(user_alchemy.role)
         return await message.answer("Предложка закончилась!", reply_markup=main_kb)
     
-    suggestion, media_group = raw_suggestion
-    await bot.send_media_group(message.chat.id, media_group.build())
-    
-    await state.set_data(
-        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
-    )
+    chat_id = message.chat.id
+    await update_review_state(*raw_suggestion, chat_id, bot, state)
+
 
 @router.message(
     SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи")

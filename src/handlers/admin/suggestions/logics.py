@@ -2,45 +2,29 @@
 from typing import Tuple, Any
 
 from aiogram import Bot
-from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.models import Suggestion
 
+from helpers.utils import get_media_group
 
-async def get_suggestions_logic(
-    message: Message, 
+async def get_suggestion_by_id(
     session: AsyncSession, 
-    bot: Bot, 
     suggestion_id: int
-):
+) -> Tuple[Suggestion, MediaGroupBuilder] | None:
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none(
             session, Suggestion.id == suggestion_id, (Suggestion.media, Suggestion.author)
         )
 
     if not suggestion:
-        return
+        return None
     
-    medias = suggestion.media
-    media_group = MediaGroupBuilder(
-        caption=suggestion.caption
-    )
-
-    for media in medias:
-        media_group.add(type=media.filetype, media=media.telegram_file_id)
-
-    await bot.send_message(
-        message.chat.id,
-        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):"
-    )
-
-    await bot.send_media_group(
-        message.chat.id,
-        media=media_group.build()
-    )
+    media_group = get_media_group(suggestion.media, suggestion.caption)
+    return suggestion, media_group
 
 
 async def get_active_suggestion(
@@ -62,11 +46,22 @@ async def get_active_suggestion(
         f"{suggestion.caption}"
     )
 
-    media_group = MediaGroupBuilder(caption=caption)
-    for media in suggestion.media:
-        media_group.add(type=media.filetype, media=media.telegram_file_id)
-
+    media_group = get_media_group(suggestion.media, caption)
     return suggestion, media_group
+
+
+async def update_review_state(
+    suggestion: Suggestion, 
+    media_group: MediaGroupBuilder,
+    chat_id: int,
+    bot: Bot,
+    state: FSMContext
+):
+    await bot.send_media_group(chat_id, media_group.build())
+    await state.set_data(
+        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
+    )
+
 
 async def post_in_channel(
     bot: Bot,

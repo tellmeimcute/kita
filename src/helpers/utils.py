@@ -6,6 +6,16 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from database.models import Media, Suggestion
 
 
+def get_media_group(
+    medias: List[Media], 
+    caption: str | None = None
+) -> MediaGroupBuilder:
+    media_group = MediaGroupBuilder(caption=caption)
+    for media in medias:
+        media_group.add(type=media.filetype, media=media.telegram_file_id)
+    return media_group
+
+
 def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
     if msg.video:
         return "video", msg.video.file_id
