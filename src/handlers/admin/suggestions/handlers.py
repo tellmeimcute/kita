@@ -57,16 +57,19 @@ async def show_suggestions_admin_menu(
     bot: Bot
 ):
     raw_suggestion = await get_active_suggestion(session)
+
     if not raw_suggestion:
         main_kb = get_main_kb_by_role(user_alchemy.role)
         return await message.answer("Нет не рассмотренной предложки :(", reply_markup=main_kb)
-
     await message.answer("Начинаем просмотр...", reply_markup=accept_decline_kb)
 
     await state.set_state(SuggestionViewer.in_viewer)
 
     chat_id = message.chat.id
-    await update_review_state(*raw_suggestion, chat_id, bot, state)
+    suggestion, media_group = raw_suggestion
+    suggestions_left = await SuggestionDAO.count(session, Suggestion.accepted.is_(None))
+
+    await update_review_state(suggestion, media_group, chat_id, bot, state, suggestions_left)
 
 
 @router.message(
@@ -106,7 +109,7 @@ async def accept_deny_suggestion(
         return await message.answer("Предложка закончилась!", reply_markup=main_kb)
     
     chat_id = message.chat.id
-    await update_review_state(*raw_suggestion, chat_id, bot, state)
+    await update_review_state(*raw_suggestion, chat_id, bot, state, data=data)
 
 
 @router.message(

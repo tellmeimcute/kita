@@ -1,4 +1,5 @@
 
+from logging import getLogger
 from typing import Tuple, Any
 
 from aiogram import Bot
@@ -10,6 +11,8 @@ from database.dao import SuggestionDAO
 from database.models import Suggestion
 
 from helpers.utils import get_media_group
+
+logger = getLogger("admin_suggestions")
 
 async def get_suggestion_by_id(
     session: AsyncSession, 
@@ -30,23 +33,14 @@ async def get_suggestion_by_id(
 async def get_active_suggestion(
     session: AsyncSession, order_by: Any = None
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
-    
-    async with session.begin():
-        suggestion = await SuggestionDAO.get_one_or_none(
-            session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author), order_by
-        )
+    suggestion = await SuggestionDAO.get_one_or_none(
+        session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author), order_by
+    )
 
     if not suggestion:
         return None
 
-    caption = (
-        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
-        f"ID: {suggestion.id}\n"
-        f"Оригинальная подпись:\n"
-        f"{suggestion.caption}"
-    )
-
-    media_group = get_media_group(suggestion.media, caption)
+    media_group = get_media_group(suggestion.media, suggestion.caption)
     return suggestion, media_group
 
 
@@ -55,11 +49,30 @@ async def update_review_state(
     media_group: MediaGroupBuilder,
     chat_id: int,
     bot: Bot,
-    state: FSMContext
+    state: FSMContext,
+    suggestions_left: int | None = None,
+    data: dict | None = None
 ):
+    if not suggestions_left:
+        data = data or await state.get_data()
+        suggestions_left = data["suggestions_left"]
+
+    media_group.caption = (
+        f"В очереди еще {suggestions_left} постов.\n\n"
+        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
+        f"ID: {suggestion.id}\n"
+        f"Оригинальная подпись:\n"
+        f"{suggestion.caption}"
+    )
+
     await bot.send_media_group(chat_id, media_group.build())
     await state.set_data(
-        {"last": suggestion.id, "media_group": media_group, "suggestion": suggestion}
+        {
+            "last": suggestion.id,
+            "media_group": media_group,
+            "suggestion": suggestion,
+            "suggestions_left": suggestions_left - 1
+        }
     )
 
 
@@ -75,4 +88,7 @@ async def post_in_channel(
         new_caption = f"{suggestion.caption}\n\n{new_caption}"
 
     media_group.caption = new_caption
-    await bot.send_media_group(channel_id, media=media_group.build())
+    try:
+        await bot.send_media_group(channel_id, media=media_group.build())
+    except Exception as e:
+        logger.error("Ошибка при отправке предложки в канал: %s", e)
