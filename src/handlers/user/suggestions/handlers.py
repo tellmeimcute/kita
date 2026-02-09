@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import UserAlchemy
 from handlers.keyboards import cancel_kb, get_main_kb_by_role
-from helpers.utils import build_album_suggestions
+from helpers.utils import create_medias, get_media_group
 from middlewares import MediaGroupMiddleware
 
 from .logics import notify_admins_task
@@ -46,14 +46,19 @@ async def process_suggestion(
     username = message.from_user.username
 
     album = album or (message,)
-    suggestion, medias, media_group = build_album_suggestions(album, user_id, media_group_id)
-
-    if not medias:
-        return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео/gif.")
-
+    caption = album[0].caption
     async with session.begin():
-        session.add_all((suggestion, *medias))
+        suggestion = await SuggestionDAO.create(
+            session, author_id=user_id, media_group_id=media_group_id, caption=caption
+        )
+        medias = await create_medias(session, album, suggestion)
 
+        if not medias:
+            await session.rollback()
+            return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео/gif.")
+             
+    media_group = get_media_group(medias, caption)
+    
     main_kb = get_main_kb_by_role(user_alchemy.role)
     await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
     await state.clear()
