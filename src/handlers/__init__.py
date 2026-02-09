@@ -1,14 +1,12 @@
 from aiogram import Router
 
-from .admin.suggestions import router as suggestion_admin_router
-from .user.start import router as start_router
-from .user.suggestions import router as suggestion_user_router
+from .admin import admin_router
+from .user import user_router
 
-handlers_router = Router(name="handlers")
-handlers_router.include_routers(
-    start_router,
-    suggestion_user_router,
-    suggestion_admin_router,
+root_router = Router(name="root_router")
+root_router.include_routers(
+    user_router,
+    admin_router,
 )
 
-__all__ = handlers_router
+__all__ = root_router

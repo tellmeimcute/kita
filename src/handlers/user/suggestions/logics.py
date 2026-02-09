@@ -1,19 +1,18 @@
-
-
 import asyncio
-from typing import List
 from logging import Logger
+from typing import List
 
 from aiogram import Bot
 from aiogram.utils.media_group import MediaGroupBuilder
+
 from database.models import UserAlchemy
 
 
 async def notify_admins_task(
     bot: Bot,
-    admins: List[UserAlchemy], 
-    username: str, 
-    user_id: int, 
+    admins: List[UserAlchemy],
+    username: str,
+    user_id: int,
     media_group: MediaGroupBuilder,
     logger: Logger,
 ):
@@ -24,7 +23,9 @@ async def notify_admins_task(
             )
             await bot.send_media_group(chat_id=admin.user_id, media=media_group.build())
             logger.info(
-                "Отправлено уведомление о новом посте админу %s (%s)", admin.username, admin.user_id 
+                "Отправлено уведомление о новом посте админу %s (%s)",
+                admin.username,
+                admin.user_id,
             )
         except Exception as e:
             logger.error(

@@ -7,14 +7,14 @@ from aiogram.enums import ParseMode
 
 from config import config
 from database import DatabaseManager
-from handlers import handlers_router
+from handlers import root_router
 from middlewares import SessionMiddleware, UserMiddleware
 
 logging.basicConfig(level=logging.INFO)
 
 db = DatabaseManager()
 dp = Dispatcher(config=config)
-dp.include_router(handlers_router)
+dp.include_router(root_router)
 
 bot = Bot(
     config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML)
@@ -31,9 +31,6 @@ dp.message.middleware(user_middleware)
 
 
 async def main():
-    # не использовать в проде
-    # await db.start_dev()
-
     try:
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)

@@ -1,4 +1,4 @@
-
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao.base import BaseDao
@@ -27,3 +27,9 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
                 session, user_id=user_id, username=username, role=user_role
             )
         return user_alchemy
+
+    @classmethod
+    async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
+        stmt = update(cls.model).where(cls.model.user_id == data_id).values(data)
+        await session.execute(stmt)
+        await session.flush()

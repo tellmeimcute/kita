@@ -8,14 +8,14 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
-from database.models import Suggestion, UserAlchemy
+from database.models import UserAlchemy
 from database.roles import UserRole
 from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.utils import build_album_suggestions
 from middlewares import MediaGroupMiddleware
 
-from .state import PostStates
 from .logics import notify_admins_task
+from .state import PostStates
 
 logger = getLogger("user_suggestions")
 
@@ -60,9 +60,8 @@ async def process_suggestion(
     await state.clear()
 
     admins = await UserAlchemyDAO.get(session, UserAlchemy.role == UserRole.ADMIN)
-    asyncio.create_task(
-        notify_admins_task(bot, admins, username, user_id, media_group, logger)
-    )
+    asyncio.create_task(notify_admins_task(bot, admins, username, user_id, media_group, logger))
+
 
 @router.message(PostStates.waiting_for_post, F.media_group_id)
 async def process_media_group_suggestion(

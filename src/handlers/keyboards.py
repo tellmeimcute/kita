@@ -15,6 +15,7 @@ main_kb_admin = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Предложить пост"), KeyboardButton(text="Статистика")],
         [KeyboardButton(text="Смотреть предложку")],
+        [KeyboardButton(text="Админ статистика")],
     ],
     resize_keyboard=True,
     is_persistent=True,

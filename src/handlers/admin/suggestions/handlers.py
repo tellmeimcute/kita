@@ -19,8 +19,8 @@ from .logics import (
 )
 from .state import SuggestionViewer
 
-router = Router(name="suggestions_admin")
-router.message.middleware(AdminMiddleware())
+router = Router(name="admin_suggestions")
+# router.message.middleware(AdminMiddleware())
 
 
 @router.message(Command("get_suggestion", prefix="/!"))
