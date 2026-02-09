@@ -29,7 +29,7 @@ async def get_suggestion(
     message: Message, 
     session: AsyncSession,
     command: CommandObject,
-    bot: Bot
+    bot: Bot,
 ):
     suggestion_id = command.args
     raw_suggestion = await get_suggestion_by_id(session, suggestion_id)
@@ -54,7 +54,7 @@ async def show_suggestions_admin_menu(
     session: AsyncSession,
     state: FSMContext,
     user_alchemy: UserAlchemy,
-    bot: Bot
+    bot: Bot,
 ):
     raw_suggestion = await get_active_suggestion(session)
 
@@ -83,7 +83,7 @@ async def accept_deny_suggestion(
     user_alchemy: UserAlchemy,
     config: Config,
     with_caption: bool = True,
-    is_accepted: bool = False
+    is_accepted: bool = False,
 ):
     text = message.text.lower()
     is_accepted = text == "принять" or is_accepted
@@ -123,6 +123,6 @@ async def accept_wo_caption(
     state: FSMContext,
     bot: Bot,
     user_alchemy: UserAlchemy,
-    config: Config
+    config: Config,
 ):
     await accept_deny_suggestion(message, session, state, bot, user_alchemy, config, False, True)

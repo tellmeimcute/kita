@@ -9,7 +9,7 @@ handlers_router = Router(name="handlers")
 handlers_router.include_routers(
     start_router,
     suggestion_user_router, 
-    suggestion_admin_router
+    suggestion_admin_router,
 )
 
 __all__ = (

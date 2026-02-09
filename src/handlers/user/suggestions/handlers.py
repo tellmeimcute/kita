@@ -80,7 +80,7 @@ async def process_media_group_suggestion(
     album: List[Message],
     user_alchemy: UserAlchemy,
     media_group_id: str,
-    bot: Bot
+    bot: Bot,
 ):
     await process_suggestion(
         message, state, session, bot, user_alchemy, media_group_id, album

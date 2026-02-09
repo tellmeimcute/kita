@@ -15,7 +15,7 @@ router = Router(name="start_handlers")
 async def start(
     message: Message,
     user_alchemy: UserAlchemy,
-    config: Config
+    config: Config,
 ):
     channel_info = await message.bot.get_chat(config.CHANNEL_ID)
     text = Text(
@@ -30,7 +30,7 @@ async def start(
 async def cmd_cancel_state(
     message: Message,
     state: FSMContext,
-    user_alchemy: UserAlchemy
+    user_alchemy: UserAlchemy,
 ):
     current_state = await state.get_state()
     if current_state:

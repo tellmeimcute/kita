@@ -19,7 +19,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         session: AsyncSession,
         user_id: int,
         username: str,
-        user_role: UserRole = UserRole.USER
+        user_role: UserRole = UserRole.USER,
     ):
         user_alchemy = await cls.get_one_or_none_by_id(session, user_id)
         if not user_alchemy:

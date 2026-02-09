@@ -38,7 +38,7 @@ class BaseDao(Generic[T]):
         options: Sequence[Any] | None = None,
         order_by: Any = None,
         offset: int = 0,
-        limit: int | None = None
+        limit: int | None = None,
     ) -> Result:
         
         stmt = cls._build_select_query(filters, options, order_by)
@@ -56,7 +56,7 @@ class BaseDao(Generic[T]):
         session: AsyncSession,
         filters: ColumnElement[bool],
         options: Sequence[Any] | Any = None,
-        order_by: Any = None
+        order_by: Any = None,
     ) -> T | None:
         if options is None:
             opt_seq = ()
@@ -102,7 +102,7 @@ class BaseDao(Generic[T]):
         options: Sequence[Any] | None = None,
         order_by: Any = None,
         offset: int = 0,
-        limit: int | None = None
+        limit: int | None = None,
     ) -> Sequence[T]:
         result = await cls.get_result(session, filters, options, order_by, offset, limit)
         return result.scalars().all()

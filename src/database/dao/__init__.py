@@ -3,5 +3,5 @@ from .user import UserAlchemyDAO
 
 __all__ = (
     'SuggestionDAO',
-    'UserAlchemyDAO'
+    'UserAlchemyDAO',
 )

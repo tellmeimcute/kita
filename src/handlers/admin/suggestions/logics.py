@@ -16,7 +16,7 @@ logger = getLogger("admin_suggestions")
 
 async def get_suggestion_by_id(
     session: AsyncSession, 
-    suggestion_id: int
+    suggestion_id: int,
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none(
@@ -51,7 +51,7 @@ async def update_review_state(
     bot: Bot,
     state: FSMContext,
     suggestions_left: int | None = None,
-    data: dict | None = None
+    data: dict | None = None,
 ):
     if not suggestions_left:
         data = data or await state.get_data()
@@ -82,7 +82,7 @@ async def post_in_channel(
     media_group: MediaGroupBuilder,
     suggestion: Suggestion,
     channel_id: int,
-    with_og_caption: bool = True
+    with_og_caption: bool = True,
 ):
     new_caption = "#предложка"
     if with_og_caption and suggestion.caption:
