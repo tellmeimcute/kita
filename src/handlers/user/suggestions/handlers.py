@@ -15,6 +15,7 @@ from helpers.utils import build_album_suggestions
 from middlewares import MediaGroupMiddleware
 
 from .state import PostStates
+from .logics import notify_admins_task
 
 logger = getLogger("user_suggestions")
 
@@ -54,24 +55,14 @@ async def process_suggestion(
     async with session.begin():
         session.add_all((suggestion, *medias))
 
-    admins = await UserAlchemyDAO.get(session, UserAlchemy.role == UserRole.ADMIN)
-    for admin in admins:
-        try:
-            await bot.send_message(
-                chat_id=admin.user_id, text=f"Новый пост от @{username} ({user_id}):"
-            )
-            await bot.send_media_group(chat_id=admin.user_id, media=media_group.build())
-        except Exception as e:
-            logger.error(
-                "Ошибка при уведомлении админа ID %s username %s: %s", admin.id, admin.username, e
-            )
-        finally:
-            await asyncio.sleep(0.05)
-
     main_kb = get_main_kb_by_role(user_alchemy.role)
     await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
     await state.clear()
 
+    admins = await UserAlchemyDAO.get(session, UserAlchemy.role == UserRole.ADMIN)
+    asyncio.create_task(
+        notify_admins_task(bot, admins, username, user_id, media_group, logger)
+    )
 
 @router.message(PostStates.waiting_for_post, F.media_group_id)
 async def process_media_group_suggestion(
@@ -89,12 +80,10 @@ async def process_media_group_suggestion(
 @router.message(F.text == "Статистика")
 async def statistic(message: Message, session: AsyncSession):
     user_id = message.from_user.id
-
-    user_suggestions_count = await SuggestionDAO.count(session, Suggestion.author_id == user_id)
-    accepted_suggestions = await SuggestionDAO.count(
-        session, (Suggestion.author_id == user_id) & (Suggestion.accepted == True)
-    )
+    stats = await SuggestionDAO.get_stats_by_user_id(session, user_id)
 
     await message.answer(
-        f"Постов предожено: {user_suggestions_count}\n\n✅ Принято: {accepted_suggestions}\n"
+        f"Постов предожено: {stats.total}\n\n"
+        f"✅ Принято: {stats.accepted}\n"
+        f"❌Отклонено: {stats.declined}"
     )

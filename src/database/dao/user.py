@@ -1,4 +1,4 @@
-from sqlalchemy import select
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao.base import BaseDao
