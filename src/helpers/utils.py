@@ -1,4 +1,4 @@
-from typing import List, Sequence, Tuple
+from typing import List, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -6,7 +6,7 @@ from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from database.models import Media, Suggestion
-from database.dao import SuggestionDAO, MediaDAO
+from database.dao import MediaDAO
 
 
 def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
