@@ -91,15 +91,17 @@ async def accept_deny_suggestion(
     data = await state.get_data()
     cur_suggestion_id: int = data["last"]
 
-    # Запостить.
-    if is_accepted:
-        cur_media_group: MediaGroupBuilder = data["media_group"]
-        cur_suggestion: Suggestion = data["suggestion"]
-        await post_in_channel(bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption)
-
-    # Обновить в базе.
     async with session.begin():
-        await SuggestionDAO.update_by_id(session, cur_suggestion_id, {"accepted": is_accepted})
+        cur_suggestion = await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id) or data["suggestion"]
+
+    # Запостить (если принято) и обновить в базе.
+    if cur_suggestion.accepted is None:
+        if is_accepted:
+            cur_media_group: MediaGroupBuilder = data["media_group"]
+            await post_in_channel(bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption)
+
+        async with session.begin():
+            await SuggestionDAO.update_by_id(session, cur_suggestion_id, {"accepted": is_accepted})
 
     # Получаем новый (следующий) suggestion
     raw_suggestion = await get_active_suggestion(session)

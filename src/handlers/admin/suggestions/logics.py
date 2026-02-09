@@ -57,8 +57,9 @@ async def update_review_state(
         data = data or await state.get_data()
         suggestions_left = data["suggestions_left"]
 
+    suggestions_left -= 1
     media_group.caption = (
-        f"В очереди еще {suggestions_left} постов.\n\n"
+        f"Постов в очереди: этот + {suggestions_left}шт.\n\n"
         f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
         f"ID: {suggestion.id}\n"
         f"Оригинальная подпись:\n"
@@ -71,7 +72,7 @@ async def update_review_state(
             "last": suggestion.id,
             "media_group": media_group,
             "suggestion": suggestion,
-            "suggestions_left": suggestions_left - 1
+            "suggestions_left": suggestions_left
         }
     )
 

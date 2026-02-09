@@ -33,10 +33,9 @@ async def cmd_cancel_state(
     user_alchemy: UserAlchemy
 ):
     current_state = await state.get_state()
-    if current_state is None:
-        return
+    if current_state:
+        await state.clear()
     
-    await state.clear()
     main_kb = get_main_kb_by_role(user_alchemy.role)
     await message.answer("Состояние сброшено", reply_markup=main_kb)
 
