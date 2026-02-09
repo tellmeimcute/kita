@@ -1,17 +1,13 @@
 target-version = "py313"
+
+line-length = 99
+indent-width = 4
  
-# Основные настройки
-line-length = 99 # Максимальная длина строки для кода
-indent-width = 4 # Ширина отступа
- 
-# Каталоги, которые следует учитывать при разрешении импорта из first/third-party источников
 src = ["src"]
  
-# Настройки линтера
 [lint]
-# Нестабильные и находящиеся в предварительной версии правила
 preview = true
-# Правила, которые должен применять линтер
+
 select = [
     # "C", # TODO: mccabe - code complecity
     "A", # flake8-annotations
@@ -30,7 +26,7 @@ select = [
     "T20", # flake8-print
     "UP", # pyupgrade
 ]
-# Игнорирование конкретных предупреждений линтера
+
 ignore = [
     "C408",  # Ненужный вызов dict, list и т.д.
     "RUF001", # Игнорирование похожих символов с разными ASCII
@@ -40,16 +36,13 @@ ignore = [
     "PLR0917", # too-many-positional-arguments (Telegram API design)
 ]
 
-# Ошибки, которые могут быть исправлены автоматически
 fixable = [
     "I", # cортировка испортов
 ]
  
-# Настройки форматтера
 [format]
 quote-style = "double"
 indent-style = "space"
  
-# Дополнительные настройки для плагинов
 [lint.flake8-bandit]
-check-typed-exception = true # Проверка типизированных исключений
+check-typed-exception = true
