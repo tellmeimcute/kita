@@ -7,9 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO
-from database.models import Suggestion, UserAlchemy
+from database.models import UserAlchemy
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
-from middlewares import AdminMiddleware
 
 from .logics import (
     get_active_suggestion,
@@ -20,7 +19,6 @@ from .logics import (
 from .state import SuggestionViewer
 
 router = Router(name="admin_suggestions")
-# router.message.middleware(AdminMiddleware())
 
 
 @router.message(Command("get_suggestion", prefix="/!"))
@@ -62,7 +60,7 @@ async def show_suggestions_admin_menu(
 
     chat_id = message.chat.id
     suggestion, media_group = raw_suggestion
-    suggestions_left = await SuggestionDAO.count(session, Suggestion.accepted.is_(None))
+    suggestions_left = await SuggestionDAO.get_active_count(session)
 
     await update_review_state(suggestion, media_group, chat_id, bot, state, suggestions_left)
 
@@ -88,7 +86,7 @@ async def accept_deny_suggestion(
 
     async with session.begin():
         cur_suggestion = (
-            await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id)
+            await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id, solo=True)
             or data["suggestion"]
         )
 

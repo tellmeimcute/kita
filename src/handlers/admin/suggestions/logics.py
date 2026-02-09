@@ -17,10 +17,7 @@ async def get_suggestion_by_id(
     session: AsyncSession,
     suggestion_id: int,
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
-    async with session.begin():
-        suggestion = await SuggestionDAO.get_one_or_none(
-            session, Suggestion.id == suggestion_id, (Suggestion.media, Suggestion.author)
-        )
+    suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_id)
 
     if not suggestion:
         return None
@@ -31,11 +28,8 @@ async def get_suggestion_by_id(
 
 async def get_active_suggestion(
     session: AsyncSession,
-    order_by: Any = None,
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
-    suggestion = await SuggestionDAO.get_one_or_none(
-        session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author), order_by
-    )
+    suggestion = await SuggestionDAO.get_active(session)
 
     if not suggestion:
         return None

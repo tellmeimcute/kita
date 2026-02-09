@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import UserAlchemy
-from database.roles import UserRole
 from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.utils import build_album_suggestions
 from middlewares import MediaGroupMiddleware
@@ -59,7 +58,7 @@ async def process_suggestion(
     await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
     await state.clear()
 
-    admins = await UserAlchemyDAO.get(session, UserAlchemy.role == UserRole.ADMIN)
+    admins = await UserAlchemyDAO.get_admins(session)
     asyncio.create_task(notify_admins_task(bot, admins, username, user_id, media_group, logger))
 
 

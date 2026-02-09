@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,3 +35,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         stmt = update(cls.model).where(cls.model.user_id == data_id).values(data)
         await session.execute(stmt)
         await session.flush()
+
+    @classmethod
+    async def get_admins(cls, session) -> Sequence[UserAlchemy]:
+        return await cls.get(session, UserAlchemy.role == UserRole.ADMIN)
