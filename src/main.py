@@ -16,7 +16,9 @@ db = DatabaseManager()
 dp = Dispatcher(config=config)
 dp.include_router(handlers_router)
 
-bot = Bot(config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(
+    config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+)
 
 session_middleware = SessionMiddleware(db.session_maker)
 user_middleware = UserMiddleware()
@@ -24,13 +26,13 @@ user_middleware = UserMiddleware()
 dp.message.middleware(session_middleware)
 dp.message.middleware(user_middleware)
 
-#dp.callback_query.middleware(session_middleware)
-#dp.callback_query.middleware(user_middleware)
+# dp.callback_query.middleware(session_middleware)
+# dp.callback_query.middleware(user_middleware)
 
 
 async def main():
     # не использовать в проде
-    #await db.start_dev()
+    # await db.start_dev()
 
     try:
         await bot.delete_webhook(drop_pending_updates=True)

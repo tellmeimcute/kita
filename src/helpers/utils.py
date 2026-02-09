@@ -6,10 +6,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from database.models import Media, Suggestion
 
 
-def get_media_group(
-    medias: List[Media], 
-    caption: str | None = None
-) -> MediaGroupBuilder:
+def get_media_group(medias: List[Media], caption: str | None = None) -> MediaGroupBuilder:
     media_group = MediaGroupBuilder(caption=caption)
     for media in medias:
         media_group.add(type=media.filetype, media=media.telegram_file_id)
@@ -29,11 +26,10 @@ def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
 
 
 def build_album_suggestions(
-    album: Sequence[Message], 
-    author_id: int, 
-    media_group_id: str | None
+    album: Sequence[Message],
+    author_id: int,
+    media_group_id: str | None,
 ) -> Tuple[Suggestion, List[Media], MediaGroupBuilder]:
-    
     suggestion: Suggestion = Suggestion(author_id=author_id, media_group_id=media_group_id)
     medias: List[Media] = []
 
@@ -50,9 +46,6 @@ def build_album_suggestions(
             media_group.caption = s_msg.caption
             suggestion.caption = s_msg.caption
 
-        medias.append(
-            Media(filetype=media_type, telegram_file_id=media_id, suggestion=suggestion)
-        )
-        
+        medias.append(Media(filetype=media_type, telegram_file_id=media_id, suggestion=suggestion))
 
     return suggestion, medias, media_group

@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import ForeignKey
@@ -10,6 +9,7 @@ if TYPE_CHECKING:
     from .media import Media
     from .user import UserAlchemy
 
+
 class Suggestion(AbstractModel):
     __tablename__ = "suggestion"
 
@@ -17,9 +17,9 @@ class Suggestion(AbstractModel):
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), index=True)
-    
+
     # None если еще не рассмотрено.
     accepted: Mapped[bool | None] = mapped_column(nullable=True, default=None, index=True)
 
     author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")
-    media: Mapped[List['Media']] = relationship(back_populates="suggestion")
+    media: Mapped[List["Media"]] = relationship(back_populates="suggestion")

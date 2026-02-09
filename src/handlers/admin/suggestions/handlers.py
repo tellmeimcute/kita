@@ -1,5 +1,3 @@
-
-
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
@@ -8,25 +6,26 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.models import Suggestion, UserAlchemy
 from database.dao import SuggestionDAO
+from database.models import Suggestion, UserAlchemy
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
 from middlewares import AdminMiddleware
 
-from .state import SuggestionViewer
 from .logics import (
-    get_suggestion_by_id,
     get_active_suggestion,
+    get_suggestion_by_id,
     post_in_channel,
-    update_review_state
+    update_review_state,
 )
+from .state import SuggestionViewer
 
 router = Router(name="suggestions_admin")
 router.message.middleware(AdminMiddleware())
 
-@router.message(Command("get_suggestion", prefix='/!'))
+
+@router.message(Command("get_suggestion", prefix="/!"))
 async def get_suggestion(
-    message: Message, 
+    message: Message,
     session: AsyncSession,
     command: CommandObject,
     bot: Bot,
@@ -38,14 +37,10 @@ async def get_suggestion(
 
     suggestion, media_group = raw_suggestion
     await bot.send_message(
-        message.chat.id,
-        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):"
+        message.chat.id, f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):"
     )
 
-    await bot.send_media_group(
-        message.chat.id,
-        media=media_group.build()
-    )
+    await bot.send_media_group(message.chat.id, media=media_group.build())
 
 
 @router.message(F.text.lower() == "смотреть предложку")
@@ -76,7 +71,7 @@ async def show_suggestions_admin_menu(
     SuggestionViewer.in_viewer, (F.text.lower() == "принять") | (F.text.lower() == "отклонить")
 )
 async def accept_deny_suggestion(
-    message: Message, 
+    message: Message,
     session: AsyncSession,
     state: FSMContext,
     bot: Bot,
@@ -92,13 +87,18 @@ async def accept_deny_suggestion(
     cur_suggestion_id: int = data["last"]
 
     async with session.begin():
-        cur_suggestion = await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id) or data["suggestion"]
+        cur_suggestion = (
+            await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id)
+            or data["suggestion"]
+        )
 
     # Запостить (если принято) и обновить в базе.
     if cur_suggestion.accepted is None:
         if is_accepted:
             cur_media_group: MediaGroupBuilder = data["media_group"]
-            await post_in_channel(bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption)
+            await post_in_channel(
+                bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption
+            )
 
         async with session.begin():
             await SuggestionDAO.update_by_id(session, cur_suggestion_id, {"accepted": is_accepted})
@@ -109,14 +109,12 @@ async def accept_deny_suggestion(
         await state.clear()
         main_kb = get_main_kb_by_role(user_alchemy.role)
         return await message.answer("Предложка закончилась!", reply_markup=main_kb)
-    
+
     chat_id = message.chat.id
     await update_review_state(*raw_suggestion, chat_id, bot, state, data=data)
 
 
-@router.message(
-    SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи")
-)
+@router.message(SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи"))
 async def accept_wo_caption(
     message: Message,
     session: AsyncSession,

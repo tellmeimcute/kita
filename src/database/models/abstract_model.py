@@ -13,7 +13,6 @@ class AbstractModel:
     def __repr__(self) -> str:
         insp = inspect(self)
         attr_str = ", ".join(
-            f"{col.key}={getattr(self, col.key, 'N/A')}"
-            for col in insp.mapper.column_attrs
+            f"{col.key}={getattr(self, col.key, 'N/A')}" for col in insp.mapper.column_attrs
         )
         return f"{self.__class__.__name__}({attr_str})"

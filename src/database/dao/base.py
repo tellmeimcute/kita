@@ -1,13 +1,13 @@
-
 from typing import Any, Generic, Sequence, TypeVar
 
 from sqlalchemy import ColumnElement, Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload, InstrumentedAttribute
+from sqlalchemy.orm import InstrumentedAttribute, selectinload
 
 from database.models.abstract_model import AbstractModel
 
 T = TypeVar("T", bound=AbstractModel)
+
 
 class BaseDao(Generic[T]):
     model: type[T]
@@ -40,7 +40,6 @@ class BaseDao(Generic[T]):
         offset: int = 0,
         limit: int | None = None,
     ) -> Result:
-        
         stmt = cls._build_select_query(filters, options, order_by)
         stmt = stmt.offset(offset)
 
@@ -52,7 +51,7 @@ class BaseDao(Generic[T]):
 
     @classmethod
     async def get_one_or_none(
-        cls, 
+        cls,
         session: AsyncSession,
         filters: ColumnElement[bool],
         options: Sequence[Any] | Any = None,
@@ -73,18 +72,18 @@ class BaseDao(Generic[T]):
                 processed_options.append(opt)
 
         result = await cls.get_result(
-            session, 
-            filters=filters, 
-            options=processed_options if processed_options else None, 
-            order_by=order_by, 
-            limit=1
+            session,
+            filters=filters,
+            options=processed_options if processed_options else None,
+            order_by=order_by,
+            limit=1,
         )
         return result.scalars().first()
 
     @classmethod
     async def get_one_or_none_by_id(cls, session: AsyncSession, data_id: int) -> T | None:
         return await cls.get_one_or_none(session, filters=cls.model.id == data_id)
-    
+
     @classmethod
     async def count(cls, session: AsyncSession, filters: ColumnElement[bool] | None = None) -> int:
         stmt = select(func.count(cls.model.id))
@@ -93,7 +92,7 @@ class BaseDao(Generic[T]):
 
         count = await session.scalar(stmt)
         return count or 0
-    
+
     @classmethod
     async def get(
         cls,
@@ -106,13 +105,9 @@ class BaseDao(Generic[T]):
     ) -> Sequence[T]:
         result = await cls.get_result(session, filters, options, order_by, offset, limit)
         return result.scalars().all()
-    
+
     @classmethod
-    async def create(
-        cls,
-        session: AsyncSession,
-        **data: Any
-    ) -> T:
+    async def create(cls, session: AsyncSession, **data: Any) -> T:
         obj = cls.model(**data)
         session.add(obj)
         await session.flush()
@@ -121,11 +116,7 @@ class BaseDao(Generic[T]):
 
     @classmethod
     async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
-        stmt = (
-            update(cls.model)
-            .where(cls.model.id == data_id)
-            .values(data)
-        )
+        stmt = update(cls.model).where(cls.model.id == data_id).values(data)
 
         await session.execute(stmt)
         await session.flush()

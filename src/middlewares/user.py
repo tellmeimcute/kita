@@ -5,11 +5,11 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as UserTelegram
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
 from database.dao import UserAlchemyDAO
 from database.models import UserAlchemy
 from database.roles import UserRole
 
-from config import Config
 
 class UserMiddleware(BaseMiddleware):
     """

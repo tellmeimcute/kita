@@ -1,6 +1,5 @@
-
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from database.roles import UserRole
 
@@ -15,7 +14,7 @@ main_kb_user = ReplyKeyboardMarkup(
 main_kb_admin = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Предложить пост"), KeyboardButton(text="Статистика")],
-        [KeyboardButton(text="Смотреть предложку")]
+        [KeyboardButton(text="Смотреть предложку")],
     ],
     resize_keyboard=True,
     is_persistent=True,
@@ -38,6 +37,7 @@ cancel_kb = ReplyKeyboardMarkup(
     resize_keyboard=True,
     one_time_keyboard=True,
 )
+
 
 def get_main_kb_by_role(user_role: UserRole):
     if user_role == UserRole.ADMIN:

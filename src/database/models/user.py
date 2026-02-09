@@ -1,10 +1,10 @@
-
 from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.roles import UserRole
+
 from .abstract_model import AbstractModel
 
 if TYPE_CHECKING:
@@ -18,13 +18,9 @@ class UserAlchemy(AbstractModel):
     username: Mapped[str] = mapped_column()
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(
-            UserRole,
-            native_enum=True, 
-            values_callable=lambda obj: [e.value for e in obj]
-        ),
+        Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
         default=UserRole.USER,
-        server_default=UserRole.USER.value
+        server_default=UserRole.USER.value,
     )
 
     suggestions: Mapped[list["Suggestion"]] = relationship(back_populates="author")

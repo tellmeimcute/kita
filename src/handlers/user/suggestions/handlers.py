@@ -1,7 +1,4 @@
-
-
 import asyncio
-
 from logging import getLogger
 from typing import List
 
@@ -10,7 +7,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import Config
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import Suggestion, UserAlchemy
 from database.roles import UserRole
@@ -25,6 +21,7 @@ logger = getLogger("user_suggestions")
 router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
+
 @router.message(F.text == "Предложить пост")
 async def suggest_post(message: Message, state: FSMContext):
     await state.set_state(PostStates.waiting_for_post)
@@ -34,10 +31,11 @@ async def suggest_post(message: Message, state: FSMContext):
     )
     await message.answer(text, reply_markup=cancel_kb)
 
+
 @router.message(PostStates.waiting_for_post, ~F.media_group_id)
 async def process_suggestion(
     message: Message,
-    state: FSMContext, 
+    state: FSMContext,
     session: AsyncSession,
     bot: Bot,
     user_alchemy: UserAlchemy,
@@ -52,7 +50,7 @@ async def process_suggestion(
 
     if not medias:
         return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео/gif.")
-    
+
     async with session.begin():
         session.add_all((suggestion, *medias))
 
@@ -64,13 +62,16 @@ async def process_suggestion(
             )
             await bot.send_media_group(chat_id=admin.user_id, media=media_group.build())
         except Exception as e:
-            logger.error("Ошибка при уведомлении админа ID %s username %s: %s", admin.id, admin.username, e)
+            logger.error(
+                "Ошибка при уведомлении админа ID %s username %s: %s", admin.id, admin.username, e
+            )
         finally:
             await asyncio.sleep(0.05)
 
     main_kb = get_main_kb_by_role(user_alchemy.role)
     await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
     await state.clear()
+
 
 @router.message(PostStates.waiting_for_post, F.media_group_id)
 async def process_media_group_suggestion(
@@ -82,9 +83,7 @@ async def process_media_group_suggestion(
     media_group_id: str,
     bot: Bot,
 ):
-    await process_suggestion(
-        message, state, session, bot, user_alchemy, media_group_id, album
-    )
+    await process_suggestion(message, state, session, bot, user_alchemy, media_group_id, album)
 
 
 @router.message(F.text == "Статистика")
@@ -92,9 +91,10 @@ async def statistic(message: Message, session: AsyncSession):
     user_id = message.from_user.id
 
     user_suggestions_count = await SuggestionDAO.count(session, Suggestion.author_id == user_id)
-    accepted_suggestions = await SuggestionDAO.count(session, (Suggestion.author_id == user_id) & (Suggestion.accepted == True))
+    accepted_suggestions = await SuggestionDAO.count(
+        session, (Suggestion.author_id == user_id) & (Suggestion.accepted == True)
+    )
 
     await message.answer(
-        f"Постов предожено: {user_suggestions_count}\n\n"
-        f"✅ Принято: {accepted_suggestions}\n"
+        f"Постов предожено: {user_suggestions_count}\n\n✅ Принято: {accepted_suggestions}\n"
     )

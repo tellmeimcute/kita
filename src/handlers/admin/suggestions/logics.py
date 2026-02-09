@@ -1,21 +1,20 @@
-
 from logging import getLogger
-from typing import Tuple, Any
+from typing import Any, Tuple
 
 from aiogram import Bot
-from aiogram.utils.media_group import MediaGroupBuilder
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.models import Suggestion
-
 from helpers.utils import get_media_group
 
 logger = getLogger("admin_suggestions")
 
+
 async def get_suggestion_by_id(
-    session: AsyncSession, 
+    session: AsyncSession,
     suggestion_id: int,
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
     async with session.begin():
@@ -25,13 +24,14 @@ async def get_suggestion_by_id(
 
     if not suggestion:
         return None
-    
+
     media_group = get_media_group(suggestion.media, suggestion.caption)
     return suggestion, media_group
 
 
 async def get_active_suggestion(
-    session: AsyncSession, order_by: Any = None
+    session: AsyncSession,
+    order_by: Any = None,
 ) -> Tuple[Suggestion, MediaGroupBuilder] | None:
     suggestion = await SuggestionDAO.get_one_or_none(
         session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author), order_by
@@ -45,7 +45,7 @@ async def get_active_suggestion(
 
 
 async def update_review_state(
-    suggestion: Suggestion, 
+    suggestion: Suggestion,
     media_group: MediaGroupBuilder,
     chat_id: int,
     bot: Bot,
@@ -72,7 +72,7 @@ async def update_review_state(
             "last": suggestion.id,
             "media_group": media_group,
             "suggestion": suggestion,
-            "suggestions_left": suggestions_left
+            "suggestions_left": suggestions_left,
         }
     )
 
