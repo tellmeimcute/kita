@@ -10,6 +10,8 @@ from database.dao import UserAlchemyDAO
 from database.models import UserAlchemy
 from database.roles import UserRole
 
+from handlers.keyboards import get_main_kb_by_role
+
 logger = getLogger(name="admin_role_change")
 router = Router()
 
@@ -42,6 +44,12 @@ async def promote_user(
 
     await message.answer(
         f"Пользователю {user_to_promote.username} ({user_to_promote.user_id}) изменена роль на {role.value}."
+    )
+
+    await message.bot.send_message(
+        user_id,
+        f"🤡 Вам назначили роль {role.value}!",
+        reply_markup=get_main_kb_by_role(role)
     )
 
     admin = message.from_user
