@@ -8,7 +8,7 @@ from aiogram.enums import ParseMode
 from config import config
 from database import DatabaseManager
 from handlers import root_router
-from middlewares import SessionMiddleware, UserMiddleware
+from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,9 +22,11 @@ bot = Bot(
 
 session_middleware = SessionMiddleware(db.session_maker)
 user_middleware = UserMiddleware()
+bancheck_middleware = BanCheckMiddleware()
 
 dp.message.middleware(session_middleware)
 dp.message.middleware(user_middleware)
+dp.message.middleware(bancheck_middleware)
 
 # dp.callback_query.middleware(session_middleware)
 # dp.callback_query.middleware(user_middleware)

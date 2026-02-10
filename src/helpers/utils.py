@@ -1,12 +1,25 @@
 from typing import List, Tuple
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from aiogram import Bot
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
+from database.dao import MediaDAO, UserAlchemyDAO
 from database.models import Media, Suggestion
-from database.dao import MediaDAO
+
+
+async def ban_user(
+    session: AsyncSession,
+    target_id: int,
+    config: Config,
+) -> bool:
+    if int(target_id) == config.ADMIN_ID:
+        return False
+
+    await UserAlchemyDAO.ban(session, target_id)
+    return True
 
 
 def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
@@ -22,7 +35,7 @@ def message_get_media_and_id(msg: Message) -> Tuple[str, str]:
 
 
 async def create_medias(
-    session: AsyncSession, 
+    session: AsyncSession,
     album: List[Message],
     suggestion: Suggestion,
 ):
@@ -40,6 +53,7 @@ async def create_medias(
         medias.append(media)
 
     return medias
+
 
 def get_media_group(medias: List[Media], caption: str | None = None) -> MediaGroupBuilder:
     media_group = MediaGroupBuilder(caption=caption)

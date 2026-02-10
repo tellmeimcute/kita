@@ -3,11 +3,14 @@ from typing import Any, Tuple
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.models import Suggestion
+from database.roles import UserRole
+from handlers.keyboards import get_main_kb_by_role
 from helpers.utils import get_media_group
 
 logger = getLogger("admin_suggestions")
@@ -87,3 +90,24 @@ async def post_in_channel(
         await bot.send_media_group(channel_id, media=media_group.build())
     except Exception as e:
         logger.error("Ошибка при отправке предложки в канал: %s", e)
+
+
+async def go_next_suggestion(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+    bot: Bot,
+    role: UserRole,
+    data: dict,
+):
+    raw_suggestion = await get_active_suggestion(session)
+    if not raw_suggestion:
+        await state.clear()
+        main_kb = get_main_kb_by_role(role)
+        return await message.answer("Предложка закончилась!", reply_markup=main_kb)
+
+    chat_id = message.chat.id
+    suggestions_left = await SuggestionDAO.get_active_count(session)
+    await update_review_state(
+        *raw_suggestion, chat_id, bot, state, suggestions_left=suggestions_left, data=data
+    )

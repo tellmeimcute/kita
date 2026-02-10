@@ -4,7 +4,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao.base import BaseDao
-from database.models import UserAlchemy
+from database.models import Suggestion, UserAlchemy
 from database.roles import UserRole
 
 
@@ -39,3 +39,35 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     @classmethod
     async def get_admins(cls, session) -> Sequence[UserAlchemy]:
         return await cls.get(session, UserAlchemy.role == UserRole.ADMIN)
+
+    @classmethod
+    async def ban(cls, session: AsyncSession, user_id: int):
+        ban_user = (
+            update(cls.model).where(cls.model.user_id == user_id).values(role=UserRole.BANNED)
+        )
+
+        decline_suggestion = (
+            update(Suggestion).where(Suggestion.author_id == user_id).values(accepted=False)
+        )
+
+        await session.execute(ban_user)
+        await session.execute(decline_suggestion)
+        await session.flush()
+
+    @classmethod
+    async def change_role(cls, session: AsyncSession, user_id: int, role: UserRole | str):
+        if isinstance(role, str):
+            role = UserRole(role)
+
+        target = await cls.get_one_or_none_by_id(session, user_id)
+        if not target:
+            raise KeyError("User not found")
+
+        match role:
+            case UserRole.BANNED:
+                await cls.ban(session, user_id)
+            case _:
+                await UserAlchemyDAO.update_by_id(session, user_id, {"role": role})
+
+        await session.refresh(target)
+        return target

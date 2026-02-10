@@ -56,9 +56,9 @@ async def process_suggestion(
         if not medias:
             await session.rollback()
             return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео/gif.")
-             
+
     media_group = get_media_group(medias, caption)
-    
+
     main_kb = get_main_kb_by_role(user_alchemy.role)
     await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
     await state.clear()

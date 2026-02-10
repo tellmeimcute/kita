@@ -28,3 +28,7 @@ class UserAlchemy(AbstractModel):
     @property
     def is_admin(self):
         return self.role == UserRole.ADMIN
+
+    @property
+    def is_banned(self):
+        return self.role == UserRole.BANNED

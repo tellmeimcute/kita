@@ -9,7 +9,6 @@ from config import Config
 from database.dao import UserAlchemyDAO
 from database.models import UserAlchemy
 from database.roles import UserRole
-
 from handlers.keyboards import get_main_kb_by_role
 
 logger = getLogger(name="admin_role_change")
@@ -28,28 +27,23 @@ async def promote_user(
     if int(user_id) == config.ADMIN_ID:
         return await message.answer("Этому пользователю нельзя изменять роль.")
 
-    async with session.begin():
-        user_to_promote: UserAlchemy = await UserAlchemyDAO.get_one_or_none_by_id(session, user_id)
-
-    if user_to_promote is None:
-        return message.answer(f"Пользователь с id {command.args} не найден.")
-
     try:
-        role = UserRole(role)
+        async with session.begin():
+            target = await UserAlchemyDAO.change_role(session, user_id, role)
+        await message.answer(
+            f"Пользователю {target.username} ({target.user_id}) изменена роль на {target.role}."
+        )
     except ValueError:
         return await message.answer("Такой роли не существует.")
-
-    async with session.begin():
-        await UserAlchemyDAO.update_by_id(session, user_id, {"role": role})
-
-    await message.answer(
-        f"Пользователю {user_to_promote.username} ({user_to_promote.user_id}) изменена роль на {role.value}."
-    )
+    except KeyError:
+        return await message.answer(f"Пользователь с id {user_id} не найден.")
+    except Exception as e:
+        raise e
 
     await message.bot.send_message(
         user_id,
-        f"🤡 Вам назначили роль {role.value}!",
-        reply_markup=get_main_kb_by_role(role)
+        f"🤡 Вам назначили роль {target.role}!",
+        reply_markup=get_main_kb_by_role(target.role.value),
     )
 
     admin = message.from_user
@@ -57,7 +51,7 @@ async def promote_user(
         "%s (%s) изменил роль пользователю %s (%s) на %s",
         admin.username,
         admin.id,
-        user_to_promote.username,
-        user_to_promote.user_id,
+        target.username,
+        target.user_id,
         role,
     )

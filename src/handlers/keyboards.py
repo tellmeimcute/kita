@@ -24,7 +24,7 @@ main_kb_admin = ReplyKeyboardMarkup(
 accept_decline_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Принять"), KeyboardButton(text="Отклонить")],
-        [KeyboardButton(text="Принять без подписи")],
+        [KeyboardButton(text="Принять без подписи"), KeyboardButton(text="Бан")],
         [KeyboardButton(text="Отмена")],
     ],
     resize_keyboard=True,

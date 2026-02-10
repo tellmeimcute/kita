@@ -6,13 +6,15 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO
-from database.models import UserAlchemy
+from database.dao import SuggestionDAO, UserAlchemyDAO
+from database.models import Suggestion, UserAlchemy
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
+from helpers.utils import ban_user
 
 from .logics import (
     get_active_suggestion,
     get_suggestion_by_id,
+    go_next_suggestion,
     post_in_channel,
     update_review_state,
 )
@@ -85,31 +87,44 @@ async def accept_deny_suggestion(
     cur_suggestion_id: int = data["last"]
 
     async with session.begin():
-        cur_suggestion = (
-            await SuggestionDAO.get_one_or_none_by_id(session, cur_suggestion_id, solo=True)
-            or data["suggestion"]
+        cur_suggestion = await SuggestionDAO.get_one_or_none_by_id(
+            session, cur_suggestion_id, solo=True
         )
 
-    # Запостить (если принято) и обновить в базе.
-    if cur_suggestion.accepted is None:
-        if is_accepted:
-            cur_media_group: MediaGroupBuilder = data["media_group"]
-            await post_in_channel(
-                bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption
-            )
+        # Запостить (если принято) и обновить в базе.
+        if cur_suggestion.accepted is None:
+            if is_accepted:
+                cur_media_group: MediaGroupBuilder = data["media_group"]
+                await post_in_channel(
+                    bot, cur_media_group, cur_suggestion, config.CHANNEL_ID, with_caption
+                )
 
-        async with session.begin():
-            await SuggestionDAO.update_by_id(session, cur_suggestion_id, {"accepted": is_accepted})
+            cur_suggestion.accepted = is_accepted
 
     # Получаем новый (следующий) suggestion
-    raw_suggestion = await get_active_suggestion(session)
-    if not raw_suggestion:
-        await state.clear()
-        main_kb = get_main_kb_by_role(user_alchemy.role)
-        return await message.answer("Предложка закончилась!", reply_markup=main_kb)
+    return await go_next_suggestion(message, session, state, bot, user_alchemy.role, data)
 
-    chat_id = message.chat.id
-    await update_review_state(*raw_suggestion, chat_id, bot, state, data=data)
+
+@router.message(SuggestionViewer.in_viewer, F.text.lower() == "бан")
+async def ban_suggestion_author(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+    bot: Bot,
+    user_alchemy: UserAlchemy,
+    config: Config,
+):
+    data = await state.get_data()
+    cur_suggestion: Suggestion = data["suggestion"]
+
+    async with session.begin():
+        caller_id = message.from_user.id
+        target_id = cur_suggestion.author_id
+        if not await ban_user(session, target_id, config):
+            return await bot.send_message(caller_id, "Этому пользователю нельзя изменять роль.")
+
+    # Получаем новый (следующий) suggestion
+    return await go_next_suggestion(message, session, state, bot, user_alchemy.role, data)
 
 
 @router.message(SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи"))
