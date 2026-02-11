@@ -37,8 +37,20 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         await session.flush()
 
     @classmethod
-    async def get_admins(cls, session) -> Sequence[UserAlchemy]:
+    async def get_admins(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
         return await cls.get(session, UserAlchemy.role == UserRole.ADMIN)
+    
+    @classmethod
+    async def get_admins_count(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
+        return await cls.count(session, cls.model.role == UserRole.ADMIN)
+    
+    @classmethod
+    async def get_banned(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
+        return await cls.get(session, UserAlchemy.role == UserRole.BANNED)
+
+    @classmethod
+    async def get_banned_count(cls, session: AsyncSession) -> int:
+        return await cls.count(session, cls.model.role == UserRole.BANNED)
 
     @classmethod
     async def ban(cls, session: AsyncSession, user_id: int):

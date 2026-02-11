@@ -17,10 +17,9 @@ async def start(
     user_alchemy: UserAlchemy,
     config: Config,
 ):
-    channel_info = await message.bot.get_chat(config.CHANNEL_ID)
     text = Text(
         "Добро пожаловать в предложку канала ",
-        Bold(channel_info.full_name),
+        Bold(config.channel_name),
         "!\n\n",
         "Чтобы предложить пост используйте клавиатуру.",
     )

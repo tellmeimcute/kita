@@ -16,7 +16,7 @@ router = Router()
 
 
 @router.message(Command("change_role"))
-async def promote_user(
+async def change_user_role(
     message: Message, session: AsyncSession, command: CommandObject, config: Config
 ):
     if not command.args:
