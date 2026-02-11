@@ -1,6 +1,5 @@
 from typing import List, Tuple
 
-from aiogram import Bot
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,8 +16,7 @@ async def ban_user(
 ) -> bool:
     if int(target_id) == config.ADMIN_ID:
         return False
-
-    await UserAlchemyDAO.ban(session, target_id)
+    await UserAlchemyDAO.change_role(session, target_id, "banned")
     return True
 
 

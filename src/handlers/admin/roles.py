@@ -10,6 +10,7 @@ from database.dao import UserAlchemyDAO
 from database.models import UserAlchemy
 from database.roles import UserRole
 from handlers.keyboards import get_main_kb_by_role
+from services.notifier import Notifier
 
 logger = getLogger(name="admin_role_change")
 router = Router()
@@ -17,34 +18,35 @@ router = Router()
 
 @router.message(Command("change_role"))
 async def change_user_role(
-    message: Message, session: AsyncSession, command: CommandObject, config: Config
+    message: Message,
+    session: AsyncSession,
+    command: CommandObject,
+    config: Config,
+    notifier: Notifier,
 ):
+    caller_id = message.from_user.id
     if not command.args:
         return await message.answer("Укажите userid и role через пробел.\nНапример 000000 admin")
 
     user_id, role = command.args.split()
 
     if int(user_id) == config.ADMIN_ID:
-        return await message.answer("Этому пользователю нельзя изменять роль.")
+        return await notifier.notify_admin_user_immune(caller_id)
 
     try:
         async with session.begin():
             target = await UserAlchemyDAO.change_role(session, user_id, role)
-        await message.answer(
-            f"Пользователю {target.username} ({target.user_id}) изменена роль на {target.role}."
+        await notifier.notify_admin_user_role_changed(
+            caller_id, target.username, target.user_id, target.role
         )
     except ValueError:
-        return await message.answer("Такой роли не существует.")
+        return await notifier.notify_admin_role_not_exist(caller_id)
     except KeyError:
-        return await message.answer(f"Пользователь с id {user_id} не найден.")
+        return await notifier.notify_admin_user_not_found(caller_id, user_id)
     except Exception as e:
         raise e
 
-    await message.bot.send_message(
-        user_id,
-        f"🤡 Вам назначили роль {target.role}!",
-        reply_markup=get_main_kb_by_role(target.role.value),
-    )
+    await notifier.notify_user_role_changed(target.user_id, target.role)
 
     admin = message.from_user
     logger.info(

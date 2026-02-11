@@ -8,7 +8,7 @@ class Config(BaseSettings):
 
     ADMIN_ID: int
     CHANNEL_ID: int
-    
+
     channel_name: str | None = None
 
     model_config = SettingsConfigDict(

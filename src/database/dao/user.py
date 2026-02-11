@@ -39,11 +39,11 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     @classmethod
     async def get_admins(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
         return await cls.get(session, UserAlchemy.role == UserRole.ADMIN)
-    
+
     @classmethod
     async def get_admins_count(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
         return await cls.count(session, cls.model.role == UserRole.ADMIN)
-    
+
     @classmethod
     async def get_banned(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
         return await cls.get(session, UserAlchemy.role == UserRole.BANNED)
@@ -53,16 +53,11 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         return await cls.count(session, cls.model.role == UserRole.BANNED)
 
     @classmethod
-    async def ban(cls, session: AsyncSession, user_id: int):
-        ban_user = (
-            update(cls.model).where(cls.model.user_id == user_id).values(role=UserRole.BANNED)
-        )
-
+    async def decline_all_suggestions(cls, session: AsyncSession, user_id: int):
         decline_suggestion = (
             update(Suggestion).where(Suggestion.author_id == user_id).values(accepted=False)
         )
 
-        await session.execute(ban_user)
         await session.execute(decline_suggestion)
         await session.flush()
 
@@ -75,11 +70,8 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         if not target:
             raise KeyError("User not found")
 
-        match role:
-            case UserRole.BANNED:
-                await cls.ban(session, user_id)
-            case _:
-                await UserAlchemyDAO.update_by_id(session, user_id, {"role": role})
+        if role == UserRole.BANNED:
+            await cls.decline_all_suggestions(session, user_id)
 
-        await session.refresh(target)
+        target.role = role
         return target

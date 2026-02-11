@@ -9,9 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import UserAlchemy
-from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.utils import create_medias, get_media_group
 from middlewares import MediaGroupMiddleware
+from services.notifier import Notifier
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -23,13 +23,13 @@ router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 
 @router.message(F.text == "Предложить пост")
-async def suggest_post(message: Message, state: FSMContext):
+async def suggest_post(
+    message: Message,
+    state: FSMContext,
+    notifier: Notifier,
+):
     await state.set_state(PostStates.waiting_for_post)
-    text = (
-        "Отправьте картинки/видео/gif одним постом.\n\n"
-        "Отменить действие можно в клавиатуре или командой /cancel"
-    )
-    await message.answer(text, reply_markup=cancel_kb)
+    await notifier.notify_user_wait_for_media(message.from_user.id)
 
 
 @router.message(PostStates.waiting_for_post, ~F.media_group_id)
@@ -39,6 +39,7 @@ async def process_suggestion(
     session: AsyncSession,
     bot: Bot,
     user_alchemy: UserAlchemy,
+    notifier: Notifier,
     media_group_id: int | None = None,
     album: List[Message] | None = None,
 ):
@@ -55,12 +56,11 @@ async def process_suggestion(
 
         if not medias:
             await session.rollback()
-            return await bot.send_message(chat_id=user_id, text="Отправьте картинки/видео/gif.")
+            return await notifier.notify_user_error_media_suggestion(user_alchemy.user_id)
 
     media_group = get_media_group(medias, caption)
 
-    main_kb = get_main_kb_by_role(user_alchemy.role)
-    await bot.send_message(chat_id=user_id, text="Отправлено на модерацию.", reply_markup=main_kb)
+    await notifier.notify_user_on_moderation(user_alchemy.user_id, user_alchemy.role)
     await state.clear()
 
     admins = await UserAlchemyDAO.get_admins(session)
@@ -74,10 +74,13 @@ async def process_media_group_suggestion(
     session: AsyncSession,
     album: List[Message],
     user_alchemy: UserAlchemy,
+    notifier: Notifier,
     media_group_id: str,
     bot: Bot,
 ):
-    await process_suggestion(message, state, session, bot, user_alchemy, media_group_id, album)
+    await process_suggestion(
+        message, state, session, bot, user_alchemy, notifier, media_group_id, album
+    )
 
 
 @router.message(F.text == "Статистика")

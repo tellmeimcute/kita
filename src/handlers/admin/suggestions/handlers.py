@@ -10,6 +10,7 @@ from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import Suggestion, UserAlchemy
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
 from helpers.utils import ban_user
+from services.notifier import Notifier
 
 from .logics import (
     get_active_suggestion,
@@ -50,14 +51,16 @@ async def show_suggestions_admin_menu(
     state: FSMContext,
     user_alchemy: UserAlchemy,
     bot: Bot,
+    notifier: Notifier,
 ):
     raw_suggestion = await get_active_suggestion(session)
 
     if not raw_suggestion:
-        main_kb = get_main_kb_by_role(user_alchemy.role)
-        return await message.answer("Нет не рассмотренной предложки :(", reply_markup=main_kb)
-    await message.answer("Начинаем просмотр...", reply_markup=accept_decline_kb)
+        return await notifier.notify_admin_no_active_suggestions(
+            user_alchemy.user_id, user_alchemy.role
+        )
 
+    await notifier.notify_admin_start_review(user_alchemy.user_id)
     await state.set_state(SuggestionViewer.in_viewer)
 
     chat_id = message.chat.id
@@ -77,6 +80,7 @@ async def accept_deny_suggestion(
     bot: Bot,
     user_alchemy: UserAlchemy,
     config: Config,
+    notifier: Notifier,
     with_caption: bool = True,
     is_accepted: bool = False,
 ):
@@ -102,7 +106,9 @@ async def accept_deny_suggestion(
             cur_suggestion.accepted = is_accepted
 
     # Получаем новый (следующий) suggestion
-    return await go_next_suggestion(message, session, state, bot, user_alchemy.role, data)
+    return await go_next_suggestion(
+        message, session, state, bot, user_alchemy.role, data, notifier
+    )
 
 
 @router.message(SuggestionViewer.in_viewer, F.text.lower() == "бан")
@@ -113,6 +119,7 @@ async def ban_suggestion_author(
     bot: Bot,
     user_alchemy: UserAlchemy,
     config: Config,
+    notifier: Notifier,
 ):
     data = await state.get_data()
     cur_suggestion: Suggestion = data["suggestion"]
@@ -121,10 +128,12 @@ async def ban_suggestion_author(
         caller_id = message.from_user.id
         target_id = cur_suggestion.author_id
         if not await ban_user(session, target_id, config):
-            return await bot.send_message(caller_id, "Этому пользователю нельзя изменять роль.")
+            return await notifier.notify_admin_user_immune(caller_id)
 
     # Получаем новый (следующий) suggestion
-    return await go_next_suggestion(message, session, state, bot, user_alchemy.role, data)
+    return await go_next_suggestion(
+        message, session, state, bot, user_alchemy.role, data, notifier
+    )
 
 
 @router.message(SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи"))
@@ -135,5 +144,8 @@ async def accept_wo_caption(
     bot: Bot,
     user_alchemy: UserAlchemy,
     config: Config,
+    notifier: Notifier,
 ):
-    await accept_deny_suggestion(message, session, state, bot, user_alchemy, config, False, True)
+    await accept_deny_suggestion(
+        message, session, state, bot, user_alchemy, config, notifier, False, True
+    )

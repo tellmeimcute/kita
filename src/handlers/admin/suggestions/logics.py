@@ -12,6 +12,7 @@ from database.models import Suggestion
 from database.roles import UserRole
 from handlers.keyboards import get_main_kb_by_role
 from helpers.utils import get_media_group
+from services.notifier import Notifier
 
 logger = getLogger("admin_suggestions")
 
@@ -54,9 +55,9 @@ async def update_review_state(
         data = data or await state.get_data()
         suggestions_left = data["suggestions_left"]
 
-    suggestions_left -= 1
+    #suggestions_left -= 1
     media_group.caption = (
-        f"Постов в очереди: этот + {suggestions_left}шт.\n\n"
+        f"Постов в очереди: {suggestions_left}.\n\n"
         f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
         f"ID: {suggestion.id}\n"
         f"Оригинальная подпись:\n"
@@ -69,8 +70,29 @@ async def update_review_state(
             "last": suggestion.id,
             "media_group": media_group,
             "suggestion": suggestion,
-            "suggestions_left": suggestions_left,
+            "suggestions_left": suggestions_left - 1,
         }
+    )
+
+
+async def go_next_suggestion(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+    bot: Bot,
+    role: UserRole,
+    data: dict,
+    notifier: Notifier,
+):
+    raw_suggestion = await get_active_suggestion(session)
+    if not raw_suggestion:
+        await state.clear()
+        return await notifier.notify_admin_no_active_suggestions(message.from_user.id, role)
+
+    chat_id = message.chat.id
+    suggestions_left = await SuggestionDAO.get_active_count(session)
+    await update_review_state(
+        *raw_suggestion, chat_id, bot, state, suggestions_left=suggestions_left, data=data
     )
 
 
@@ -90,24 +112,3 @@ async def post_in_channel(
         await bot.send_media_group(channel_id, media=media_group.build())
     except Exception as e:
         logger.error("Ошибка при отправке предложки в канал: %s", e)
-
-
-async def go_next_suggestion(
-    message: Message,
-    session: AsyncSession,
-    state: FSMContext,
-    bot: Bot,
-    role: UserRole,
-    data: dict,
-):
-    raw_suggestion = await get_active_suggestion(session)
-    if not raw_suggestion:
-        await state.clear()
-        main_kb = get_main_kb_by_role(role)
-        return await message.answer("Предложка закончилась!", reply_markup=main_kb)
-
-    chat_id = message.chat.id
-    suggestions_left = await SuggestionDAO.get_active_count(session)
-    await update_review_state(
-        *raw_suggestion, chat_id, bot, state, suggestions_left=suggestions_left, data=data
-    )
