@@ -56,11 +56,11 @@ async def show_suggestions_admin_menu(
     raw_suggestion = await get_active_suggestion(session)
 
     if not raw_suggestion:
-        return await notifier.notify_admin_no_active_suggestions(
+        return await notifier.answer_admin_no_active_suggestions(
             user_alchemy.user_id, user_alchemy.role
         )
 
-    await notifier.notify_admin_start_review(user_alchemy.user_id)
+    await notifier.answer_admin_start_review(user_alchemy.user_id)
     await state.set_state(SuggestionViewer.in_viewer)
 
     chat_id = message.chat.id
@@ -128,7 +128,7 @@ async def ban_suggestion_author(
         caller_id = message.from_user.id
         target_id = cur_suggestion.author_id
         if not await ban_user(session, target_id, config):
-            return await notifier.notify_admin_user_immune(caller_id)
+            return await notifier.answer_admin_user_immune(caller_id)
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(

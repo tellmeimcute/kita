@@ -55,7 +55,7 @@ async def update_review_state(
         data = data or await state.get_data()
         suggestions_left = data["suggestions_left"]
 
-    #suggestions_left -= 1
+    # suggestions_left -= 1
     media_group.caption = (
         f"Постов в очереди: {suggestions_left}.\n\n"
         f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
@@ -87,7 +87,7 @@ async def go_next_suggestion(
     raw_suggestion = await get_active_suggestion(session)
     if not raw_suggestion:
         await state.clear()
-        return await notifier.notify_admin_no_active_suggestions(message.from_user.id, role)
+        return await notifier.answer_admin_no_active_suggestions(message.from_user.id, role)
 
     chat_id = message.chat.id
     suggestions_left = await SuggestionDAO.get_active_count(session)

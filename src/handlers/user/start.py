@@ -40,7 +40,7 @@ async def cmd_cancel_state(
     if current_state:
         await state.clear()
 
-    await notifier.notify_user_state_reset(user_alchemy.user_id, user_alchemy.role)
+    await notifier.answer_user_state_reset(user_alchemy.user_id, user_alchemy.role)
 
 
 @router.message(F.text.lower() == "отмена")

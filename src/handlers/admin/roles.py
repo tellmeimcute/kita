@@ -31,18 +31,18 @@ async def change_user_role(
     user_id, role = command.args.split()
 
     if int(user_id) == config.ADMIN_ID:
-        return await notifier.notify_admin_user_immune(caller_id)
+        return await notifier.answer_admin_user_immune(caller_id)
 
     try:
         async with session.begin():
             target = await UserAlchemyDAO.change_role(session, user_id, role)
-        await notifier.notify_admin_user_role_changed(
+        await notifier.answer_admin_user_role_changed(
             caller_id, target.username, target.user_id, target.role
         )
     except ValueError:
-        return await notifier.notify_admin_role_not_exist(caller_id)
+        return await notifier.answer_admin_role_not_exist(caller_id)
     except KeyError:
-        return await notifier.notify_admin_user_not_found(caller_id, user_id)
+        return await notifier.answer_admin_user_not_found(caller_id, user_id)
     except Exception as e:
         raise e
 

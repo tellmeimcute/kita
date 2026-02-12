@@ -2,7 +2,7 @@ import asyncio
 from logging import getLogger
 from typing import List
 
-from aiogram import Bot, F, Router
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,7 +29,7 @@ async def suggest_post(
     notifier: Notifier,
 ):
     await state.set_state(PostStates.waiting_for_post)
-    await notifier.notify_user_wait_for_media(message.from_user.id)
+    await notifier.answer_user_wait_for_media(message.from_user.id)
 
 
 @router.message(PostStates.waiting_for_post, ~F.media_group_id)
@@ -37,7 +37,6 @@ async def process_suggestion(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    bot: Bot,
     user_alchemy: UserAlchemy,
     notifier: Notifier,
     media_group_id: int | None = None,
@@ -56,15 +55,17 @@ async def process_suggestion(
 
         if not medias:
             await session.rollback()
-            return await notifier.notify_user_error_media_suggestion(user_alchemy.user_id)
+            return await notifier.answer_user_error_media_suggestion(user_alchemy.user_id)
 
     media_group = get_media_group(medias, caption)
 
-    await notifier.notify_user_on_moderation(user_alchemy.user_id, user_alchemy.role)
+    await notifier.answer_user_on_moderation(user_alchemy.user_id, user_alchemy.role)
     await state.clear()
 
     admins = await UserAlchemyDAO.get_admins(session)
-    asyncio.create_task(notify_admins_task(bot, admins, username, user_id, media_group, logger))
+    asyncio.create_task(
+        notify_admins_task(suggestion, admins, username, media_group, logger, notifier)
+    )
 
 
 @router.message(PostStates.waiting_for_post, F.media_group_id)
@@ -76,10 +77,9 @@ async def process_media_group_suggestion(
     user_alchemy: UserAlchemy,
     notifier: Notifier,
     media_group_id: str,
-    bot: Bot,
 ):
     await process_suggestion(
-        message, state, session, bot, user_alchemy, notifier, media_group_id, album
+        message, state, session, user_alchemy, notifier, media_group_id, album
     )
 
 

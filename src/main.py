@@ -22,7 +22,7 @@ bot = Bot(
 
 dp = Dispatcher(
     config=config,
-    notifier=Notifier(bot),
+    notifier=Notifier(bot, logger),
 )
 dp.include_router(root_router)
 
