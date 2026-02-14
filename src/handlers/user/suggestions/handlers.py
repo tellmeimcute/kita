@@ -9,9 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.models import UserAlchemy
-from helpers.utils import create_medias, get_media_group
+from database.dto import UserDTO
+from helpers.utils import create_medias
+from helpers.message_payload import MessagePayload
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
+from handlers.keyboards import get_main_kb_by_role, cancel_kb
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -25,11 +28,14 @@ router.message.middleware(MediaGroupMiddleware(latency=0.25))
 @router.message(F.text == "Предложить пост")
 async def suggest_post(
     message: Message,
+    user_dto: UserDTO,
     state: FSMContext,
     notifier: Notifier,
 ):
     await state.set_state(PostStates.waiting_for_post)
-    await notifier.answer_user_wait_for_media(message.from_user.id)
+    
+    payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=cancel_kb)
+    await notifier.notify_user(user_dto, payload=payload)
 
 
 @router.message(PostStates.waiting_for_post, ~F.media_group_id)
@@ -37,13 +43,13 @@ async def process_suggestion(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     notifier: Notifier,
     media_group_id: int | None = None,
     album: List[Message] | None = None,
 ):
-    user_id = message.from_user.id
-    username = message.from_user.username
+    author = message.from_user
+    user_id = author.id
 
     album = album or (message,)
     caption = album[0].caption
@@ -54,17 +60,19 @@ async def process_suggestion(
         medias = await create_medias(session, album, suggestion)
 
         if not medias:
-            await session.rollback()
-            return await notifier.answer_user_error_media_suggestion(user_alchemy.user_id)
+            payload =  MessagePayload(i18n_key="error_media_suggestion")
+            await notifier.notify_user(user_dto, payload=payload)
+            return await session.rollback()
+        
+    kb = get_main_kb_by_role(user_dto.role)
+    payload =  MessagePayload(i18n_key="on_moderation", reply_markup=kb)
+    await notifier.notify_user(user_dto, payload=payload)
 
-    media_group = get_media_group(medias, caption)
-
-    await notifier.answer_user_on_moderation(user_alchemy.user_id, user_alchemy.role)
     await state.clear()
 
     admins = await UserAlchemyDAO.get_admins(session)
     asyncio.create_task(
-        notify_admins_task(suggestion, admins, username, media_group, logger, notifier)
+        notify_admins_task(suggestion, admins, author, logger, notifier)
     )
 
 
@@ -84,12 +92,14 @@ async def process_media_group_suggestion(
 
 
 @router.message(F.text == "Статистика")
-async def statistic(message: Message, session: AsyncSession):
+async def statistic(message: Message, session: AsyncSession, user_dto: UserDTO, notifier: Notifier,):
     user_id = message.from_user.id
     stats = await SuggestionDAO.get_stats_by_user_id(session, user_id)
 
-    await message.answer(
-        f"Постов предожено: {stats.total}\n\n"
-        f"✅ Принято: {stats.accepted}\n"
-        f"❌Отклонено: {stats.declined}"
-    )
+    i18n_kwargs = {
+        "total_user_suggestions": stats.total,
+        "accepted_user_suggestions": stats.accepted,
+        "declined_user_suggestions": stats.declined,
+    }
+    payload =  MessagePayload(i18n_key="user_stats", i18n_kwargs=i18n_kwargs)
+    await notifier.notify_user(user_dto, payload=payload)

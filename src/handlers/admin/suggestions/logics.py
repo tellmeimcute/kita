@@ -1,17 +1,17 @@
 from logging import getLogger
-from typing import Any, Tuple
+from typing import Tuple
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.models import Suggestion
-from database.roles import UserRole
+from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
 from helpers.utils import get_media_group
+from helpers.message_payload import MessagePayload
 from services.notifier import Notifier
 
 logger = getLogger("admin_suggestions")
@@ -45,8 +45,8 @@ async def get_active_suggestion(
 async def update_review_state(
     suggestion: Suggestion,
     media_group: MediaGroupBuilder,
-    chat_id: int,
-    bot: Bot,
+    user_dto: UserDTO,
+    notifier: Notifier,
     state: FSMContext,
     suggestions_left: int | None = None,
     data: dict | None = None,
@@ -55,16 +55,21 @@ async def update_review_state(
         data = data or await state.get_data()
         suggestions_left = data["suggestions_left"]
 
-    # suggestions_left -= 1
-    media_group.caption = (
-        f"Постов в очереди: {suggestions_left}.\n\n"
-        f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):\n\n"
-        f"ID: {suggestion.id}\n"
-        f"Оригинальная подпись:\n"
-        f"{suggestion.caption}"
-    )
+    left_caption = notifier.get_i18n_text("suggestion_left", {"left": suggestions_left})
 
-    await bot.send_media_group(chat_id, media_group.build())
+    i18n_kwargs = {
+        "author_username": suggestion.author.username,
+        "author_id": suggestion.author_id,
+        "suggestion_id": suggestion.id,
+        "original_caption": suggestion.caption,
+    }
+
+    suggestion_caption = notifier.get_i18n_text("admin_get_suggestion_caption", i18n_kwargs)
+    media_group.caption = f"{left_caption}\n{suggestion_caption}"
+
+    payload = MessagePayload(content=media_group.build())
+    await notifier.notify_user(user_dto, payload=payload)
+
     await state.set_data(
         {
             "last": suggestion.id,
@@ -76,23 +81,22 @@ async def update_review_state(
 
 
 async def go_next_suggestion(
-    message: Message,
     session: AsyncSession,
     state: FSMContext,
-    bot: Bot,
-    role: UserRole,
+    user_dto: UserDTO,
     data: dict,
     notifier: Notifier,
 ):
     raw_suggestion = await get_active_suggestion(session)
     if not raw_suggestion:
         await state.clear()
-        return await notifier.answer_admin_no_active_suggestions(message.from_user.id, role)
+        kb = get_main_kb_by_role(user_dto.role)
+        payload =  MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
+        return await notifier.notify_user(user_dto, payload=payload)
 
-    chat_id = message.chat.id
     suggestions_left = await SuggestionDAO.get_active_count(session)
     await update_review_state(
-        *raw_suggestion, chat_id, bot, state, suggestions_left=suggestions_left, data=data
+        *raw_suggestion, user_dto, notifier, state, suggestions_left=suggestions_left, data=data
     )
 
 

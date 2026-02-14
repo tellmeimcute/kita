@@ -1,13 +1,17 @@
-from aiogram import F, Router
+from aiogram import F, Router, html
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.formatting import Bold, Text
 
 from config import Config
+from helpers.message_payload import MessagePayload
 from database.models import UserAlchemy
-from handlers.keyboards import get_main_kb_by_role
 from services.notifier import Notifier
+
+from handlers.keyboards import (
+    get_main_kb_by_role,
+)
+
 
 router = Router(name="start_handlers")
 
@@ -17,16 +21,13 @@ async def start(
     message: Message,
     user_alchemy: UserAlchemy,
     config: Config,
+    notifier: Notifier,
 ):
-    text = Text(
-        "Добро пожаловать в предложку канала ",
-        Bold(config.channel_name),
-        "!\n\n",
-        "Чтобы предложить пост используйте клавиатуру.",
-    )
-
     main_kb = get_main_kb_by_role(user_alchemy.role)
-    return await message.answer(text.as_html(), reply_markup=main_kb)
+    i18n_kwargs = {"channel_name": html.bold(config.channel_name)}
+
+    payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
+    await notifier.notify_user(user_alchemy, payload)
 
 
 @router.message(Command("cancel"))
@@ -40,7 +41,10 @@ async def cmd_cancel_state(
     if current_state:
         await state.clear()
 
-    await notifier.answer_user_state_reset(user_alchemy.user_id, user_alchemy.role)
+    kb = get_main_kb_by_role(user_alchemy.role)
+
+    payload =  MessagePayload(i18n_key="state_reset", reply_markup=kb)
+    await notifier.notify_user(user_alchemy, payload=payload)
 
 
 @router.message(F.text.lower() == "отмена")

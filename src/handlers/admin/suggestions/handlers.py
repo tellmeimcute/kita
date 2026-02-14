@@ -1,4 +1,4 @@
-from aiogram import Bot, F, Router
+from aiogram import Bot, F, Router, html
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO, UserAlchemyDAO
+from database.dto import UserDTO
 from database.models import Suggestion, UserAlchemy
+from helpers.message_payload import MessagePayload
+
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
 from helpers.utils import ban_user
 from services.notifier import Notifier
@@ -29,45 +32,56 @@ async def get_suggestion(
     message: Message,
     session: AsyncSession,
     command: CommandObject,
-    bot: Bot,
+    user_dto: UserDTO,
+    notifier: Notifier,
 ):
     suggestion_id = command.args
     raw_suggestion = await get_suggestion_by_id(session, suggestion_id)
     if not raw_suggestion:
-        return await message.answer(f"Предложки с ID {suggestion_id} не найдено :(")
+        i18n_kwargs = {"suggestion_id": suggestion_id}
+        payload =  MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
+        return await notifier.notify_user(user_dto, payload=payload)
 
     suggestion, media_group = raw_suggestion
-    await bot.send_message(
-        message.chat.id, f"Предложка от @{suggestion.author.username} ({suggestion.author_id}):"
-    )
 
-    await bot.send_media_group(message.chat.id, media=media_group.build())
+    i18n_kwargs = {
+        "author_username": html.bold(suggestion.author.username),
+        "author_id": suggestion.author_id,
+        "suggestion_id": suggestion.id,
+        "original_caption": suggestion.caption,
+    }
 
+    translated = notifier.get_translated_text("admin_get_suggestion_caption")
+    media_group.caption = notifier.get_formatted_text(translated, i18n_kwargs)
+
+    payload =  MessagePayload(content=media_group.build())
+    await notifier.notify_user(user_dto, payload=payload)
 
 @router.message(F.text.lower() == "смотреть предложку")
 async def show_suggestions_admin_menu(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     bot: Bot,
     notifier: Notifier,
 ):
     raw_suggestion = await get_active_suggestion(session)
 
     if not raw_suggestion:
-        return await notifier.answer_admin_no_active_suggestions(
-            user_alchemy.user_id, user_alchemy.role
-        )
+        kb = get_main_kb_by_role(user_dto.role)
+        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
+        return await notifier.notify_user(user_dto, payload=payload)
 
-    await notifier.answer_admin_start_review(user_alchemy.user_id)
+    payload = MessagePayload(i18n_key="start_review_suggestions", reply_markup=accept_decline_kb)
+    await notifier.notify_user(user_dto, payload=payload)
+
     await state.set_state(SuggestionViewer.in_viewer)
 
-    chat_id = message.chat.id
     suggestion, media_group = raw_suggestion
     suggestions_left = await SuggestionDAO.get_active_count(session)
 
-    await update_review_state(suggestion, media_group, chat_id, bot, state, suggestions_left)
+    await update_review_state(suggestion, media_group, user_dto, notifier, state, suggestions_left)
 
 
 @router.message(
@@ -78,7 +92,7 @@ async def accept_deny_suggestion(
     session: AsyncSession,
     state: FSMContext,
     bot: Bot,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     config: Config,
     notifier: Notifier,
     with_caption: bool = True,
@@ -107,7 +121,7 @@ async def accept_deny_suggestion(
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(
-        message, session, state, bot, user_alchemy.role, data, notifier
+        session, state, user_dto, data, notifier
     )
 
 
@@ -116,8 +130,7 @@ async def ban_suggestion_author(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    bot: Bot,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     config: Config,
     notifier: Notifier,
 ):
@@ -125,14 +138,14 @@ async def ban_suggestion_author(
     cur_suggestion: Suggestion = data["suggestion"]
 
     async with session.begin():
-        caller_id = message.from_user.id
         target_id = cur_suggestion.author_id
         if not await ban_user(session, target_id, config):
-            return await notifier.answer_admin_user_immune(caller_id)
+            payload = MessagePayload(i18n_key="command_user_immune")
+            return await notifier.notify_user(user_dto, payload=payload)
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(
-        message, session, state, bot, user_alchemy.role, data, notifier
+        session, state, user_dto, data, notifier
     )
 
 

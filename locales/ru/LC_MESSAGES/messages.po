@@ -1,0 +1,93 @@
+# Russian translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-14 12:44+1000\n"
+"PO-Revision-Date: 2026-02-14 12:47+1000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ru\n"
+"Language-Team: ru <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "start_msg"
+msgstr ""
+"Добро пожаловать в предложку канала {channel_name}!\n"
+"\n"
+"Чтобы предложить пост используйте клавиатуру."
+
+msgid "state_reset"
+msgstr "Состояние сброшено."
+
+msgid "error_media_suggestion"
+msgstr "Отправь картинки/видео/gif."
+
+msgid "on_moderation"
+msgstr "Отправлено на модерацию."
+
+msgid "user_stats"
+msgstr ""
+"Ты предложил постов: {total_user_suggestions}\n"
+"\n"
+"✅ Принято: {accepted_user_suggestions}\n"
+"❌Отклонено: {declined_user_suggestions}"
+
+msgid "notify_admin_new_suggestion"
+msgstr ""
+"🛑 Новая предложка!\n"
+"\n"
+"ID {new_suggestion_id}\n"
+"Автор @{new_suggestion_author_username} ({new_suggestion_author_id})\n"
+"\n"
+"Что бы просмотреть введите команду {new_suggestion_view_command}"
+
+msgid "command_user_immune"
+msgstr "Этот пользователь неуязвим к этой команде."
+
+msgid "answer_admin_role_changed"
+msgstr "Пользователю {username} ({user_id}) изменена роль на {role}."
+
+msgid "role_not_exist"
+msgstr "Роли {role} не существует."
+
+msgid "user_not_found"
+msgstr "Пользователь с id {user_id} не найден."
+
+msgid "notify_user_role_changed"
+msgstr "🤡 Вам назначили роль {role}!"
+
+msgid "error_suggestion_not_found"
+msgstr "Предложки с ID {suggestion_id} не найдено 😢"
+
+msgid "admin_get_suggestion_caption"
+msgstr ""
+"Предложка ID {suggestion_id}\n"
+"Автор {author_username} ({author_id})\n"
+"\n"
+"Оригинальная подпись:\n"
+"{original_caption}"
+
+msgid "no_active_suggestions"
+msgstr "Нет активной предложки 😢"
+
+msgid "suggestion_left"
+msgstr "Постов в очереди {left}"
+
+msgid "suggestion_wait_media"
+msgstr ""
+"Отправьте картинки/видео/gif одним постом.\n"
+"\n"
+"Отменить действие можно в клавиатуре или командой /cancel"
+
+msgid "start_review_suggestions"
+msgstr "Начинаем просмотр предложки..."
+

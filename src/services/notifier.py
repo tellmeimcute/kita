@@ -4,13 +4,19 @@ from aiogram import Bot
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder, MediaType
 
+from database.models import UserAlchemy
 from database.roles import UserRole
+from database.dto import UserDTO
+
+from helpers.message_payload import MessagePayload
 from handlers.keyboards import (
     accept_decline_kb,
     cancel_kb,
     get_main_kb_by_role,
 )
 
+
+from aiogram.utils.i18n import gettext as _
 
 class Notifier:
     def __init__(self, bot: Bot, logger: Logger):
@@ -22,81 +28,32 @@ class Notifier:
         target_id: int,
         content: str | list[MediaType],
         kb: ReplyKeyboardMarkup = None,
+        silent=True,
     ):
         try:
             if isinstance(content, str):
                 return await self.bot.send_message(
-                    target_id, content, reply_markup=kb, disable_notification=True
+                    target_id, content, reply_markup=kb, disable_notification=silent
                 )
-            await self.bot.send_media_group(target_id, content, disable_notification=True)
+            await self.bot.send_media_group(target_id, content, disable_notification=silent)
         except Exception as e:
             self.logger.info(
                 "Не удалось отправить сообщение пользователю с ID %s, ошибка: %s", target_id, e
             )
 
-    async def answer_user_state_reset(self, target_id: int, target_role: str | UserRole):
-        await self._save_send(target_id, "Состояние сброшено.", get_main_kb_by_role(target_role))
+    def get_translated_text(self, i18n_key: str) -> str:
+        return _(i18n_key)
+    
+    def get_formatted_text(self, text: str, i18n_kwargs: dict[str, str]) -> str:
+        return text.format(**i18n_kwargs)
 
-    async def answer_user_on_moderation(self, target_id: int, target_role: str | UserRole):
-        await self._save_send(
-            target_id, "Отправлено на модерацию.", get_main_kb_by_role(target_role)
-        )
+    def get_i18n_text(self, i18n_key, i18n_kwargs) -> str:
+        translated = self.get_translated_text(i18n_key)
+        return self.get_formatted_text(translated, i18n_kwargs)
 
-    async def answer_user_error_media_suggestion(self, target_id: int):
-        await self._save_send(target_id, "Отправьте картинки/видео/gif.")
+    async def notify_user(self, user: UserAlchemy | UserDTO, payload: MessagePayload):
+        if payload.i18n_key:
+            content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
+            return await self._save_send(user.user_id, content, payload.reply_markup)
 
-    async def answer_user_wait_for_media(self, target_id: int):
-        text = (
-            "Отправьте картинки/видео/gif одним постом.\n\n"
-            "Отменить действие можно в клавиатуре или командой /cancel"
-        )
-        await self._save_send(target_id, text, cancel_kb)
-
-    async def answer_admin_user_immune(self, target_id: int):
-        await self._save_send(target_id, "Этот пользователь неуязвим.")
-
-    async def answer_admin_user_role_changed(
-        self,
-        target_id: int,
-        username: str,
-        user_id: int,
-        role: str | UserRole,
-    ):
-        await self._save_send(
-            target_id, f"Пользователю {username} ({user_id}) изменена роль на {role}."
-        )
-
-    async def answer_admin_role_not_exist(self, target_id: int):
-        await self._save_send(target_id, "Такой роли не существует.")
-
-    async def answer_admin_user_not_found(self, target_id: int, user_id: int):
-        await self._save_send(target_id, f"Пользователь с id {user_id} не найден.")
-
-    async def answer_admin_no_active_suggestions(
-        self,
-        target_id: int,
-        target_role: str | UserRole,
-    ):
-        await self._save_send(
-            target_id,
-            "Нет не рассмотренной предложки :(",
-            get_main_kb_by_role(target_role),
-        )
-
-    async def answer_admin_start_review(self, target_id: int):
-        await self._save_send(target_id, "Начинаем просмотр...", accept_decline_kb)
-
-    async def notify_user_role_changed(self, target_id, role):
-        await self._save_send(
-            target_id, f"🤡 Вам назначили роль {role}!", get_main_kb_by_role(role)
-        )
-
-    async def notify_admin_new_suggestion(
-        self,
-        target_id: int,
-        username: str,
-        user_id: int,
-        sug_media_group: MediaGroupBuilder,
-    ):
-        await self._save_send(target_id, f"Новый пост от @{username} ({user_id}):")
-        await self._save_send(target_id, sug_media_group.build())
+        return await self._save_send(user.user_id, payload.content, payload.reply_markup)

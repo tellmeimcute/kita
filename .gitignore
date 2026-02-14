@@ -15,3 +15,6 @@ wheels/
 
 # ruff 
 .ruff_cache
+
+# compiled locales
+*.mo

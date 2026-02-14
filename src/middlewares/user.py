@@ -9,12 +9,13 @@ from config import Config
 from database.dao import UserAlchemyDAO
 from database.models import UserAlchemy
 from database.roles import UserRole
-
+from database.dto import UserDTO
 
 class UserMiddleware(BaseMiddleware):
     """
     ВЫДАЕТ UserAlchemy В ХЕНДЛЕРЫ
-    data["user_alchemy"]
+    data["user_alchemy"] ORM
+    data["user_dto] DTO
     """
 
     async def __call__(
@@ -46,5 +47,9 @@ class UserMiddleware(BaseMiddleware):
                 session, user_tg.id, user_tg.username, user_role
             )
 
+        user_dto = UserDTO.model_validate(user_alchemy)
+
         data["user_alchemy"] = user_alchemy
+        data["user_dto"] = user_dto
+        
         return await handler(event, data)
