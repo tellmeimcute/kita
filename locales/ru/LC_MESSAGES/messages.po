@@ -91,3 +91,8 @@ msgstr ""
 msgid "start_review_suggestions"
 msgstr "Начинаем просмотр предложки..."
 
+msgid "command_syntax_error"
+msgstr ""
+"Проверьте введена ли команда правильно.\n"
+"{hint}"
+

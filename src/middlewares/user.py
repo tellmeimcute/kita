@@ -11,6 +11,7 @@ from database.models import UserAlchemy
 from database.roles import UserRole
 from database.dto import UserDTO
 
+
 class UserMiddleware(BaseMiddleware):
     """
     ВЫДАЕТ UserAlchemy В ХЕНДЛЕРЫ
@@ -51,5 +52,5 @@ class UserMiddleware(BaseMiddleware):
 
         data["user_alchemy"] = user_alchemy
         data["user_dto"] = user_dto
-        
+
         return await handler(event, data)

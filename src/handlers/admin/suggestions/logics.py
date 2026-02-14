@@ -91,7 +91,7 @@ async def go_next_suggestion(
     if not raw_suggestion:
         await state.clear()
         kb = get_main_kb_by_role(user_dto.role)
-        payload =  MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
+        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
         return await notifier.notify_user(user_dto, payload=payload)
 
     suggestions_left = await SuggestionDAO.get_active_count(session)

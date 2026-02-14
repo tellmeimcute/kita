@@ -18,6 +18,7 @@ from handlers.keyboards import (
 
 from aiogram.utils.i18n import gettext as _
 
+
 class Notifier:
     def __init__(self, bot: Bot, logger: Logger):
         self.bot = bot
@@ -43,7 +44,7 @@ class Notifier:
 
     def get_translated_text(self, i18n_key: str) -> str:
         return _(i18n_key)
-    
+
     def get_formatted_text(self, text: str, i18n_kwargs: dict[str, str]) -> str:
         return text.format(**i18n_kwargs)
 

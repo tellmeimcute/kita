@@ -43,7 +43,7 @@ async def cmd_cancel_state(
 
     kb = get_main_kb_by_role(user_alchemy.role)
 
-    payload =  MessagePayload(i18n_key="state_reset", reply_markup=kb)
+    payload = MessagePayload(i18n_key="state_reset", reply_markup=kb)
     await notifier.notify_user(user_alchemy, payload=payload)
 
 

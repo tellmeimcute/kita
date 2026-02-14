@@ -1,5 +1,3 @@
-
-
 from typing import Optional, Any
 from pydantic import BaseModel, ConfigDict
 
@@ -9,10 +7,6 @@ from aiogram.utils.media_group import MediaGroupBuilder, MediaType
 AnyKeyboard = ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove
 AnyContent = str | list[MediaType]
 
-
-temp_i18n = {
-    "state_reset": "бебебе бубубу"
-}
 
 class MessagePayload(BaseModel):
     i18n_key: Optional[str] = None

@@ -39,7 +39,7 @@ async def get_suggestion(
     raw_suggestion = await get_suggestion_by_id(session, suggestion_id)
     if not raw_suggestion:
         i18n_kwargs = {"suggestion_id": suggestion_id}
-        payload =  MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
+        payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
         return await notifier.notify_user(user_dto, payload=payload)
 
     suggestion, media_group = raw_suggestion
@@ -54,8 +54,9 @@ async def get_suggestion(
     translated = notifier.get_translated_text("admin_get_suggestion_caption")
     media_group.caption = notifier.get_formatted_text(translated, i18n_kwargs)
 
-    payload =  MessagePayload(content=media_group.build())
+    payload = MessagePayload(content=media_group.build())
     await notifier.notify_user(user_dto, payload=payload)
+
 
 @router.message(F.text.lower() == "смотреть предложку")
 async def show_suggestions_admin_menu(
@@ -120,9 +121,7 @@ async def accept_deny_suggestion(
             cur_suggestion.accepted = is_accepted
 
     # Получаем новый (следующий) suggestion
-    return await go_next_suggestion(
-        session, state, user_dto, data, notifier
-    )
+    return await go_next_suggestion(session, state, user_dto, data, notifier)
 
 
 @router.message(SuggestionViewer.in_viewer, F.text.lower() == "бан")
@@ -144,9 +143,7 @@ async def ban_suggestion_author(
             return await notifier.notify_user(user_dto, payload=payload)
 
     # Получаем новый (следующий) suggestion
-    return await go_next_suggestion(
-        session, state, user_dto, data, notifier
-    )
+    return await go_next_suggestion(session, state, user_dto, data, notifier)
 
 
 @router.message(SuggestionViewer.in_viewer, (F.text.lower() == "принять без подписи"))
