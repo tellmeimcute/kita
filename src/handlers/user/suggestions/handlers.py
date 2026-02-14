@@ -8,13 +8,12 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
-from database.models import UserAlchemy
 from database.dto import UserDTO
-from helpers.utils import create_medias
+from handlers.keyboards import cancel_kb, get_main_kb_by_role
 from helpers.message_payload import MessagePayload
+from helpers.utils import create_medias
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
-from handlers.keyboards import get_main_kb_by_role, cancel_kb
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -80,13 +79,11 @@ async def process_media_group_suggestion(
     state: FSMContext,
     session: AsyncSession,
     album: List[Message],
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     notifier: Notifier,
     media_group_id: str,
 ):
-    await process_suggestion(
-        message, state, session, user_alchemy, notifier, media_group_id, album
-    )
+    await process_suggestion(message, state, session, user_dto, notifier, media_group_id, album)
 
 
 @router.message(F.text == "Статистика")

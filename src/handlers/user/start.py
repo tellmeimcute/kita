@@ -4,14 +4,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from config import Config
+from database.dto import UserDTO
+from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
-from database.models import UserAlchemy
 from services.notifier import Notifier
-
-from handlers.keyboards import (
-    get_main_kb_by_role,
-)
-
 
 router = Router(name="start_handlers")
 
@@ -19,39 +15,39 @@ router = Router(name="start_handlers")
 @router.message(CommandStart())
 async def start(
     message: Message,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     config: Config,
     notifier: Notifier,
 ):
-    main_kb = get_main_kb_by_role(user_alchemy.role)
+    main_kb = get_main_kb_by_role(user_dto.role)
     i18n_kwargs = {"channel_name": html.bold(config.channel_name)}
 
     payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
-    await notifier.notify_user(user_alchemy, payload)
+    await notifier.notify_user(user_dto, payload)
 
 
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,
     state: FSMContext,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     notifier: Notifier,
 ):
     current_state = await state.get_state()
     if current_state:
         await state.clear()
 
-    kb = get_main_kb_by_role(user_alchemy.role)
+    kb = get_main_kb_by_role(user_dto.role)
 
     payload = MessagePayload(i18n_key="state_reset", reply_markup=kb)
-    await notifier.notify_user(user_alchemy, payload=payload)
+    await notifier.notify_user(user_dto, payload=payload)
 
 
 @router.message(F.text.lower() == "отмена")
 async def cancel_state(
     message: Message,
     state: FSMContext,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     notifier: Notifier,
 ):
-    await cmd_cancel_state(message, state, user_alchemy, notifier)
+    await cmd_cancel_state(message, state, user_dto, notifier)

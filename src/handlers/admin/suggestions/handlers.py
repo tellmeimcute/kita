@@ -6,12 +6,11 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO, UserAlchemyDAO
+from database.dao import SuggestionDAO
 from database.dto import UserDTO
-from database.models import Suggestion, UserAlchemy
-from helpers.message_payload import MessagePayload
-
+from database.models import Suggestion
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
+from helpers.message_payload import MessagePayload
 from helpers.utils import ban_user
 from services.notifier import Notifier
 
@@ -152,10 +151,10 @@ async def accept_wo_caption(
     session: AsyncSession,
     state: FSMContext,
     bot: Bot,
-    user_alchemy: UserAlchemy,
+    user_dto: UserDTO,
     config: Config,
     notifier: Notifier,
 ):
     await accept_deny_suggestion(
-        message, session, state, bot, user_alchemy, config, notifier, False, True
+        message, session, state, bot, user_dto, config, notifier, False, True
     )

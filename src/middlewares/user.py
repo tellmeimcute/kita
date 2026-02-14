@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import UserAlchemyDAO
+from database.dto import UserDTO
 from database.models import UserAlchemy
 from database.roles import UserRole
-from database.dto import UserDTO
 
 
 class UserMiddleware(BaseMiddleware):

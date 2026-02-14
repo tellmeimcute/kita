@@ -7,9 +7,8 @@ from aiogram.types import User as UserTelegram
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from database.models import Suggestion, UserAlchemy
-from services.notifier import Notifier
-
 from helpers.message_payload import MessagePayload
+from services.notifier import Notifier
 
 
 async def notify_admins_task(

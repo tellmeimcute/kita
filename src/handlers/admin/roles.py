@@ -1,16 +1,15 @@
 from logging import getLogger
 
-from pydantic import BaseModel, ValidationError
-
 from aiogram import Router, html
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import UserAlchemyDAO
-from database.roles import UserRole
 from database.dto import UserDTO
+from database.roles import UserRole
 from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
 from services.notifier import Notifier

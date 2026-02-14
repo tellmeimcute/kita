@@ -7,11 +7,11 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
-from database.models import Suggestion
 from database.dto import UserDTO
+from database.models import Suggestion
 from handlers.keyboards import get_main_kb_by_role
-from helpers.utils import get_media_group
 from helpers.message_payload import MessagePayload
+from helpers.utils import get_media_group
 from services.notifier import Notifier
 
 logger = getLogger("admin_suggestions")

@@ -2,21 +2,12 @@ from logging import Logger
 
 from aiogram import Bot
 from aiogram.types import ReplyKeyboardMarkup
-from aiogram.utils.media_group import MediaGroupBuilder, MediaType
-
-from database.models import UserAlchemy
-from database.roles import UserRole
-from database.dto import UserDTO
-
-from helpers.message_payload import MessagePayload
-from handlers.keyboards import (
-    accept_decline_kb,
-    cancel_kb,
-    get_main_kb_by_role,
-)
-
-
 from aiogram.utils.i18n import gettext as _
+from aiogram.utils.media_group import MediaType
+
+from database.dto import UserDTO
+from database.models import UserAlchemy
+from helpers.message_payload import MessagePayload
 
 
 class Notifier:
