@@ -32,7 +32,7 @@ session_middleware = SessionMiddleware(db.session_maker)
 user_middleware = UserMiddleware()
 bancheck_middleware = BanCheckMiddleware()
 
-i18n = I18n(path="locales", default_locale="en", domain="messages")
+i18n = I18n(path="locales", default_locale="ru", domain="messages")
 i18n_middleware = ConstI18nMiddleware(locale="ru", i18n=i18n)
 
 dp.message.middleware(session_middleware)
