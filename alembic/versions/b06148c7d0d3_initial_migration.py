@@ -1,8 +1,8 @@
 """initial_migration
 
-Revision ID: 6f55fa2adf80
+Revision ID: b06148c7d0d3
 Revises: 
-Create Date: 2026-02-15 19:16:29.919823
+Create Date: 2026-02-15 20:22:39.253945
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6f55fa2adf80'
+revision: str = 'b06148c7d0d3'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,8 +26,8 @@ def upgrade() -> None:
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('role', sa.Enum('USER', 'ADMIN', 'BANNED', name='user_role', create_constraint=True), server_default='USER', nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_id')
     )
@@ -37,8 +37,8 @@ def upgrade() -> None:
     sa.Column('author_id', sa.BigInteger(), nullable=False),
     sa.Column('accepted', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.ForeignKeyConstraint(['author_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
