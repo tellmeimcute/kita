@@ -50,7 +50,7 @@ msgstr ""
 "\n"
 "Что бы просмотреть введите команду {new_suggestion_view_command}"
 
-msgid "command_user_immune"
+msgid "error_user_immune"
 msgstr "Этот пользователь неуязвим к этой команде."
 
 msgid "answer_admin_role_changed"

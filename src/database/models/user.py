@@ -6,19 +6,21 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.roles import UserRole
 
 from .abstract_model import AbstractModel
+from .timestamp import TimestampMixin
 
 if TYPE_CHECKING:
     from .suggestion import Suggestion
 
 
-class UserAlchemy(AbstractModel):
+class UserAlchemy(AbstractModel, TimestampMixin):
     __tablename__ = "users"
 
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     username: Mapped[str] = mapped_column()
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
+        #Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
+        Enum(UserRole, name="user_role", create_constraint=True, validate_strings=True,),
         default=UserRole.USER,
         server_default=UserRole.USER.value,
     )

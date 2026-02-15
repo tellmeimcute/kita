@@ -138,7 +138,7 @@ async def ban_suggestion_author(
     async with session.begin():
         target_id = cur_suggestion.author_id
         if not await ban_user(session, target_id, config):
-            payload = MessagePayload(i18n_key="command_user_immune")
+            payload = MessagePayload(i18n_key="error_user_immune")
             return await notifier.notify_user(user_dto, payload=payload)
 
     # Получаем новый (следующий) suggestion

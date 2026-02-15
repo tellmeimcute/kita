@@ -52,7 +52,7 @@ async def change_user_role(
         return await notifier.notify_user(user_dto, payload)
 
     if cmd_data.user_id == config.ADMIN_ID:
-        payload = MessagePayload(i18n_key="command_user_immune")
+        payload = MessagePayload(i18n_key="error_user_immune")
         return await notifier.notify_user(user_dto, payload)
 
     try:
