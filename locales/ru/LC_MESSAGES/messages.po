@@ -133,3 +133,6 @@ msgstr "Админ стата"
 msgid "user_stats_command"
 msgstr "Статистика"
 
+msgid "send_verdict"
+msgstr "Запостить или отказать? А может забанить 😏"
+

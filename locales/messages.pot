@@ -106,3 +106,6 @@ msgstr ""
 
 msgid "user_stats_command"
 msgstr ""
+
+msgid "send_verdict"
+msgstr ""

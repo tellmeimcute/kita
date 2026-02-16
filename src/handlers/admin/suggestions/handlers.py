@@ -98,7 +98,6 @@ async def verdict_solo_view(
     config: Config,
     viewer_action: str,
 ):
-    print(viewer_action)
     data = await state.get_data()
     suggestion_dto: SuggestionFullDTO = data.get("suggestion_dto")
 
