@@ -1,21 +1,19 @@
-
-
 from logging import getLogger
-from pydantic import ValidationError
 
 from aiogram import Bot, F, Router, html
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.media_group import MediaGroupBuilder
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO
-from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO
+from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
-from helpers.schemas import ChangeRoleCommand, IDCommand
 from helpers.message_payload import MessagePayload
+from helpers.schemas import ChangeRoleCommand, IDCommand
 from helpers.utils import ban_user
 from services.notifier import Notifier
 
@@ -68,7 +66,7 @@ async def get_suggestion_solo_view(
     await state.set_state(SuggestionViewer.in_solo_view)
     await state.set_data(
         {
-            "suggestion_dto": suggestion_dto, # FULL DTO
+            "suggestion_dto": suggestion_dto,  # FULL DTO
             "media_group": media_group,
         }
     )
@@ -82,7 +80,7 @@ async def get_suggestion_solo_view(
 
 @router.message(
     SuggestionViewer.in_solo_view,
-    F.text.lower().in_(("принять", "отклонить", "принять без подписи"))
+    F.text.lower().in_(("принять", "отклонить", "принять без подписи")),
 )
 async def verdict_solo_view(
     message: Message,
@@ -101,13 +99,11 @@ async def verdict_solo_view(
     async with session.begin():
         data_orm = {"accepted": verdict}
         await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
-    
+
     if verdict:
         with_og_caption = text != "принять без подписи"
         media_group = data.get("media_group")
-        await post_in_channel(
-            bot, media_group, suggestion_dto, config.CHANNEL_ID, with_og_caption
-        )
+        await post_in_channel(bot, media_group, suggestion_dto, config.CHANNEL_ID, with_og_caption)
 
     kb = get_main_kb_by_role(user_dto.role)
     payload = MessagePayload(i18n_key="verdict_rewrite", reply_markup=kb)
@@ -142,9 +138,7 @@ async def show_suggestions_admin_menu(
 
 
 @router.message(
-    SuggestionViewer.in_viewer, F.text.lower().in_(
-        ("принять", "отклонить", "принять без подписи")
-    )
+    SuggestionViewer.in_viewer, F.text.lower().in_(("принять", "отклонить", "принять без подписи"))
 )
 async def accept_deny_suggestion(
     message: Message,
@@ -164,27 +158,23 @@ async def accept_deny_suggestion(
     with_caption = text != "принять без подписи"
 
     async with session.begin():
-        suggestion = await SuggestionDAO.get_one_or_none_by_id(
-            session, suggestion_id, solo=True
-        )
+        suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_id, solo=True)
         suggestion_dto = SuggestionBaseDTO.model_validate(suggestion)
 
     # go next если уже вердикт вынесен
     if suggestion_dto.accepted is not None:
         i18n_kwargs = {
-            "id": html.bold(f'{suggestion_dto.id}'),
+            "id": html.bold(f"{suggestion_dto.id}"),
             "verdict": html.bold(f"{suggestion_dto.accepted}"),
         }
         payload = MessagePayload(i18n_key="suggestion_verdict_exists", i18n_kwargs=i18n_kwargs)
         await notifier.notify_user(user_dto, payload)
         return await go_next_suggestion(session, state, user_dto, data, notifier)
-    
+
     # Запостить (если принято) и обновить в базе.
     if is_accepted:
         media_group: MediaGroupBuilder = data["media_group"]
-        await post_in_channel(
-            bot, media_group, suggestion_dto, config.CHANNEL_ID, with_caption
-        )
+        await post_in_channel(bot, media_group, suggestion_dto, config.CHANNEL_ID, with_caption)
 
     async with session.begin():
         data_orm = {"accepted": is_accepted}
@@ -219,7 +209,7 @@ async def ban_suggestion_author(
         )
         if await ban_user(session, cmd_data, notify_user=False) is False:
             return
-        
+
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
@@ -231,4 +221,3 @@ async def ban_suggestion_author(
     current_state = await state.get_state()
     if current_state != "SuggestionViewer:in_solo_view":
         await go_next_suggestion(session, state, user_dto, data, notifier)
-

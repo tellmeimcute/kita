@@ -19,8 +19,13 @@ class UserAlchemy(AbstractModel, TimestampMixin):
     username: Mapped[str] = mapped_column()
 
     role: Mapped[UserRole] = mapped_column(
-        #Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
-        Enum(UserRole, name="user_role", create_constraint=True, validate_strings=True,),
+        # Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
+        Enum(
+            UserRole,
+            name="user_role",
+            create_constraint=True,
+            validate_strings=True,
+        ),
         default=UserRole.USER,
         server_default=UserRole.USER.value,
     )

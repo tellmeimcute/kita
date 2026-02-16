@@ -8,11 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dto import UserDTO
-from helpers.schemas import ChangeRoleCommand
 from helpers.message_payload import MessagePayload
-from services.notifier import Notifier
-
+from helpers.schemas import ChangeRoleCommand
 from helpers.utils import ban_user
+from services.notifier import Notifier
 
 logger = getLogger(name="admin_role_change")
 router = Router()
@@ -31,9 +30,9 @@ async def change_user_role(
         payload = MessagePayload(
             i18n_key="command_syntax_error",
             i18n_kwargs={"hint": html.code("/change_role USERID ROLE")},
-        )      
+        )
         return await notifier.notify_user(user_dto, payload)
-    
+
     try:
         raw_target_id, raw_target_role = command.args.split(maxsplit=1)
         cmd_data = ChangeRoleCommand(

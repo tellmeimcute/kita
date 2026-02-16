@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
-from .user import UserDTO
 from .media import MediaDTO
+from .user import UserDTO
 
 
 class SuggestionBaseDTO(BaseModel):

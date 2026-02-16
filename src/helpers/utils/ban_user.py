@@ -1,16 +1,15 @@
-
 from logging import getLogger
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
-
 from handlers.keyboards import get_main_kb_by_role
-
-from helpers.schemas import ChangeRoleCommand
 from helpers.message_payload import MessagePayload
+from helpers.schemas import ChangeRoleCommand
 
 logger = getLogger()
+
 
 async def ban_user(
     session: AsyncSession,
@@ -27,7 +26,9 @@ async def ban_user(
 
     try:
         async with session.begin():
-            target_orm = await UserAlchemyDAO.change_role(session, cmd_data.target_id, cmd_data.target_role)
+            target_orm = await UserAlchemyDAO.change_role(
+                session, cmd_data.target_id, cmd_data.target_role
+            )
             target_dto = UserDTO.model_validate(target_orm)
     except KeyError:
         i18n_kwargs = {"user_id": cmd_data.target_id}

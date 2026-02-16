@@ -7,7 +7,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
-from database.dto import UserDTO, SuggestionBaseDTO
+from database.dto import SuggestionBaseDTO, UserDTO
 from database.models import Suggestion
 from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload

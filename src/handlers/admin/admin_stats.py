@@ -14,7 +14,7 @@ async def promote_user(
 ):
     suggestions_count = await SuggestionDAO.count(session)
     media_count = await MediaDAO.count(session)
-    
+
     user_stats = await UserAlchemyDAO.get_users_stats(session)
 
     await message.answer(

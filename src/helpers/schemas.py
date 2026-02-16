@@ -1,11 +1,9 @@
-
-
-
 from pydantic import BaseModel, ConfigDict
-from database.roles import UserRole
-from database.dto import UserDTO
 
+from database.dto import UserDTO
+from database.roles import UserRole
 from services.notifier import Notifier
+
 
 class ChangeRoleCommand(BaseModel):
     target_id: int
@@ -22,6 +20,7 @@ class ChangeRoleCommand(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
+
 
 class IDCommand(BaseModel):
     target_id: int
