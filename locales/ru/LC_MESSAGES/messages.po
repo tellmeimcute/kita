@@ -104,31 +104,31 @@ msgid "verdict_rewrite"
 msgstr "Статус изменен."
 
 msgid "command_ban_filter"
-msgstr "бан"
+msgstr "Забанить"
 
 msgid "viewer_accept"
-msgstr "запостить"
+msgstr "Принять"
 
 msgid "viewer_decline"
-msgstr "не постить"
+msgstr "Отказ"
 
 msgid "viewer_accept_no_caption"
-msgstr "запостить без подписи"
+msgstr "Запостить без подписи"
 
 msgid "enter_viewer_command"
-msgstr "Посмотреть чем насрали"
+msgstr "Смотреть предложку"
 
 msgid "open_solo_view"
 msgstr "предложка"
 
 msgid "cancel_command"
-msgstr "синдром отмены"
+msgstr "Отмена"
 
 msgid "suggest_post_command"
-msgstr "ЗаХуЯрИтЬ предложку"
+msgstr "Предложить пост"
 
 msgid "admin_stats_command"
-msgstr "Админ статистика"
+msgstr "Админ стата"
 
 msgid "user_stats_command"
 msgstr "Статистика"
