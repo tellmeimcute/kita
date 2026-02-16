@@ -72,6 +72,7 @@ msgid "admin_get_suggestion_caption"
 msgstr ""
 "Предложка ID {suggestion_id}\n"
 "Автор {author_username} ({author_id})\n"
+"Принято?: {verdict}\n"
 "\n"
 "Оригинальная подпись:\n"
 "{original_caption}"
@@ -95,4 +96,10 @@ msgid "command_syntax_error"
 msgstr ""
 "Проверьте введена ли команда правильно.\n"
 "{hint}"
+
+msgid "suggestion_verdict_exists"
+msgstr "Предложке с ID {id} уже вынесен вердикт: {verdict}."
+
+msgid "verdict_rewrite"
+msgstr "Статус изменен."
 

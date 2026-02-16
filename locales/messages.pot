@@ -70,3 +70,9 @@ msgstr ""
 
 msgid "command_syntax_error"
 msgstr ""
+
+msgid "suggestion_verdict_exists"
+msgstr ""
+
+msgid "verdict_rewrite"
+msgstr ""
