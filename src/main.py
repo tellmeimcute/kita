@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.utils.i18n import I18n
@@ -18,8 +19,11 @@ logger = logging.getLogger("kita_main")
 
 db = DatabaseManager()
 
+proxy_session = AiohttpSession(proxy=config.PROXY)
 bot = Bot(
-    config.TG_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML)
+    config.TG_TOKEN.get_secret_value(), 
+    default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    session=proxy_session,
 )
 
 dp = Dispatcher(
