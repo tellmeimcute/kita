@@ -30,7 +30,7 @@ from .logics import (
 from .state import SuggestionViewer
 
 VIEWER_ACTION_FILTER = ViewerActionFilter()
-VIEWER_BAN_FILTER = F.text.lower() == __("command_ban_filter")
+VIEWER_BAN_FILTER = F.text == __("command_ban_filter")
 
 router = Router(name="admin_suggestions")
 logger = getLogger()
