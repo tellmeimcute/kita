@@ -7,7 +7,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
-from database.dto import UserDTO
+from database.dto import UserDTO, SuggestionBaseDTO
 from database.models import Suggestion
 from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
@@ -15,19 +15,6 @@ from helpers.utils import get_media_group
 from services.notifier import Notifier
 
 logger = getLogger("admin_suggestions")
-
-
-async def get_suggestion_by_id(
-    session: AsyncSession,
-    suggestion_id: int,
-) -> Tuple[Suggestion, MediaGroupBuilder] | None:
-    suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_id)
-
-    if not suggestion:
-        return None
-
-    media_group = get_media_group(suggestion.media, suggestion.caption)
-    return suggestion, media_group
 
 
 async def get_active_suggestion(
@@ -62,6 +49,7 @@ async def update_review_state(
         "author_id": suggestion.author_id,
         "suggestion_id": suggestion.id,
         "original_caption": suggestion.caption,
+        "verdict": suggestion.accepted,
     }
 
     suggestion_caption = notifier.get_i18n_text("admin_get_suggestion_caption", i18n_kwargs)
@@ -103,7 +91,7 @@ async def go_next_suggestion(
 async def post_in_channel(
     bot: Bot,
     media_group: MediaGroupBuilder,
-    suggestion: Suggestion,
+    suggestion: Suggestion | SuggestionBaseDTO,
     channel_id: int,
     with_og_caption: bool = True,
 ):

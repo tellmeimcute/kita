@@ -26,6 +26,7 @@ async def start(
     await notifier.notify_user(user_dto, payload)
 
 
+@router.message(F.text.lower() == "отмена")
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,
@@ -38,16 +39,5 @@ async def cmd_cancel_state(
         await state.clear()
 
     kb = get_main_kb_by_role(user_dto.role)
-
     payload = MessagePayload(i18n_key="state_reset", reply_markup=kb)
     await notifier.notify_user(user_dto, payload=payload)
-
-
-@router.message(F.text.lower() == "отмена")
-async def cancel_state(
-    message: Message,
-    state: FSMContext,
-    user_dto: UserDTO,
-    notifier: Notifier,
-):
-    await cmd_cancel_state(message, state, user_dto, notifier)
