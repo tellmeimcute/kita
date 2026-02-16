@@ -152,13 +152,15 @@ async def ban_suggestion_author(
             notifier=notifier,
             bot_owner_id=config.ADMIN_ID,
         )
-        await ban_user(session, cmd_data, notify_user=False)
+        if await ban_user(session, cmd_data, notify_user=False) is False:
+            return
+        
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
             i18n_kwargs={"hint": html.code("Validation Error.")},
         )
-        await notifier.notify_user(user_dto, payload)
+        return await notifier.notify_user(user_dto, payload)
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(session, state, user_dto, data, notifier)
