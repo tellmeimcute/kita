@@ -12,17 +12,15 @@ async def promote_user(
     message: Message,
     session: AsyncSession,
 ):
-    user_count = await UserAlchemyDAO.count(session)
     suggestions_count = await SuggestionDAO.count(session)
     media_count = await MediaDAO.count(session)
-
-    admins_count = await UserAlchemyDAO.get_admins_count(session)
-    banned_count = await UserAlchemyDAO.get_banned_count(session)
+    
+    user_stats = await UserAlchemyDAO.get_users_stats(session)
 
     await message.answer(
-        f"👤 Всего пользователей: {user_count}\n"
-        f"🤡 Забаненых пользователей: {banned_count}\n"
-        f"😎 Кол-во админов: {admins_count}\n\n"
+        f"👤 Всего пользователей: {user_stats.total}\n"
+        f"🤡 Забаненых пользователей: {user_stats.banned}\n"
+        f"😎 Кол-во админов: {user_stats.admins}\n\n"
         f"📄 Всего постов предложено: {suggestions_count}\n"
         f"🎨 Всего медиа файлов: {media_count}\n"
     )

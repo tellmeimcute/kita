@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from sqlalchemy import update
+from sqlalchemy import select, update, func, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao.base import BaseDao
@@ -41,7 +41,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         return await cls.get(session, UserAlchemy.role == UserRole.ADMIN)
 
     @classmethod
-    async def get_admins_count(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
+    async def get_admins_count(cls, session: AsyncSession) -> int:
         return await cls.count(session, cls.model.role == UserRole.ADMIN)
 
     @classmethod
@@ -51,6 +51,19 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     @classmethod
     async def get_banned_count(cls, session: AsyncSession) -> int:
         return await cls.count(session, cls.model.role == UserRole.BANNED)
+
+    @classmethod
+    async def get_users_stats(
+        cls,
+        session: AsyncSession,
+    ):
+        stmt = select(
+            func.count(cls.model.id).label("total"),
+            func.count(cls.model.id).filter(cls.model.role == UserRole.ADMIN).label("admins"),
+            func.count(cls.model.id).filter(cls.model.role  == UserRole.BANNED).label("banned"),
+        )
+        result: Result = await session.execute(stmt)
+        return result.one()
 
     @classmethod
     async def decline_all_suggestions(cls, session: AsyncSession, user_id: int):
