@@ -11,7 +11,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO, UserAlchemyDAO
+from database.dao import SuggestionDAO
 from database.dto import UserDTO
 from database.models import Suggestion
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
@@ -70,7 +70,6 @@ async def show_suggestions_admin_menu(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    bot: Bot,
     notifier: Notifier,
 ):
     raw_suggestion = await get_active_suggestion(session)

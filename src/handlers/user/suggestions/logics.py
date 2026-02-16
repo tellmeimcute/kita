@@ -4,7 +4,6 @@ from typing import List
 
 from aiogram import html
 from aiogram.types import User as UserTelegram
-from aiogram.utils.media_group import MediaGroupBuilder
 
 from database.models import Suggestion, UserAlchemy
 from helpers.message_payload import MessagePayload

@@ -7,9 +7,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
-from handlers.keyboards import get_main_kb_by_role
 from helpers.schemas import ChangeRoleCommand
 from helpers.message_payload import MessagePayload
 from services.notifier import Notifier
