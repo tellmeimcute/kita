@@ -1,3 +1,8 @@
+
+
+from logging import getLogger
+from pydantic import ValidationError
+
 from aiogram import Bot, F, Router, html
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
@@ -6,10 +11,11 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO
+from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
 from database.models import Suggestion
 from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
+from helpers.schemas import ChangeRoleCommand
 from helpers.message_payload import MessagePayload
 from helpers.utils import ban_user
 from services.notifier import Notifier
@@ -24,6 +30,7 @@ from .logics import (
 from .state import SuggestionViewer
 
 router = Router(name="admin_suggestions")
+logger = getLogger()
 
 
 @router.message(Command("get_suggestion", prefix="/!"))
@@ -135,11 +142,23 @@ async def ban_suggestion_author(
     data = await state.get_data()
     cur_suggestion: Suggestion = data["suggestion"]
 
-    async with session.begin():
-        target_id = cur_suggestion.author_id
-        if not await ban_user(session, target_id, config):
-            payload = MessagePayload(i18n_key="error_user_immune")
-            return await notifier.notify_user(user_dto, payload=payload)
+    target_id = cur_suggestion.author_id
+
+    try:
+        cmd_data = ChangeRoleCommand(
+            target_id=target_id,
+            target_role="BANNED",
+            caller_dto=user_dto,
+            notifier=notifier,
+            bot_owner_id=config.ADMIN_ID,
+        )
+        await ban_user(session, cmd_data, notify_user=False)
+    except (ValueError, ValidationError):
+        payload = MessagePayload(
+            i18n_key="command_syntax_error",
+            i18n_kwargs={"hint": html.code("Validation Error.")},
+        )
+        await notifier.notify_user(user_dto, payload)
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(session, state, user_dto, data, notifier)
