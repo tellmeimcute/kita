@@ -9,6 +9,8 @@ from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
 from services.notifier import Notifier
 
+from aiogram.utils.i18n import lazy_gettext as __
+
 router = Router(name="start_handlers")
 
 
@@ -26,7 +28,7 @@ async def start(
     await notifier.notify_user(user_dto, payload)
 
 
-@router.message(F.text.lower() == "отмена")
+@router.message(F.text.lower() == __("cancel_command"))
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,

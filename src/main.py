@@ -38,7 +38,7 @@ i18n_middleware = ConstI18nMiddleware(locale="ru", i18n=i18n)
 dp.message.middleware(session_middleware)
 dp.message.middleware(user_middleware)
 dp.message.middleware(bancheck_middleware)
-dp.message.middleware(i18n_middleware)
+dp.message.outer_middleware(i18n_middleware)
 
 
 async def on_startup():

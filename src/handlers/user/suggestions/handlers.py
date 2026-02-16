@@ -9,11 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
-from handlers.keyboards import cancel_kb, get_main_kb_by_role
+from handlers.keyboards import get_cancel_kb, get_main_kb_by_role
 from helpers.message_payload import MessagePayload
 from helpers.utils import create_medias
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
+
+from aiogram.utils.i18n import lazy_gettext as __
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -24,7 +26,7 @@ router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 
-@router.message(F.text == "Предложить пост")
+@router.message(F.text == __("suggest_post_command"))
 async def suggest_post(
     message: Message,
     user_dto: UserDTO,
@@ -33,7 +35,7 @@ async def suggest_post(
 ):
     await state.set_state(PostStates.waiting_for_post)
 
-    payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=cancel_kb)
+    payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=get_cancel_kb())
     await notifier.notify_user(user_dto, payload=payload)
 
 

@@ -103,3 +103,33 @@ msgstr "Предложке с ID {id} уже вынесен вердикт: {ver
 msgid "verdict_rewrite"
 msgstr "Статус изменен."
 
+msgid "command_ban_filter"
+msgstr "бан"
+
+msgid "viewer_accept"
+msgstr "запостить"
+
+msgid "viewer_decline"
+msgstr "не постить"
+
+msgid "viewer_accept_no_caption"
+msgstr "запостить без подписи"
+
+msgid "enter_viewer_command"
+msgstr "Посмотреть чем насрали"
+
+msgid "open_solo_view"
+msgstr "предложка"
+
+msgid "cancel_command"
+msgstr "синдром отмены"
+
+msgid "suggest_post_command"
+msgstr "ЗаХуЯрИтЬ предложку"
+
+msgid "admin_stats_command"
+msgstr "Админ статистика"
+
+msgid "user_stats_command"
+msgstr "Статистика"
+

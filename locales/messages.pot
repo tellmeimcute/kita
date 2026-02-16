@@ -76,3 +76,33 @@ msgstr ""
 
 msgid "verdict_rewrite"
 msgstr ""
+
+msgid "command_ban_filter"
+msgstr ""
+
+msgid "viewer_accept"
+msgstr ""
+
+msgid "viewer_decline"
+msgstr ""
+
+msgid "viewer_accept_no_caption"
+msgstr ""
+
+msgid "enter_viewer_command"
+msgstr ""
+
+msgid "open_solo_view"
+msgstr ""
+
+msgid "cancel_command"
+msgstr ""
+
+msgid "suggest_post_command"
+msgstr ""
+
+msgid "admin_stats_command"
+msgstr ""
+
+msgid "user_stats_command"
+msgstr ""

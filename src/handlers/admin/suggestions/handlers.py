@@ -11,11 +11,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dao import SuggestionDAO
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from handlers.keyboards import accept_decline_kb, get_main_kb_by_role
+from handlers.keyboards import get_main_kb_by_role, get_accept_decline_kb
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, IDCommand
 from helpers.utils import ban_user
 from services.notifier import Notifier
+
+from aiogram.utils.i18n import lazy_gettext as __
+from .filters import ViewerActionFilter
 
 from .logics import (
     get_active_suggestion,
@@ -25,6 +28,9 @@ from .logics import (
     update_review_state,
 )
 from .state import SuggestionViewer
+
+VIEWER_ACTION_FILTER = ViewerActionFilter()
+VIEWER_BAN_FILTER = F.text.lower() == __("command_ban_filter")
 
 router = Router(name="admin_suggestions")
 logger = getLogger()
@@ -74,13 +80,13 @@ async def get_suggestion_solo_view(
     payload = MessagePayload(content=media_group.build())
     await notifier.notify_user(user_dto, payload)
 
-    payload = MessagePayload(i18n_key="send_verdict", reply_markup=accept_decline_kb)
+    payload = MessagePayload(i18n_key="send_verdict", reply_markup=get_accept_decline_kb())
     await notifier.notify_user(user_dto, payload)
 
 
 @router.message(
     SuggestionViewer.in_solo_view,
-    F.text.lower().in_(("принять", "отклонить", "принять без подписи")),
+    VIEWER_ACTION_FILTER,
 )
 async def verdict_solo_view(
     message: Message,
@@ -90,18 +96,19 @@ async def verdict_solo_view(
     notifier: Notifier,
     bot: Bot,
     config: Config,
+    viewer_action: str,
 ):
+    print(viewer_action)
     data = await state.get_data()
     suggestion_dto: SuggestionFullDTO = data.get("suggestion_dto")
-    text = message.text.lower()
 
-    verdict = text == "принять" or text == "принять без подписи"
+    verdict = viewer_action == "accept" or viewer_action == "accept_no_caption"
     async with session.begin():
         data_orm = {"accepted": verdict}
         await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
 
     if verdict:
-        with_og_caption = text != "принять без подписи"
+        with_og_caption = viewer_action != "accept_no_caption"
         media_group = data.get("media_group")
         await post_in_channel(bot, media_group, suggestion_dto, config.CHANNEL_ID, with_og_caption)
 
@@ -111,7 +118,7 @@ async def verdict_solo_view(
     await state.clear()
 
 
-@router.message(F.text.lower() == "смотреть предложку")
+@router.message(F.text == __("enter_viewer_command"))
 async def show_suggestions_admin_menu(
     message: Message,
     session: AsyncSession,
@@ -126,7 +133,7 @@ async def show_suggestions_admin_menu(
         payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
         return await notifier.notify_user(user_dto, payload=payload)
 
-    payload = MessagePayload(i18n_key="start_review_suggestions", reply_markup=accept_decline_kb)
+    payload = MessagePayload(i18n_key="start_review_suggestions", reply_markup=get_accept_decline_kb())
     await notifier.notify_user(user_dto, payload=payload)
 
     await state.set_state(SuggestionViewer.in_viewer)
@@ -138,7 +145,8 @@ async def show_suggestions_admin_menu(
 
 
 @router.message(
-    SuggestionViewer.in_viewer, F.text.lower().in_(("принять", "отклонить", "принять без подписи"))
+    SuggestionViewer.in_viewer,
+    VIEWER_ACTION_FILTER,
 )
 async def accept_deny_suggestion(
     message: Message,
@@ -148,14 +156,12 @@ async def accept_deny_suggestion(
     user_dto: UserDTO,
     config: Config,
     notifier: Notifier,
+    viewer_action: str,
 ):
-    text = message.text.lower()
-    is_accepted = text == "принять" or text == "принять без подписи"
+    verdict = viewer_action == "accept" or viewer_action == "accept_no_caption"
 
     data = await state.get_data()
     suggestion_id: int = data["last"]
-
-    with_caption = text != "принять без подписи"
 
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_id, solo=True)
@@ -172,20 +178,21 @@ async def accept_deny_suggestion(
         return await go_next_suggestion(session, state, user_dto, data, notifier)
 
     # Запостить (если принято) и обновить в базе.
-    if is_accepted:
+    if verdict:
         media_group: MediaGroupBuilder = data["media_group"]
+        with_caption = viewer_action != "accept_no_caption"
         await post_in_channel(bot, media_group, suggestion_dto, config.CHANNEL_ID, with_caption)
 
     async with session.begin():
-        data_orm = {"accepted": is_accepted}
+        data_orm = {"accepted": verdict}
         await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
 
     # Получаем новый (следующий) suggestion
     return await go_next_suggestion(session, state, user_dto, data, notifier)
 
 
-@router.message(SuggestionViewer.in_solo_view, F.text.lower() == "бан")
-@router.message(SuggestionViewer.in_viewer, F.text.lower() == "бан")
+@router.message(SuggestionViewer.in_solo_view, VIEWER_BAN_FILTER)
+@router.message(SuggestionViewer.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(
     message: Message,
     session: AsyncSession,

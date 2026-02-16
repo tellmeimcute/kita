@@ -3,11 +3,12 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
+from aiogram.utils.i18n import lazy_gettext as __
 
 router = Router()
 
 
-@router.message(F.text.lower() == "админ статистика")
+@router.message(F.text == __("admin_stats_command"))
 async def promote_user(
     message: Message,
     session: AsyncSession,
