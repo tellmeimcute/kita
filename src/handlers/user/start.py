@@ -28,7 +28,7 @@ async def start(
     await notifier.notify_user(user_dto, payload)
 
 
-@router.message(F.text.lower() == __("cancel_command"))
+@router.message(F.text == __("cancel_command"))
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,
