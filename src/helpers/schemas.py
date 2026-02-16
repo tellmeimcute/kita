@@ -22,3 +22,6 @@ class ChangeRoleCommand(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
+
+class IDCommand(BaseModel):
+    target_id: int
