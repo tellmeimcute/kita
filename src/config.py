@@ -8,7 +8,7 @@ class Config(BaseSettings):
 
     ADMIN_ID: int
     CHANNEL_ID: int
-    PROXY: str | None
+    PROXY: str | None = None
     
     channel_name: str | None = None
 
