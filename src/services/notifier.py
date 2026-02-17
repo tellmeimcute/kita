@@ -1,4 +1,4 @@
-from logging import Logger
+from logging import Logger, getLogger
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
@@ -15,10 +15,10 @@ from helpers.message_payload import MessagePayload
 
 
 class Notifier:
-    def __init__(self, bot: Bot, logger: Logger, sessionmaker: async_sessionmaker):
-        self.bot = bot
-        self.logger = logger
-        self.sessionmaker = sessionmaker
+    def __init__(self, bot: Bot, sessionmaker: async_sessionmaker):
+        self.bot: Bot = bot
+        self.logger: Logger = getLogger("notifier_service")
+        self.sessionmaker: async_sessionmaker = sessionmaker
 
     async def _update_user_bot_ban(self, user_dto: UserDTO):
         session: AsyncSession

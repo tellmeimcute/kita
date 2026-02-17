@@ -28,7 +28,7 @@ bot = Bot(
 
 dp = Dispatcher(
     config=config,
-    notifier=Notifier(bot, logger, db.session_maker),
+    notifier=Notifier(bot, db.session_maker),
 )
 dp.include_router(root_router)
 
