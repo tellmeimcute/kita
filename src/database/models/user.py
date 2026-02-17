@@ -17,9 +17,9 @@ class UserAlchemy(AbstractModel, TimestampMixin):
 
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     username: Mapped[str] = mapped_column()
+    is_bot_blocked: Mapped[bool] = mapped_column(default=False, nullable=True)
 
     role: Mapped[UserRole] = mapped_column(
-        # Enum(UserRole, native_enum=True, values_callable=lambda obj: [e.value for e in obj]),
         Enum(
             UserRole,
             name="user_role",

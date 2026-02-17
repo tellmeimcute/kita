@@ -10,6 +10,8 @@ class UserDTO(BaseModel):
     username: str
     role: UserRole
 
+    is_bot_blocked: bool | None
+
     @property
     def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN

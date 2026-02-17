@@ -47,6 +47,9 @@ class UserMiddleware(BaseMiddleware):
             user_alchemy: UserAlchemy = await UserAlchemyDAO.get_or_create_user(
                 session, user_tg.id, user_tg.username, user_role
             )
+            
+            if user_alchemy.is_bot_blocked:
+                user_alchemy.is_bot_blocked = False
 
         user_dto = UserDTO.model_validate(user_alchemy)
 
