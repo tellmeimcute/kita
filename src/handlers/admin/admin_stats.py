@@ -1,9 +1,9 @@
 from aiogram import F, Router
 from aiogram.types import Message
+from aiogram.utils.i18n import lazy_gettext as __
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
-from aiogram.utils.i18n import lazy_gettext as __
 
 router = Router()
 

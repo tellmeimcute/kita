@@ -1,8 +1,8 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils.i18n import gettext as _
+
 #from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from database.roles import UserRole
-
-from aiogram.utils.i18n import gettext as _
 
 
 def get_cancel_kb():

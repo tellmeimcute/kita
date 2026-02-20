@@ -109,3 +109,15 @@ msgstr ""
 
 msgid "send_verdict"
 msgstr ""
+
+msgid "channel_post_message"
+msgstr ""
+
+msgid "channel_post_mediagroup"
+msgstr ""
+
+msgid "channel_post_message_no_caption"
+msgstr ""
+
+msgid "channel_post_mediagroup_no_caption"
+msgstr ""

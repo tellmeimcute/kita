@@ -136,3 +136,21 @@ msgstr "Статистика"
 msgid "send_verdict"
 msgstr "Запостить или отказать? А может забанить 😏"
 
+msgid "channel_post_message"
+msgstr ""
+"{original_caption}\n"
+"#предложка"
+
+msgid "channel_post_mediagroup"
+msgstr ""
+"{original_caption}\n"
+"#предложка"
+
+msgid "channel_post_message_no_caption"
+msgstr ""
+"#предложка"
+
+msgid "channel_post_mediagroup_no_caption"
+msgstr ""
+"#предложка"
+

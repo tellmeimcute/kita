@@ -5,6 +5,7 @@ from typing import List
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from aiogram.utils.i18n import lazy_gettext as __
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
@@ -14,8 +15,6 @@ from helpers.message_payload import MessagePayload
 from helpers.utils import create_medias
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
-
-from aiogram.utils.i18n import lazy_gettext as __
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -52,15 +51,19 @@ async def process_suggestion(
     author = message.from_user
     user_id = author.id
 
-    album = album or (message,)
-    caption = album[0].caption
+    if not album:
+        album = (message,)
+
+    first = album[0]
+    caption = first.caption or first.text
+
     async with session.begin():
         suggestion = await SuggestionDAO.create(
             session, author_id=user_id, media_group_id=media_group_id, caption=caption
         )
         medias = await create_medias(session, album, suggestion)
 
-        if not medias:
+        if not medias and not caption:
             payload = MessagePayload(i18n_key="error_media_suggestion")
             await notifier.notify_user(user_dto, payload=payload)
             return await session.rollback()

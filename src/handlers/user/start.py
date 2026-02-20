@@ -2,14 +2,13 @@ from aiogram import F, Router, html
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from aiogram.utils.i18n import lazy_gettext as __
 
 from config import Config
 from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
 from services.notifier import Notifier
-
-from aiogram.utils.i18n import lazy_gettext as __
 
 router = Router(name="start_handlers")
 
