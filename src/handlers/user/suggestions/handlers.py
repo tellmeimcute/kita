@@ -13,6 +13,7 @@ from database.dto import UserDTO
 from handlers.keyboards import get_cancel_kb, get_main_kb_by_role
 from helpers.message_payload import MessagePayload
 from helpers.utils import create_medias
+from helpers.filters import I18nTextFilter
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
 
@@ -25,7 +26,7 @@ router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 
-@router.message(F.text == __("suggest_post_command"))
+@router.message(I18nTextFilter("suggest_post_command"))
 async def suggest_post(
     message: Message,
     user_dto: UserDTO,
@@ -91,7 +92,7 @@ async def process_media_group_suggestion(
     await process_suggestion(message, state, session, user_dto, notifier, media_group_id, album)
 
 
-@router.message(F.text == "Статистика")
+@router.message(I18nTextFilter("user_stats_command"))
 async def statistic(
     message: Message,
     session: AsyncSession,

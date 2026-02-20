@@ -8,7 +8,9 @@ from config import Config
 from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
 from helpers.message_payload import MessagePayload
+from helpers.filters import I18nTextFilter
 from services.notifier import Notifier
+
 
 router = Router(name="start_handlers")
 
@@ -27,7 +29,7 @@ async def start(
     await notifier.notify_user(user_dto, payload)
 
 
-@router.message(F.text == __("cancel_command"))
+@router.message(I18nTextFilter("cancel_command"))
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,

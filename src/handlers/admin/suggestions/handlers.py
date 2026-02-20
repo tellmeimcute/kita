@@ -11,18 +11,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dao import SuggestionDAO
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from handlers.keyboards import get_accept_decline_kb, get_main_kb_by_role
+from handlers.keyboards import get_main_kb_by_role
+from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, IDCommand, SuggestionViewerData
 from helpers.utils import ban_user
 from services.notifier import Notifier
 
-from .filters import ViewerActionFilter
+from .filters import viewer_action
 from .logics import SuggestionViewerRenderer
 from .state import SuggestionViewerState
 
-VIEWER_ACTION_FILTER = ViewerActionFilter()
-VIEWER_BAN_FILTER = F.text == __("command_ban_filter")
 
 router = Router(name="admin_suggestions")
 logger = getLogger()
@@ -62,10 +61,9 @@ async def get_suggestion_solo_view(
     await viewer.render_send_verdict()
 
 
-@router.message(
-    SuggestionViewerState.in_solo_view,
-    VIEWER_ACTION_FILTER,
-)
+@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_accept"))
+@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_accept_no_caption"))
+@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_decline"))
 async def verdict_solo_view(
     message: Message,
     session: AsyncSession,
@@ -93,7 +91,7 @@ async def verdict_solo_view(
     await state.clear()
 
 
-@router.message(F.text == __("enter_viewer_command"))
+@router.message(I18nTextFilter("enter_viewer_command"))
 async def show_suggestions_admin_menu(
     message: Message,
     session: AsyncSession,
@@ -123,10 +121,10 @@ async def show_suggestions_admin_menu(
     await viewer.render_suggestion()
     await viewer.update_state_data(state)
 
-@router.message(
-    SuggestionViewerState.in_viewer,
-    VIEWER_ACTION_FILTER,
-)
+
+@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_accept"))
+@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_accept_no_caption"))
+@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_decline"))
 async def accept_deny_suggestion(
     message: Message,
     session: AsyncSession,
@@ -165,6 +163,7 @@ async def accept_deny_suggestion(
     return await viewer.go_next(session, state)
 
 
+VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
 @router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
 @router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(
