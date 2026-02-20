@@ -1,7 +1,5 @@
 
 
-from aiogram.filters import Filter
-from aiogram.types import Message
 from aiogram.utils.i18n import gettext as _
 
 from helpers.enums import ViewerAdminAction
