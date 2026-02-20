@@ -121,3 +121,6 @@ msgstr ""
 
 msgid "channel_post_mediagroup_no_caption"
 msgstr ""
+
+msgid "error_empty_suggestion"
+msgstr ""

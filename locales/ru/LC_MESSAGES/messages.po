@@ -147,10 +147,11 @@ msgstr ""
 "#предложка"
 
 msgid "channel_post_message_no_caption"
-msgstr ""
-"#предложка"
+msgstr "#предложка"
 
 msgid "channel_post_mediagroup_no_caption"
-msgstr ""
-"#предложка"
+msgstr "#предложка"
+
+msgid "error_empty_suggestion"
+msgstr "Нельзя опубликовать пустое сообщение."
 
