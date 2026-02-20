@@ -16,10 +16,10 @@ from helpers.message_payload import MessagePayload
 class Notifier:
     def __init__(self, bot: Bot, sessionmaker: async_sessionmaker):
         self.bot: Bot = bot
-        self.logger: Logger = getLogger("notifier_service")
         self.sessionmaker: async_sessionmaker = sessionmaker
+        self.logger: Logger = getLogger("notifier_service")
 
-    async def _update_user_bot_ban(self, user_dto: UserDTO):
+    async def _handle_blocked_user(self, user_dto: UserDTO):
         session: AsyncSession
 
         async with self.session_maker() as session:
@@ -28,7 +28,7 @@ class Notifier:
                 await UserAlchemyDAO.update_by_id(session, user_dto.user_id, data)
 
         self.logger.info(
-            "It seems like user %s (%s) has blocked the bot. User status updated.",
+            "User %s (%s) blocked the bot. Status updated.",
             user_dto.username, user_dto.user_id
         )
 
@@ -53,7 +53,7 @@ class Notifier:
             target_id, content, reply_markup=kb, disable_notification=silent
         )
 
-    async def _save_send_user(
+    async def _safe_send(
         self,
         user_dto: UserDTO,
         content: str | list[MediaType],
@@ -66,11 +66,10 @@ class Notifier:
                 return await self._send_message(target_id, content, kb, silent)
             return await self._send_media_group(target_id, content, silent)
         except TelegramForbiddenError:
-            await self._update_user_bot_ban(user_dto)
-
+            await self._handle_blocked_user(user_dto)
         except Exception as e:
             self.logger.error(
-                "Не удалось отправить сообщение пользователю с ID %s, ошибка: %s", target_id, e
+                "Failed to send to user ID %s: %s", target_id, e
             )
 
     def get_translated_text(self, i18n_key: str) -> str:
@@ -86,15 +85,15 @@ class Notifier:
     async def notify_user(self, user: UserAlchemy | UserDTO, payload: MessagePayload):
         if user.is_bot_blocked:
             return self.logger.info(
-                "User %s (%s) has blocked the bot.",
+                "User %s (%s) has blocked the bot. Skip.",
                 user.username, user.user_id,
             )
         
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._save_send_user(user, content, payload.reply_markup)
+            return await self._safe_send(user, content, payload.reply_markup)
 
-        return await self._save_send_user(user, payload.content, payload.reply_markup)
+        return await self._safe_send(user, payload.content, payload.reply_markup)
 
     async def send_channel(self, channel_id: int, payload: MessagePayload):
         if payload.i18n_key:
