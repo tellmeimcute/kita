@@ -16,7 +16,9 @@ class UserAlchemy(AbstractModel, TimestampMixin):
     __tablename__ = "users"
 
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
-    username: Mapped[str] = mapped_column()
+    username: Mapped[str | None] = mapped_column(nullable=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+
     is_bot_blocked: Mapped[bool] = mapped_column(default=False, nullable=True)
 
     role: Mapped[UserRole] = mapped_column(

@@ -3,6 +3,7 @@ from logging import Logger
 from typing import List
 
 from aiogram import html
+from aiogram.utils.i18n import gettext as _
 from aiogram.types import User as UserTelegram
 
 from database.models import Suggestion, UserAlchemy
@@ -24,7 +25,7 @@ async def notify_admins_task(
                 "new_suggestion_author_id": author.id,
                 "new_suggestion_author_username": author.username,
                 "new_suggestion_author_fullname": author.full_name,
-                "new_suggestion_view_command": html.code(f"/get_suggestion {suggestion.id}"),
+                "new_suggestion_view_command": html.code(f"{_("command_open_solo_view")} {suggestion.id}"),
             }
 
             payload = MessagePayload(
@@ -33,7 +34,7 @@ async def notify_admins_task(
             await notifier.notify_user(admin, payload=payload)
 
             logger.info(
-                "Отправлено уведомление о новом посте админу %s (%s)",
+                "New suggestion notify sended to %s (%s)",
                 admin.username,
                 admin.user_id,
             )

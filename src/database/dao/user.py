@@ -1,5 +1,7 @@
 from typing import Sequence
 
+from aiogram.types import User as UserTelegram
+
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,14 +21,18 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     async def get_or_create_user(
         cls,
         session: AsyncSession,
-        user_id: int,
-        username: str,
-        user_role: UserRole = UserRole.USER,
+        user_tg: UserTelegram,
+        role: UserRole,
     ):
-        user_alchemy = await cls.get_one_or_none_by_id(session, user_id)
+        user_alchemy = await cls.get_one_or_none_by_id(session, user_tg.id)
+
         if not user_alchemy:
             user_alchemy = await cls.create(
-                session, user_id=user_id, username=username, role=user_role
+                session, 
+                user_id=user_tg.id, 
+                username=user_tg.username, 
+                name=user_tg.full_name, 
+                role=role,
             )
         return user_alchemy
 

@@ -45,7 +45,7 @@ class UserMiddleware(BaseMiddleware):
 
         async with session.begin():
             user_alchemy: UserAlchemy = await UserAlchemyDAO.get_or_create_user(
-                session, user_tg.id, user_tg.username, user_role
+                session, user_tg, user_role
             )
             
             if user_alchemy.is_bot_blocked:
