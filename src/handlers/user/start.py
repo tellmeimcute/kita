@@ -7,10 +7,9 @@ from aiogram.utils.i18n import lazy_gettext as __
 from config import Config
 from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
-from helpers.message_payload import MessagePayload
 from helpers.filters import I18nTextFilter
+from helpers.message_payload import MessagePayload
 from services.notifier import Notifier
-
 
 router = Router(name="start_handlers")
 

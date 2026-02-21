@@ -2,8 +2,8 @@
 
 from aiogram.filters import Filter
 from aiogram.types import Message
-from helpers.schemas import IDCommand
 from aiogram.utils.i18n import gettext as _
+from pydantic import BaseModel
 
 class I18nTextFilter(Filter):
     def __init__(self, i18n_key, **return_data):
@@ -22,27 +22,33 @@ class I18nTextFilter(Filter):
         return False
     
 
-class TargetIdFilter(Filter):
-    def __init__(self, i18n_key):
+class TextArgsFilter(Filter):
+    def __init__(self, i18n_key: str, schema: type[BaseModel]):
         self.i18n_key = i18n_key
+        self.schema = schema
 
     async def __call__(self, message: Message) -> bool | dict[str, str]:
         if not message.text:
             return False
         
         try:
-            text = message.text.lower().strip().split()
-            command_text = text[0]
-            id_command = IDCommand(target_id=text[-1])
             expected = _(self.i18n_key).strip().lower()
+            raw_text = message.text.lower().strip()
+            
+            args = raw_text[len(expected):].strip().split()
+            command_text = raw_text[:len(expected)]
         except:
             return False
 
-        return_data = {
-            "target_id": id_command.target_id
-        }
+        if command_text != expected:
+            return False
 
-        if command_text == expected:
-            return return_data
+        try:
+            field_names = self.schema.model_fields.keys()
+            data = dict(zip(field_names, args))
+            cmd_data = self.schema(**data)
+        except:
+            return False
         
-        return False
+        return_data = {"command": cmd_data}
+        return return_data

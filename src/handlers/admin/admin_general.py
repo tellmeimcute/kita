@@ -1,36 +1,58 @@
-from pydantic import ValidationError
-
 from aiogram import Router, html
 from aiogram.types import Message
-from aiogram.utils.i18n import lazy_gettext as __
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
-
+from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
-from helpers.schemas import ChangeRoleCommand
-from helpers.filters import TargetIdFilter, I18nTextFilter
+from helpers.schemas import ChangeRoleCommand, ChangeRoleData, IDCommand
 from helpers.utils import ban_user
-
 from services.notifier import Notifier
-from config import Config
 
 router = Router()
 
 
-@router.message(TargetIdFilter("command_ban_filter"))
+@router.message(TextArgsFilter("command_change_role", ChangeRoleCommand))
+async def change_user_role(
+    message: Message,
+    session: AsyncSession,
+    user_dto: UserDTO,
+    config: Config,
+    notifier: Notifier,
+    command: ChangeRoleCommand,
+):    
+    try:
+        cmd_data = ChangeRoleData(
+            target_id=command.target_id,
+            target_role=command.target_role,
+            caller_dto=user_dto,
+            notifier=notifier,
+            bot_owner_id=config.ADMIN_ID,
+        )
+        await ban_user(session, cmd_data)
+    except (ValueError, ValidationError):
+        payload = MessagePayload(
+            i18n_key="command_syntax_error",
+            i18n_kwargs={"hint": html.code("COMMAND USERID[int] ROLE[str]")},
+        )
+        await notifier.notify_user(user_dto, payload)
+
+
+@router.message(TextArgsFilter("command_ban_filter", IDCommand))
 async def ban_user_handler(
     message: Message,
     session: AsyncSession,
     user_dto: UserDTO,
-    target_id: int,
+    command: IDCommand,
     notifier: Notifier,
     config: Config,
 ):
     try:
-        cmd_data = ChangeRoleCommand(
-            target_id=target_id,
+        cmd_data = ChangeRoleData(
+            target_id=command.target_id,
             target_role="BANNED",
             caller_dto=user_dto,
             notifier=notifier,
@@ -48,7 +70,7 @@ async def ban_user_handler(
 
 
 @router.message(I18nTextFilter("command_admin_stats"))
-async def promote_user(
+async def global_stats_handler(
     message: Message,
     session: AsyncSession,
 ):

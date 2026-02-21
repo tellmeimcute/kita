@@ -107,6 +107,9 @@ msgstr ""
 msgid "command_user_stats"
 msgstr ""
 
+msgid "command_change_role"
+msgstr ""
+
 msgid "send_verdict"
 msgstr ""
 
@@ -123,4 +126,7 @@ msgid "channel_post_mediagroup_no_caption"
 msgstr ""
 
 msgid "error_empty_suggestion"
+msgstr ""
+
+msgid "notify_author_suggestion_status"
 msgstr ""

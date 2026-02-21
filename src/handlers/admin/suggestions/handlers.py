@@ -1,10 +1,11 @@
+
+
+
 from logging import getLogger
 
-from aiogram import F, Router, html
-from aiogram.filters import Command, CommandObject
+from aiogram import Router, html
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.i18n import lazy_gettext as __
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,9 +13,9 @@ from config import Config
 from database.dao import SuggestionDAO
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from handlers.keyboards import get_main_kb_by_role
-from helpers.filters import I18nTextFilter, TargetIdFilter
+from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
-from helpers.schemas import ChangeRoleCommand, IDCommand, SuggestionViewerData
+from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
 from helpers.utils import ban_user
 from services.notifier import Notifier
 
@@ -22,13 +23,11 @@ from .filters import viewer_action
 from .logics import SuggestionViewerRenderer
 from .state import SuggestionViewerState
 
-
 router = Router(name="admin_suggestions")
 logger = getLogger()
 
 
-@router.message(TargetIdFilter("command_open_solo_view"))
-@router.message(Command("get_suggestion", prefix="/!"))
+@router.message(TextArgsFilter("command_open_solo_view", IDCommand))
 async def get_suggestion_solo_view(
     message: Message,
     session: AsyncSession,
@@ -36,19 +35,14 @@ async def get_suggestion_solo_view(
     notifier: Notifier,
     state: FSMContext,
     config: Config,
-    command: CommandObject | None = None,
-    target_id: int | None = None,
+    command: IDCommand,
 ):
     try:
-        if not target_id:
-            cmd_data = IDCommand(target_id=command.args)
-            target_id = cmd_data.target_id
-
         async with session.begin():
-            suggestion = await SuggestionDAO.get_one_or_none_by_id(session, target_id)
+            suggestion = await SuggestionDAO.get_one_or_none_by_id(session, command.target_id)
             suggestion_dto = SuggestionFullDTO.model_validate(suggestion)
     except (ValueError, ValidationError) as e:
-        i18n_kwargs = {"suggestion_id": command.args}
+        i18n_kwargs = {"suggestion_id": command.target_id}
         payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
         return await notifier.notify_user(user_dto, payload=payload)
 
@@ -190,7 +184,7 @@ async def ban_suggestion_author(
     viewer: SuggestionViewerRenderer  = await SuggestionViewerRenderer.from_data(notifier, viewer_data)
 
     try:
-        cmd_data = ChangeRoleCommand(
+        cmd_data = ChangeRoleData(
             target_id=suggestion_dto.author_id,
             target_role="BANNED",
             caller_dto=user_dto,

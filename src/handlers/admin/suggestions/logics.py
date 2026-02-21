@@ -122,8 +122,8 @@ class SuggestionViewerRenderer:
     
     async def notify_author(self, status):
         i18n_kwargs = {
-            "suggestion_id": self.data.suggestion_dto.id,
-            "status": html.bold("Принято" if status else "Отклонено")
+            "suggestion_id": html.bold(self.data.suggestion_dto.id),
+            "status": html.bold("принята" if status else "отклонена")
         }
 
         payload = MessagePayload(

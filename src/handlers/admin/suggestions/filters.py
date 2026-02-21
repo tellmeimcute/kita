@@ -3,7 +3,6 @@
 from aiogram.utils.i18n import gettext as _
 
 from helpers.enums import ViewerAdminAction
-
 from helpers.filters import I18nTextFilter
 
 VIEWER_ACTION_MAP = {

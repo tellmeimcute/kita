@@ -11,9 +11,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.dao import SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
 from handlers.keyboards import get_cancel_kb, get_main_kb_by_role
+from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.utils import create_medias
-from helpers.filters import I18nTextFilter
 from middlewares import MediaGroupMiddleware
 from services.notifier import Notifier
 

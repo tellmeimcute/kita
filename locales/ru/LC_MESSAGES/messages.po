@@ -133,6 +133,9 @@ msgstr "Админ стата"
 msgid "command_user_stats"
 msgstr "Статистика"
 
+msgid "command_change_role"
+msgstr "изменить роль"
+
 msgid "send_verdict"
 msgstr "Запостить или отказать? А может забанить 😏"
 
@@ -155,3 +158,5 @@ msgstr "#предложка"
 msgid "error_empty_suggestion"
 msgstr "Нельзя опубликовать пустое сообщение."
 
+msgid "notify_author_suggestion_status"
+msgstr "Ваша предложка с ID: {suggestion_id} : {status}."
