@@ -115,22 +115,22 @@ msgstr "Отказ"
 msgid "viewer_accept_no_caption"
 msgstr "Запостить без подписи"
 
-msgid "enter_viewer_command"
+msgid "command_enter_viewer"
 msgstr "Смотреть предложку"
 
-msgid "open_solo_view"
+msgid "command_open_solo_view"
 msgstr "предложка"
 
-msgid "cancel_command"
+msgid "command_cancel"
 msgstr "Отмена"
 
-msgid "suggest_post_command"
+msgid "command_suggest_post"
 msgstr "Предложить пост"
 
-msgid "admin_stats_command"
+msgid "command_admin_stats"
 msgstr "Админ стата"
 
-msgid "user_stats_command"
+msgid "command_user_stats"
 msgstr "Статистика"
 
 msgid "send_verdict"

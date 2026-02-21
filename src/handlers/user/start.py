@@ -29,7 +29,7 @@ async def start(
     await notifier.notify_user(user_dto, payload)
 
 
-@router.message(I18nTextFilter("cancel_command"))
+@router.message(I18nTextFilter("command_cancel"))
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
     message: Message,

@@ -89,22 +89,22 @@ msgstr ""
 msgid "viewer_accept_no_caption"
 msgstr ""
 
-msgid "enter_viewer_command"
+msgid "command_enter_viewer"
 msgstr ""
 
-msgid "open_solo_view"
+msgid "command_open_solo_view"
 msgstr ""
 
-msgid "cancel_command"
+msgid "command_cancel"
 msgstr ""
 
-msgid "suggest_post_command"
+msgid "command_suggest_post"
 msgstr ""
 
-msgid "admin_stats_command"
+msgid "command_admin_stats"
 msgstr ""
 
-msgid "user_stats_command"
+msgid "command_user_stats"
 msgstr ""
 
 msgid "send_verdict"

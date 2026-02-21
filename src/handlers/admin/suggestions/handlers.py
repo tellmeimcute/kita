@@ -12,7 +12,7 @@ from config import Config
 from database.dao import SuggestionDAO
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from handlers.keyboards import get_main_kb_by_role
-from helpers.filters import I18nTextFilter
+from helpers.filters import I18nTextFilter, TargetIdFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, IDCommand, SuggestionViewerData
 from helpers.utils import ban_user
@@ -27,20 +27,25 @@ router = Router(name="admin_suggestions")
 logger = getLogger()
 
 
+@router.message(TargetIdFilter("command_open_solo_view"))
 @router.message(Command("get_suggestion", prefix="/!"))
 async def get_suggestion_solo_view(
     message: Message,
     session: AsyncSession,
-    command: CommandObject,
     user_dto: UserDTO,
     notifier: Notifier,
     state: FSMContext,
     config: Config,
+    command: CommandObject | None = None,
+    target_id: int | None = None,
 ):
     try:
-        cmd_data = IDCommand(target_id=command.args)
+        if not target_id:
+            cmd_data = IDCommand(target_id=command.args)
+            target_id = cmd_data.target_id
+
         async with session.begin():
-            suggestion = await SuggestionDAO.get_one_or_none_by_id(session, cmd_data.target_id)
+            suggestion = await SuggestionDAO.get_one_or_none_by_id(session, target_id)
             suggestion_dto = SuggestionFullDTO.model_validate(suggestion)
     except (ValueError, ValidationError) as e:
         i18n_kwargs = {"suggestion_id": command.args}
@@ -83,6 +88,8 @@ async def verdict_solo_view(
         if not status:
             return
         
+        await viewer.notify_author(status)
+        
     async with session.begin():
         data_orm = {"accepted": verdict}
         await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
@@ -91,7 +98,7 @@ async def verdict_solo_view(
     await state.clear()
 
 
-@router.message(I18nTextFilter("enter_viewer_command"))
+@router.message(I18nTextFilter("command_enter_viewer"))
 async def show_suggestions_admin_menu(
     message: Message,
     session: AsyncSession,
@@ -155,6 +162,7 @@ async def accept_deny_suggestion(
         status = await viewer.post_in_channel(viewer_action)
         if not status:
             return
+        await viewer.notify_author(status)
 
     async with session.begin():
         data_orm = {"accepted": verdict}

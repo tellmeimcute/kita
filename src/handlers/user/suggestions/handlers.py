@@ -26,7 +26,7 @@ router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 
-@router.message(I18nTextFilter("suggest_post_command"))
+@router.message(I18nTextFilter("command_suggest_post"))
 async def suggest_post(
     message: Message,
     user_dto: UserDTO,
@@ -92,7 +92,7 @@ async def process_media_group_suggestion(
     await process_suggestion(message, state, session, user_dto, notifier, media_group_id, album)
 
 
-@router.message(I18nTextFilter("user_stats_command"))
+@router.message(I18nTextFilter("command_user_stats"))
 async def statistic(
     message: Message,
     session: AsyncSession,
