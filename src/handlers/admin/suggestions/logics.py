@@ -50,15 +50,6 @@ class SuggestionViewerRenderer:
         else:
             self.data.render_type = RenderType.MEDIAGROUP
 
-    async def _build_message_payload(self, i18n_key="admin_get_suggestion_caption"):
-        kb = get_accept_decline_kb()
-        i18n_kwargs = self._get_i18n_kwargs()
-        payload = MessagePayload(
-            i18n_key=i18n_key, i18n_kwargs=i18n_kwargs, reply_markup=kb
-        )
-
-        return payload
-
     async def _build_media_group_payload(self, i18n_key="admin_get_suggestion_caption"):
         suggestion_dto = self.data.suggestion_dto
         notifier = self.notifier
@@ -94,7 +85,11 @@ class SuggestionViewerRenderer:
 
         match self.data.render_type:
             case RenderType.MESSAGE:
-                payload = await self._build_message_payload()
+                payload = MessagePayload(
+                    i18n_key="admin_get_suggestion_caption", 
+                    i18n_kwargs=self._get_i18n_kwargs(),
+                    reply_markup=get_accept_decline_kb(),
+                )
             case RenderType.MEDIAGROUP:
                 payload = await self._build_media_group_payload()
 
@@ -113,7 +108,8 @@ class SuggestionViewerRenderer:
         match self.data.render_type:
             case RenderType.MESSAGE:
                 i18n_key = "channel_post_message" if with_caption else "channel_post_message_no_caption"
-                payload = await self._build_message_payload(i18n_key)
+                i18n_kwargs = self._get_i18n_kwargs()
+                payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
             case RenderType.MEDIAGROUP:
                 i18n_key = "channel_post_mediagroup" if with_caption else "channel_post_mediagroup_no_caption"
                 payload = await self._build_media_group_payload(i18n_key)
