@@ -49,9 +49,17 @@ async def on_startup():
     try:
         channel_info = await bot.get_chat(config.CHANNEL_ID)
         config.channel_name = channel_info.full_name
-        logger.info("Channel name loaded in config: %s", config.channel_name)
+        logger.info("Channel name loaded: %s", config.channel_name)
     except Exception as e:
-        logger.error("Failed to load channel name %s", e)
+        logger.error("Failed to load channel info %s", e)
+
+    try:
+        bot_user = await bot.get_me()
+        config.bot_username = bot_user.username
+        config.bot_url = f"https://t.me/{bot_user.username}"
+        logger.info("Bot info loaded in config")
+    except:
+        logger.error("Failed to load bot info")
 
 
 async def main():

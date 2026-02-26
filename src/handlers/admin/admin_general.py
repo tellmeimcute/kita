@@ -1,4 +1,4 @@
-from aiogram import Router, html
+from aiogram import Router, html, F
 from aiogram.types import Message
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +12,28 @@ from helpers.schemas import ChangeRoleCommand, ChangeRoleData, IDCommand
 from helpers.utils import ban_user
 from services.notifier import Notifier
 
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 router = Router()
+
+
+@router.message(I18nTextFilter("command_post_banner"))
+async def post_channel_banner(
+    message: Message,
+    user_dto: UserDTO,
+    config: Config,
+    notifier: Notifier,
+):
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Предложка", url=config.bot_url
+    )
+
+    payload = MessagePayload(i18n_key="channel_banner", reply_markup=builder.as_markup())
+    await notifier.send_channel(config.CHANNEL_ID, payload)
+
+    payload = MessagePayload(i18n_key="channel_banner_sent")
+    await notifier.notify_user(user_dto, payload)
 
 
 @router.message(TextArgsFilter("command_change_role", ChangeRoleCommand))

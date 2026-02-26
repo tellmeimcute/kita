@@ -98,5 +98,5 @@ class Notifier:
     async def send_channel(self, channel_id: int, payload: MessagePayload):
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._send_message(channel_id, content)
+            return await self._send_message(channel_id, content, kb=payload.reply_markup)
         return await self._send_media_group(channel_id, payload.content)

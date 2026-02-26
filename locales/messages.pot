@@ -107,6 +107,15 @@ msgstr ""
 msgid "command_user_stats"
 msgstr ""
 
+msgid "command_post_banner"
+msgstr ""
+
+msgid "channel_banner_sent"
+msgstr ""
+
+msgid "channel_banner"
+msgstr ""
+
 msgid "command_change_role"
 msgstr ""
 

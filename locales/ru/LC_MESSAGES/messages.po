@@ -133,6 +133,15 @@ msgstr "Админ стата"
 msgid "command_user_stats"
 msgstr "Статистика"
 
+msgid "command_post_banner"
+msgstr "Запостить баннер"
+
+msgid "channel_banner_sent"
+msgstr "Баннер отправлен в канал."
+
+msgid "channel_banner"
+msgstr "Предложка -->"
+
 msgid "command_change_role"
 msgstr "изменить роль"
 
@@ -160,3 +169,4 @@ msgstr "Нельзя опубликовать пустое сообщение."
 
 msgid "notify_author_suggestion_status"
 msgstr "Ваша предложка с ID: {suggestion_id} : {status}."
+
