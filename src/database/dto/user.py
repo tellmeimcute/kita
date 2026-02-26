@@ -1,11 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+
 
 from database.roles import UserRole
+from .base import BaseDTO
 
-
-class UserDTO(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class UserDTO(BaseDTO):
     user_id: int
     username: str
     role: UserRole

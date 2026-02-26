@@ -1,12 +1,10 @@
-from pydantic import BaseModel, ConfigDict
 
+from .base import BaseDTO
 from .media import MediaDTO
 from .user import UserDTO
 
 
-class SuggestionBaseDTO(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class SuggestionBaseDTO(BaseDTO):
     id: int
     author_id: int
 
