@@ -29,7 +29,7 @@ class SuggestionViewerRenderer:
         return cls(notifier, viewer_data)
 
     @classmethod
-    async def from_data(cls, notifier: Notifier, viewer_data):
+    def from_data(cls, notifier: Notifier, viewer_data):
         return cls(notifier, viewer_data)
 
     def _get_i18n_kwargs(self):
@@ -45,12 +45,13 @@ class SuggestionViewerRenderer:
 
     def _update_render_type(self):
         suggestion_dto = self.data.suggestion_dto
+
         if not suggestion_dto.media and suggestion_dto.caption:
             self.data.render_type = RenderType.MESSAGE
         else:
             self.data.render_type = RenderType.MEDIAGROUP
 
-    async def _build_media_group_payload(self, i18n_key="admin_get_suggestion_caption"):
+    def _build_media_group_payload(self, i18n_key="admin_get_suggestion_caption"):
         suggestion_dto = self.data.suggestion_dto
         notifier = self.notifier
 
@@ -91,7 +92,7 @@ class SuggestionViewerRenderer:
                     reply_markup=get_accept_decline_kb(),
                 )
             case RenderType.MEDIAGROUP:
-                payload = await self._build_media_group_payload()
+                payload = self._build_media_group_payload()
 
         return await notifier.notify_user(user_dto, payload)
 
@@ -107,19 +108,21 @@ class SuggestionViewerRenderer:
 
         match self.data.render_type:
             case RenderType.MESSAGE:
-                i18n_key = "channel_post_message" if with_caption else "channel_post_message_no_caption"
+                i18n_key = "channel_post_message"
+                i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
                 i18n_kwargs = self._get_i18n_kwargs()
                 payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
             case RenderType.MEDIAGROUP:
-                i18n_key = "channel_post_mediagroup" if with_caption else "channel_post_mediagroup_no_caption"
-                payload = await self._build_media_group_payload(i18n_key)
+                i18n_key = "channel_post_mediagroup"
+                i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
+                payload = self._build_media_group_payload(i18n_key)
         
         return await notifier.send_channel(channel_id, payload)
     
     async def notify_author(self, status):
         i18n_kwargs = {
             "suggestion_id": html.bold(self.data.suggestion_dto.id),
-            "status": html.bold("принята" if status else "отклонена")
+            "status": status
         }
 
         payload = MessagePayload(
@@ -185,3 +188,7 @@ class SuggestionViewerRenderer:
         self.data.suggestion_dto = new_active_dto
         await self.update_state_data(state)
         await self.render_suggestion()
+
+        logger.debug(
+            "SuggestionViewerRenderer revnder next suggestion ID %s", new_active_dto.id
+        )

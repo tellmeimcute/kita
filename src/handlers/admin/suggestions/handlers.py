@@ -75,7 +75,7 @@ async def verdict_solo_view(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer  = await SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
 
     if verdict:
         status = await viewer.post_in_channel(viewer_action)
@@ -139,7 +139,7 @@ async def accept_deny_suggestion(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer  = await SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
 
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_dto.id, solo=True)
@@ -181,7 +181,7 @@ async def ban_suggestion_author(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer  = await SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
 
     try:
         cmd_data = ChangeRoleData(
