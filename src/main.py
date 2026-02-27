@@ -44,7 +44,6 @@ dp.message.middleware(user_middleware)
 dp.message.middleware(bancheck_middleware)
 dp.message.outer_middleware(i18n_middleware)
 
-
 async def on_startup():
     try:
         channel_info = await bot.get_chat(config.CHANNEL_ID)
@@ -61,10 +60,14 @@ async def on_startup():
     except:
         logger.error("Failed to load bot info")
 
+async def on_shutdown():
+    await db.engine.dispose()
 
 async def main():
     try:
         dp.startup.register(on_startup)
+        dp.shutdown.register(on_shutdown)
+
         await bot.delete_webhook(drop_pending_updates=True)
         await dp.start_polling(bot)
     finally:
