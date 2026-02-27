@@ -22,7 +22,7 @@ class Notifier:
     async def _handle_blocked_user(self, user_dto: UserDTO):
         session: AsyncSession
 
-        async with self.session_maker() as session:
+        async with self.sessionmaker() as session:
             async with session.begin():
                 data = {"is_bot_blocked": True}
                 await UserAlchemyDAO.update_by_id(session, user_dto.user_id, data)

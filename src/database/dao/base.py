@@ -107,12 +107,19 @@ class BaseDao(Generic[T]):
         return result.scalars().all()
 
     @classmethod
-    async def create(cls, session: AsyncSession, **data: Any) -> T:
+    async def create_from_data(cls, session: AsyncSession, **data: Any) -> T:
         obj = cls.model(**data)
         session.add(obj)
         await session.flush()
         await session.refresh(obj)
         return obj
+
+    @classmethod
+    async def create(cls, session: AsyncSession, model: T) -> T:
+        session.add(model)
+        await session.flush()
+        await session.refresh(model)
+        return model
 
     @classmethod
     async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):

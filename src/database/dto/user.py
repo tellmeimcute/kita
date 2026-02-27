@@ -1,12 +1,13 @@
 
 
 from database.roles import UserRole
-from .base import BaseDTO
+from .base import TrackableDto
 
-class UserDTO(BaseDTO):
+class UserDTO(TrackableDto):
     user_id: int
-    username: str
+    username: str | None
     role: UserRole
+    name: str
 
     is_bot_blocked: bool | None
 

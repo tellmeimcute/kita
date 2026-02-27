@@ -58,7 +58,7 @@ async def process_suggestion(
     caption = first.caption or first.text
 
     async with session.begin():
-        suggestion = await SuggestionDAO.create(
+        suggestion = await SuggestionDAO.create_from_data(
             session, author_id=user_id, media_group_id=media_group_id, caption=caption
         )
         medias = await create_medias(session, album, suggestion)

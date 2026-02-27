@@ -9,7 +9,7 @@ from database.models import UserAlchemy
 class AdminMiddleware(BaseMiddleware):
     """
     Пропускает дальше только если пользователь админ.
-    data["user_alchemy"] уже должен существовать.
+    data["user_dto"] уже должен существовать.
     Должен стоять после UserMiddleware (для дебилов)
     """
 
@@ -19,7 +19,7 @@ class AdminMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        user_alchemy: UserAlchemy = data.get("user_alchemy")
-        if not user_alchemy or not user_alchemy.is_admin:
+        user_dto: UserAlchemy = data.get("user_dto")
+        if not user_dto or not user_dto.is_admin:
             return
         return await handler(event, data)

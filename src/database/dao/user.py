@@ -27,7 +27,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         user_alchemy = await cls.get_one_or_none_by_id(session, user_tg.id)
 
         if not user_alchemy:
-            user_alchemy = await cls.create(
+            user_alchemy = await cls.create_from_data(
                 session, 
                 user_id=user_tg.id, 
                 username=user_tg.username, 

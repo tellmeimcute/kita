@@ -13,8 +13,6 @@ class ChangeRoleData(BaseModel):
     caller_dto: UserDTO
     notifier: Notifier
 
-    bot_owner_id: int
-
     model_config = ConfigDict(
         extra="ignore",
         from_attributes=True,

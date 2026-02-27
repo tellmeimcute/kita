@@ -32,7 +32,7 @@ async def create_medias(
         if not media_id:
             continue
 
-        media = await MediaDAO.create(
+        media = await MediaDAO.create_from_data(
             session, filetype=media_type, telegram_file_id=media_id, suggestion=suggestion
         )
 

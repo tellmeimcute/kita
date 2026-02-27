@@ -4,11 +4,13 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from services.user import UserService
+
+from config import Config
 
 class SessionMiddleware(BaseMiddleware):
     """
-    ВЫДАЕТ AsyncSession В ХЕНДЛЕРЫ(data)
-    data["session"]
+    ВЫДАЕТ AsyncSession и Сервисы В ХЕНДЛЕРЫ(data)
     """
 
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]) -> None:
@@ -20,6 +22,9 @@ class SessionMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
+        config: Config = data["config"]
+
         async with self.session_maker() as session:
             data["session"] = session
+            data["user_service"] = UserService(session, config)
             return await handler(event, data)

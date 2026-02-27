@@ -1,3 +1,6 @@
+
+from logging import getLogger
+
 from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
@@ -5,11 +8,12 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.models import UserAlchemy
 
+logger = getLogger("ban_middleware")
 
 class BanCheckMiddleware(BaseMiddleware):
     """
     Не пропускает если пользователь в бане.
-    data["user_alchemy"] уже должен существовать.
+    data["user_dto"] уже должен существовать.
     Должен стоять после UserMiddleware (для дебилов)
     """
 
@@ -19,7 +23,8 @@ class BanCheckMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        user_alchemy: UserAlchemy = data.get("user_alchemy")
-        if not user_alchemy or user_alchemy.is_banned:
+        user_dto: UserAlchemy = data.get("user_dto")
+        if not user_dto or user_dto.is_banned:
+            logger.debug("Stop banned user")
             return
         return await handler(event, data)

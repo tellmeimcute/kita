@@ -1,8 +1,7 @@
-from aiogram import F, Router, html
+from aiogram import Router, html
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from aiogram.utils.i18n import lazy_gettext as __
 
 from config import Config
 from database.dto import UserDTO
@@ -26,7 +25,6 @@ async def start(
 
     payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
     await notifier.notify_user(user_dto, payload)
-
 
 @router.message(I18nTextFilter("command_cancel"))
 @router.message(Command("cancel"))

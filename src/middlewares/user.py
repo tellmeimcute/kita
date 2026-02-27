@@ -5,18 +5,12 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as UserTelegram
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import Config
-from database.dao import UserAlchemyDAO
-from database.dto import UserDTO
-from database.models import UserAlchemy
-from database.roles import UserRole
-
+from services.user import UserService
 
 class UserMiddleware(BaseMiddleware):
     """
-    ВЫДАЕТ UserAlchemy В ХЕНДЛЕРЫ
-    data["user_alchemy"] ORM
-    data["user_dto] DTO
+    ВЫДАЕТ UserDTO В ХЕНДЛЕРЫ
+    data["user_dto]
     """
 
     async def __call__(
@@ -37,23 +31,11 @@ class UserMiddleware(BaseMiddleware):
         if not user_tg:
             return await handler(event, data)
 
-        config: Config = data["config"]
+        user_service: UserService = data["user_service"]
 
-        user_role = UserRole.USER
-        if user_tg.id == config.ADMIN_ID:
-            user_role = UserRole.ADMIN
+        user_dto = await user_service.get(user_tg.id)
+        if not user_dto:
+            user_dto = await user_service.create(user_tg)
 
-        async with session.begin():
-            user_alchemy: UserAlchemy = await UserAlchemyDAO.get_or_create_user(
-                session, user_tg, user_role
-            )
-            
-            if user_alchemy.is_bot_blocked:
-                user_alchemy.is_bot_blocked = False
-
-        user_dto = UserDTO.model_validate(user_alchemy)
-
-        data["user_alchemy"] = user_alchemy
         data["user_dto"] = user_dto
-
         return await handler(event, data)

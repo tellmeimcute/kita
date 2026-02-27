@@ -1,5 +1,7 @@
-from aiogram import Router, html, F
+from aiogram import Router, html
 from aiogram.types import Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,13 +11,9 @@ from database.dto import UserDTO
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, ChangeRoleData, IDCommand
-from helpers.utils import ban_user
-from services.notifier import Notifier
-
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from services import Notifier, UserService
 
 router = Router()
-
 
 @router.message(I18nTextFilter("command_post_banner"))
 async def post_channel_banner(
@@ -39,11 +37,10 @@ async def post_channel_banner(
 @router.message(TextArgsFilter("command_change_role", ChangeRoleCommand))
 async def change_user_role(
     message: Message,
-    session: AsyncSession,
     user_dto: UserDTO,
-    config: Config,
     notifier: Notifier,
     command: ChangeRoleCommand,
+    user_service: UserService,
 ):    
     try:
         cmd_data = ChangeRoleData(
@@ -51,9 +48,8 @@ async def change_user_role(
             target_role=command.target_role,
             caller_dto=user_dto,
             notifier=notifier,
-            bot_owner_id=config.ADMIN_ID,
         )
-        await ban_user(session, cmd_data)
+        await user_service.change_role(cmd_data)
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
@@ -65,11 +61,10 @@ async def change_user_role(
 @router.message(TextArgsFilter("command_ban_filter", IDCommand))
 async def ban_user_handler(
     message: Message,
-    session: AsyncSession,
     user_dto: UserDTO,
     command: IDCommand,
     notifier: Notifier,
-    config: Config,
+    user_service: UserService,
 ):
     try:
         cmd_data = ChangeRoleData(
@@ -77,11 +72,8 @@ async def ban_user_handler(
             target_role="BANNED",
             caller_dto=user_dto,
             notifier=notifier,
-            bot_owner_id=config.ADMIN_ID,
         )
-        if await ban_user(session, cmd_data, notify_user=False) is False:
-            return
-
+        await user_service.change_role(cmd_data, notify_user=False)
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",

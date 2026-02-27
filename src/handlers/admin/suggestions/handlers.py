@@ -16,7 +16,8 @@ from handlers.keyboards import get_main_kb_by_role
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
-from helpers.utils import ban_user
+
+from services.user import UserService
 from services.notifier import Notifier
 
 from .filters import viewer_action
@@ -173,8 +174,8 @@ async def ban_suggestion_author(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    config: Config,
     notifier: Notifier,
+    user_service: UserService,
 ):
     data = await state.get_data()
 
@@ -189,11 +190,8 @@ async def ban_suggestion_author(
             target_role="BANNED",
             caller_dto=user_dto,
             notifier=notifier,
-            bot_owner_id=config.ADMIN_ID,
         )
-        if await ban_user(session, cmd_data, notify_user=False) is False:
-            return
-
+        await user_service.change_role(cmd_data, notify_user=False)
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
