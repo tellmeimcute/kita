@@ -56,7 +56,7 @@ class UserService:
 
         async with self.session.begin():
             result = await self.dao.update_by_id(
-                self.session, user_dto.user_id, **user_dto.prepare_changed_data()
+                self.session, user_dto.user_id, user_dto.prepare_changed_data()
             )
         
         return result
