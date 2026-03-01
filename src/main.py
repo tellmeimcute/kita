@@ -5,14 +5,13 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
-from aiogram.utils.i18n import I18n
-from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 
 from config import config
 from database import DatabaseManager
 from handlers import root_router
-from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
 from services.notifier import Notifier
+
+from helpers.utils.startup import register_middlewares
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kita_main")
@@ -31,18 +30,6 @@ dp = Dispatcher(
     notifier=Notifier(bot, db.session_maker),
 )
 dp.include_router(root_router)
-
-session_middleware = SessionMiddleware(db.session_maker)
-user_middleware = UserMiddleware()
-bancheck_middleware = BanCheckMiddleware()
-
-i18n = I18n(path="locales", default_locale="ru", domain="messages")
-i18n_middleware = ConstI18nMiddleware(locale="ru", i18n=i18n)
-
-dp.message.middleware(session_middleware)
-dp.message.middleware(user_middleware)
-dp.message.middleware(bancheck_middleware)
-dp.message.outer_middleware(i18n_middleware)
 
 async def on_startup():
     try:
@@ -64,18 +51,16 @@ async def on_shutdown():
     await db.engine.dispose()
 
 async def main():
-    try:
-        dp.startup.register(on_startup)
-        dp.shutdown.register(on_shutdown)
+    dp.startup.register(on_startup)
+    dp.shutdown.register(on_shutdown)
+    register_middlewares(dp, db)
 
-        await bot.delete_webhook(drop_pending_updates=True)
-        await dp.start_polling(bot)
-    finally:
-        await bot.session.close()
+    await bot.delete_webhook(drop_pending_updates=True)
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("Закрываюсь...")
+        logger.info("Shutdown...")
