@@ -61,12 +61,12 @@ class UserService:
         
         return result
 
-    async def change_role(self, data: ChangeRoleData, notify_user: bool = True):
+    async def change_role(self, data: ChangeRoleData, notify_user: bool = True, return_kb = None):
         notifier = data.notifier
         caller_dto = data.caller_dto
 
         if data.target_id == self.config.ADMIN_ID or data.target_id == data.caller_dto.user_id:
-            payload = MessagePayload(i18n_key="error_user_immune")
+            payload = MessagePayload(i18n_key="error_user_immune", reply_markup=return_kb)
             await notifier.notify_user(caller_dto, payload)
             return
     
@@ -79,7 +79,7 @@ class UserService:
                 await self.dao.update_by_id(self.session, data.target_id, target_dto.prepare_changed_data())
         except KeyError:
             i18n_kwargs = {"user_id": data.target_id}
-            payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs)
+            payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)
             await notifier.notify_user(caller_dto, payload)
             return
         except Exception as e:
@@ -92,7 +92,7 @@ class UserService:
             "user_id": target_dto.user_id,
             "role": target_dto.role,
         }
-        payload = MessagePayload(i18n_key="answer_admin_role_changed", i18n_kwargs=i18n_kwargs)
+        payload = MessagePayload(i18n_key="answer_admin_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)
         await notifier.notify_user(caller_dto, payload)
 
         # NOTIFY USER

@@ -1,6 +1,5 @@
 from logging import getLogger
 
-from aiogram import html
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,34 +11,46 @@ from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
 from helpers.utils import get_media_group
 from services.notifier import Notifier
+from config import Config
 
-logger = getLogger("admin_suggestions")
+logger = getLogger("kita_suggestions")
 
 class SuggestionViewerRenderer:
-    def __init__(self, notifier: Notifier, data: SuggestionViewerData):
+    def __init__(self, notifier: Notifier, data: SuggestionViewerData, config: Config):
         self.notifier = notifier
         self.data = data
+
+        self.config = config
 
         self._update_render_type()
 
     @classmethod
-    async def from_state(cls, notifier: Notifier, state: FSMContext):
+    async def from_state(cls, notifier: Notifier, state: FSMContext, config: Config):
         state_data = await state.get_data()
         viewer_data = state_data.get("viewer_data")
-        return cls(notifier, viewer_data)
+        return cls(notifier, viewer_data, config)
 
     @classmethod
-    def from_data(cls, notifier: Notifier, viewer_data):
-        return cls(notifier, viewer_data)
+    def from_data(cls, notifier: Notifier, viewer_data: SuggestionViewerData, config: Config):
+        return cls(notifier, viewer_data, config)
 
     def _get_i18n_kwargs(self):
         suggestion_dto = self.data.suggestion_dto
+        
+        i18n_key = "none_suggestion"
+        if suggestion_dto.accepted is not None:
+            i18n_key = "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
+
+        verdict = self.notifier.get_translated_text(i18n_key)
+
         i18n_kwargs = {
-            "author_username": html.bold(suggestion_dto.author.username),
+            "author_username": suggestion_dto.author.username,
+            "author_name": suggestion_dto.author.name,
             "author_id": suggestion_dto.author_id,
             "suggestion_id": suggestion_dto.id,
             "original_caption": suggestion_dto.caption,
-            "verdict": suggestion_dto.accepted,
+            "verdict": verdict,
+            "bot_url": self.config.bot_url,
         }
         return i18n_kwargs
 
@@ -87,7 +98,7 @@ class SuggestionViewerRenderer:
         match self.data.render_type:
             case RenderType.MESSAGE:
                 payload = MessagePayload(
-                    i18n_key="admin_get_suggestion_caption", 
+                    i18n_key="admin_get_suggestion_caption",
                     i18n_kwargs=self._get_i18n_kwargs(),
                     reply_markup=get_accept_decline_kb(),
                 )
@@ -106,24 +117,24 @@ class SuggestionViewerRenderer:
         notifier = self.notifier
         channel_id = self.data.channel_id
 
+        i18n_key = "channel_post_message"
+        i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
+        i18n_kwargs = self._get_i18n_kwargs()
+
         match self.data.render_type:
             case RenderType.MESSAGE:
-                i18n_key = "channel_post_message"
-                i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
-                i18n_kwargs = self._get_i18n_kwargs()
                 payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
             case RenderType.MEDIAGROUP:
-                i18n_key = "channel_post_mediagroup"
-                i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
                 payload = self._build_media_group_payload(i18n_key)
         
         return await notifier.send_channel(channel_id, payload)
     
     async def notify_author(self, status):
-        i18n_kwargs = {
-            "suggestion_id": html.bold(self.data.suggestion_dto.id),
-            "status": status
-        }
+        i18n_kwargs = self._get_i18n_kwargs()
+
+        i18n_key = "bool_suggestion_true" if status else "bool_suggestion_false"
+        verdict = self.notifier.get_translated_text(i18n_key)
+        i18n_kwargs["verdict"] = verdict
 
         payload = MessagePayload(
             i18n_key="notify_author_suggestion_status",
@@ -158,8 +169,8 @@ class SuggestionViewerRenderer:
         notifier = self.notifier
 
         i18n_kwargs = {
-            "id": html.bold(f"{suggestion_dto.id}"),
-            "verdict": html.bold(f"{suggestion_dto.accepted}"),
+            "id": f"{suggestion_dto.id}",
+            "verdict": f"{suggestion_dto.accepted}",
         }
 
         payload = MessagePayload(i18n_key="suggestion_verdict_exists", i18n_kwargs=i18n_kwargs)

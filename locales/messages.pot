@@ -17,7 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+msgid "bool_suggestion_true"
+msgstr ""
+
+msgid "bool_suggestion_false"
+msgstr ""
+
+msgid "none_suggestion"
+msgstr ""
+
 msgid "start_msg"
+msgstr ""
+
+msgid "admin_help_msg"
 msgstr ""
 
 msgid "state_reset"
@@ -80,6 +92,18 @@ msgstr ""
 msgid "command_ban_filter"
 msgstr ""
 
+msgid "command_unban_filter"
+msgstr ""
+
+msgid "command_admin_help"
+msgstr ""
+
+msgid "command_get_admin_menu"
+msgstr ""
+
+msgid "state_wait_for_id"
+msgstr ""
+
 msgid "viewer_accept"
 msgstr ""
 
@@ -125,13 +149,7 @@ msgstr ""
 msgid "channel_post_message"
 msgstr ""
 
-msgid "channel_post_mediagroup"
-msgstr ""
-
 msgid "channel_post_message_no_caption"
-msgstr ""
-
-msgid "channel_post_mediagroup_no_caption"
 msgstr ""
 
 msgid "error_empty_suggestion"

@@ -20,7 +20,7 @@ db = DatabaseManager()
 
 proxy_session = AiohttpSession(proxy=config.PROXY)
 bot = Bot(
-    config.TG_TOKEN.get_secret_value(), 
+    config.TG_TOKEN.get_secret_value(),
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     session=proxy_session,
 )
@@ -34,18 +34,15 @@ dp.include_router(root_router)
 async def on_startup():
     try:
         channel_info = await bot.get_chat(config.CHANNEL_ID)
-        config.channel_name = channel_info.full_name
-        logger.info("Channel name loaded: %s", config.channel_name)
-    except Exception as e:
-        logger.error("Failed to load channel info %s", e)
-
-    try:
         bot_user = await bot.get_me()
+
+        config.channel_name = channel_info.full_name
         config.bot_username = bot_user.username
         config.bot_url = f"https://t.me/{bot_user.username}"
+
         logger.info("Bot info loaded in config")
-    except:
-        logger.error("Failed to load bot info")
+    except Exception as e:
+        logger.error("Failed to load bot/channel info %s", e)
 
 async def on_shutdown():
     await db.engine.dispose()

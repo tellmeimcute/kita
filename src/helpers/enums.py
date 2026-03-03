@@ -11,3 +11,6 @@ class ViewerAdminAction(StrEnum):
     DECLINE = auto()
     ACCEPT_NO_CAPTION = auto()
 
+class BanAdminAction(StrEnum):
+    BAN = auto()
+    UNBAN = auto()

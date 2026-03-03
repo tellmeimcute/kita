@@ -19,11 +19,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
+msgid "bool_suggestion_true"
+msgstr "🟢 Принята"
+
+msgid "bool_suggestion_false"
+msgstr "🔴 Отклонена"
+
+msgid "none_suggestion"
+msgstr "⌚ На модерации"
+
 msgid "start_msg"
 msgstr ""
 "Добро пожаловать в предложку канала {channel_name}!\n"
 "\n"
 "Чтобы предложить пост используйте клавиатуру."
+
+msgid "admin_help_msg"
+msgstr "placeholder :)"
 
 msgid "state_reset"
 msgstr "Состояние сброшено."
@@ -72,7 +84,7 @@ msgid "admin_get_suggestion_caption"
 msgstr ""
 "Предложка ID {suggestion_id}\n"
 "Автор @{author_username} ({author_id})\n"
-"Принято?: {verdict}\n"
+"Стутус: <b>{verdict}</b>\n"
 "\n"
 "Оригинальная подпись:\n"
 "{original_caption}"
@@ -105,6 +117,18 @@ msgstr "Статус изменен."
 
 msgid "command_ban_filter"
 msgstr "Забанить"
+
+msgid "command_unban_filter"
+msgstr "Разбанить"
+
+msgid "command_admin_help"
+msgstr "Админ помощь"
+
+msgid "command_get_admin_menu"
+msgstr "Админ панель"
+
+msgid "state_wait_for_id"
+msgstr "Жду ID"
 
 msgid "viewer_accept"
 msgstr "Принять"
@@ -151,22 +175,15 @@ msgstr "Запостить или отказать? А может забанит
 msgid "channel_post_message"
 msgstr ""
 "{original_caption}\n"
-"#предложка"
-
-msgid "channel_post_mediagroup"
-msgstr ""
-"{original_caption}\n"
-"#предложка"
+"\n"
+"👤 <code><b>{author_name}</b></code>"
 
 msgid "channel_post_message_no_caption"
-msgstr "#предложка"
-
-msgid "channel_post_mediagroup_no_caption"
-msgstr "#предложка"
+msgstr "👤 <code><b>{author_name}</b></code>"
 
 msgid "error_empty_suggestion"
 msgstr "Нельзя опубликовать пустое сообщение."
 
 msgid "notify_author_suggestion_status"
-msgstr "Ваша предложка с ID: {suggestion_id} : {status}."
+msgstr "Ваша предложка с ID: {suggestion_id} : <b>{verdict}</b>."
 

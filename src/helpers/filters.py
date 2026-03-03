@@ -23,9 +23,10 @@ class I18nTextFilter(Filter):
     
 
 class TextArgsFilter(Filter):
-    def __init__(self, i18n_key: str, schema: type[BaseModel]):
+    def __init__(self, i18n_key: str, schema: type[BaseModel], **return_data):
         self.i18n_key = i18n_key
         self.schema = schema
+        self.return_data = return_data
 
     async def __call__(self, message: Message) -> bool | dict[str, str]:
         if not message.text:
@@ -50,5 +51,5 @@ class TextArgsFilter(Filter):
         except:
             return False
         
-        return_data = {"command": cmd_data}
-        return return_data
+        self.return_data.update({"command": cmd_data})
+        return self.return_data

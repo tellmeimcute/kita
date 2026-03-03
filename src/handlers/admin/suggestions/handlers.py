@@ -54,7 +54,7 @@ async def get_suggestion_solo_view(
         user_dto=user_dto,
         channel_id=config.CHANNEL_ID
     )
-    viewer = SuggestionViewerRenderer(notifier, viewer_data)
+    viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
 
     await viewer.render_suggestion()
     await viewer.update_state_data(state)
@@ -69,6 +69,7 @@ async def verdict_solo_view(
     session: AsyncSession,
     state: FSMContext,
     notifier: Notifier,
+    config: Config,
     viewer_action: str,
     verdict: bool,
 ):
@@ -76,7 +77,7 @@ async def verdict_solo_view(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
 
     if verdict:
         status = await viewer.post_in_channel(viewer_action)
@@ -117,7 +118,7 @@ async def show_suggestions_admin_menu(
         user_dto=user_dto,
         channel_id=config.CHANNEL_ID
     )
-    viewer = SuggestionViewerRenderer(notifier, viewer_data)
+    viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
 
     await viewer.render_send_verdict(i18n_key="start_review_suggestions")
     await viewer.render_suggestion()
@@ -132,6 +133,7 @@ async def accept_deny_suggestion(
     session: AsyncSession,
     state: FSMContext,
     notifier: Notifier,
+    config: Config,
     viewer_action: str,
     verdict: bool,
 ):
@@ -140,7 +142,7 @@ async def accept_deny_suggestion(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
 
     async with session.begin():
         suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_dto.id, solo=True)
@@ -176,13 +178,14 @@ async def ban_suggestion_author(
     user_dto: UserDTO,
     notifier: Notifier,
     user_service: UserService,
+    config: Config,
 ):
     data = await state.get_data()
 
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data)
+    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
 
     try:
         cmd_data = ChangeRoleData(
