@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, Dict, Union
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
-from database.models import UserAlchemy
+from database.dto import UserDTO
 
 logger = getLogger("ban_middleware")
 
@@ -23,7 +23,7 @@ class BanCheckMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        user_dto: UserAlchemy = data.get("user_dto")
+        user_dto: UserDTO = data.get("user_dto")
         if not user_dto or user_dto.is_banned:
             logger.debug("Stop banned user")
             return

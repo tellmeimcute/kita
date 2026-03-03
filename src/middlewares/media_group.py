@@ -49,11 +49,7 @@ class MediaGroupMiddleware(BaseMiddleware):
 
             data["album"] = messages
             data["media_group_id"] = group_id
-
-            try:
-                await handler(event, data)
-            except Exception as e:
-                print(e)
+            await handler(event, data)
 
         task = asyncio.create_task(wait_and_handle())
         album["task"] = task
