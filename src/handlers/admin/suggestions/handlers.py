@@ -204,5 +204,5 @@ async def ban_suggestion_author(
 
     # Получаем новый (следующий) suggestion
     current_state = await state.get_state()
-    if current_state != "SuggestionViewer:in_solo_view":
+    if current_state != "SuggestionViewerState:in_solo_view":
         await viewer.go_next(session, state)
