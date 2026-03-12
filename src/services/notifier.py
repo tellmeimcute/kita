@@ -1,8 +1,10 @@
 from logging import Logger, getLogger
 
+from typing import Literal, Optional
+
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
-from aiogram.types import ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, Message
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.media_group import MediaType
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -32,45 +34,68 @@ class Notifier:
             user_dto.username, user_dto.user_id
         )
 
-    async def _send_media_group(
-        self,
-        target_id: int,
-        content: list[MediaType],
-        silent=True,
-    ):
-        return await self.bot.send_media_group(
-            target_id, content, disable_notification=silent
-        )
-
-    async def _send_message(
-        self, 
-        target_id: int, 
-        content: str, 
-        kb: ReplyKeyboardMarkup | None = None, 
-        silent: bool = True,
-    ):
-        return await self.bot.send_message(
-            target_id, content, reply_markup=kb, disable_notification=silent
-        )
-
     async def _safe_send(
         self,
-        user_dto: UserDTO,
         content: str | list[MediaType],
-        kb: ReplyKeyboardMarkup = None,
-        silent=True,
+        user_dto: Optional[UserDTO] = None,
+        channel_id: Optional[int] = None,
+        method: Literal["media_group", "string"] = "string",
+        kb: Optional[ReplyKeyboardMarkup] = None,
+        silent: bool = True,
     ):
-        target_id = user_dto.user_id
+        payload = user_dto, channel_id
+        if not any(payload) or all(payload):
+            raise ValueError("only one UserDTO or channel_id should be provided")
+        
+        target = channel_id if channel_id else user_dto.user_id
+
         try:
-            if isinstance(content, str):
-                return await self._send_message(target_id, content, kb, silent)
-            return await self._send_media_group(target_id, content, silent)
+            if method == "string":
+                return await self.bot.send_message(
+                    target, content, reply_markup=kb, disable_notification=silent
+                )
+            if method == "media_group":
+                return await self.bot.send_media_group(
+                    target, content, disable_notification=silent
+                )
         except TelegramForbiddenError:
             await self._handle_blocked_user(user_dto)
         except Exception as e:
             self.logger.error(
-                "Failed to send to user ID %s: %s", target_id, e
+                "Failed to send message to target %s: %s", target, e
             )
+        
+        return None
+
+    async def _deliver_message(
+        self,
+        message: Message,
+        user_dto: Optional[UserDTO] = None,
+        channel_id: Optional[int] = None,
+        method: Literal["forward", "copy"] = "forward",
+    ):
+        payload = user_dto, channel_id
+        if not any(payload) or all(payload):
+            raise ValueError("only one UserDTO or channel_id should be provided")
+        target = channel_id if channel_id else user_dto.user_id
+
+        send_func = (
+            self.bot.forward_message if method == "forward" else self.bot.copy_message
+        )
+
+        try:
+            return await send_func(
+                chat_id=target,
+                from_chat_id=message.chat.id,
+                message_id=message.message_id,
+            )
+        except Exception as e:
+            self.logger.error(
+                "Failed to %s message to target %s: %s", 
+                method, target, e
+            )
+
+        return None
 
     def get_translated_text(self, i18n_key: str) -> str:
         return _(i18n_key)
@@ -89,14 +114,37 @@ class Notifier:
                 user.username, user.user_id,
             )
         
+        # STRING message
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._safe_send(user, content, payload.reply_markup)
+            return await self._safe_send(content, user_dto=user, kb=payload.reply_markup)
+        
+        # MEDIA GROUP message
+        return await self._safe_send(
+            payload.content, user_dto=user, method="media_group", kb=payload.reply_markup
+        )
 
-        return await self._safe_send(user, payload.content, payload.reply_markup)
+    async def forward_message(self, user_dto: UserDTO, message: Message):
+        return await self._deliver_message(message, user_dto=user_dto, method="forward")
+        
+    async def copy_message(self, user_dto: UserDTO, message: Message):
+        return await self._deliver_message(message, user_dto=user_dto, method="copy")
+        
+    async def edit_message(self, message: Message, text: str):
+        await self.bot.edit_message_text(
+            text=text,
+            chat_id=message.chat.id,
+            message_id=message.message_id
+        )
 
     async def send_channel(self, channel_id: int, payload: MessagePayload):
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._send_message(channel_id, content, kb=payload.reply_markup)
-        return await self._send_media_group(channel_id, payload.content)
+            return await self._safe_send(
+                content, channel_id=channel_id, kb=payload.reply_markup
+            )
+        
+        # MEDIA GROUP message
+        return await self._safe_send(
+            payload.content, channel_id=channel_id, method="media_group", kb=payload.reply_markup
+        )

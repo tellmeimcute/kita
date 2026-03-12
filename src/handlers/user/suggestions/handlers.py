@@ -37,8 +37,7 @@ async def suggest_post(
     payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=get_cancel_kb())
     await notifier.notify_user(user_dto, payload=payload)
 
-
-@router.message(PostStates.waiting_for_post, ~F.media_group_id)
+@router.message(PostStates.waiting_for_post)
 async def process_suggestion(
     message: Message,
     state: FSMContext,
@@ -76,20 +75,6 @@ async def process_suggestion(
 
     admins = await UserAlchemyDAO.get_admins(session)
     asyncio.create_task(notify_admins_task(suggestion, admins, author, logger, notifier))
-
-
-@router.message(PostStates.waiting_for_post, F.media_group_id)
-async def process_media_group_suggestion(
-    message: Message,
-    state: FSMContext,
-    session: AsyncSession,
-    album: List[Message],
-    user_dto: UserDTO,
-    notifier: Notifier,
-    media_group_id: str,
-):
-    await process_suggestion(message, state, session, user_dto, notifier, media_group_id, album)
-
 
 @router.message(I18nTextFilter("command_user_stats"))
 async def statistic(
