@@ -30,9 +30,12 @@ class SuggestionViewerData(BaseData):
     render_type: RenderType | None = None
 
 class MassMessageData(BaseData):
-    message: Message | None = None
     users: list[UserDTO] | None = None
     
+    is_forwarded: bool = False
+    source_chat_id: int | None = None
+    source_message_ids: list[int] | None = None
+
     progress: int = 0
     success: int = 0
     failure: int = 0

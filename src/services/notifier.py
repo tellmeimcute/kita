@@ -67,9 +67,10 @@ class Notifier:
         
         return None
 
-    async def _deliver_message(
+    async def _deliver_messages(
         self,
-        message: Message,
+        message_ids: list[int],
+        message_source: int,
         user_dto: Optional[UserDTO] = None,
         channel_id: Optional[int] = None,
         method: Literal["forward", "copy"] = "forward",
@@ -80,14 +81,14 @@ class Notifier:
         target = channel_id if channel_id else user_dto.user_id
 
         send_func = (
-            self.bot.forward_message if method == "forward" else self.bot.copy_message
+            self.bot.forward_messages if method == "forward" else self.bot.copy_messages
         )
 
         try:
             return await send_func(
                 chat_id=target,
-                from_chat_id=message.chat.id,
-                message_id=message.message_id,
+                from_chat_id=message_source,
+                message_ids=message_ids,
             )
         except Exception as e:
             self.logger.error(
@@ -124,11 +125,11 @@ class Notifier:
             payload.content, user_dto=user, method="media_group", kb=payload.reply_markup
         )
 
-    async def forward_message(self, user_dto: UserDTO, message: Message):
-        return await self._deliver_message(message, user_dto=user_dto, method="forward")
+    async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
+        return await self._deliver_messages(messages, source, user_dto=user_dto, method="forward")
         
-    async def copy_message(self, user_dto: UserDTO, message: Message):
-        return await self._deliver_message(message, user_dto=user_dto, method="copy")
+    async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int):
+        return await self._deliver_messages(messages, source, user_dto=user_dto, method="copy")
         
     async def edit_message(self, message: Message, text: str):
         await self.bot.edit_message_text(

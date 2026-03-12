@@ -10,19 +10,21 @@ from handlers.keyboards import get_main_kb_by_role, get_confirm_decline_kb, get_
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import MassMessageData
+from middlewares import MediaGroupMiddleware
 from services import Notifier, UserService
 
 router = Router()
+router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 async def mass_message_task(notifier: Notifier, data: MassMessageData, status_message: Message):
     send_func = (
-        notifier.forward_message
-        if isinstance(data.message.forward_origin, MessageOriginChannel)
-        else notifier.copy_message
+        notifier.forward_messages
+        if data.is_forwarded
+        else notifier.copy_messages
     )
 
     for user in data.users:
-        sended = await send_func(user, data.message)
+        sended = await send_func(user, data.source_message_ids, data.source_chat_id)
         data = data.model_copy(update={
             "progress": data.progress + 1,
             "success": data.success + 1 if sended else data.success,
@@ -65,14 +67,21 @@ async def mass_message_get_message(
     user_dto: UserDTO,
     notifier: Notifier,
     state: FSMContext,
+    media_group_id: int | None = None,
+    album: list[Message] | None = None,
 ):
     state_data = await state.get_data()
     raw_data = state_data.get("mass_message_data")
     data = MassMessageData.model_validate(raw_data)
 
+    if not album:
+        album = (message,)
+
     data = data.model_copy(
         update={
-            "message": message
+            "is_forwarded": True if isinstance(message.forward_origin, MessageOriginChannel) else False,
+            "source_chat_id": message.chat.id,
+            "source_message_ids": [m.message_id for m in album]
         }
     )
 
