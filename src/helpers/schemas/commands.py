@@ -8,6 +8,9 @@ from database.roles import UserRole
 class IDCommand(BaseModel):
     target_id: int
 
+class StrCommand(BaseModel):
+    string: str
+
 class ChangeRoleCommand(BaseModel):
     target_id: int
     target_role: UserRole

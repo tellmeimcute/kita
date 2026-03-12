@@ -1,10 +1,12 @@
 from enum import StrEnum, auto
 
+class BoolAction(StrEnum):
+    ACCEPT = auto()
+    DECLINE = auto()
 
 class RenderType(StrEnum):
     MESSAGE = auto()
     MEDIAGROUP = auto()
-
 
 class ViewerAdminAction(StrEnum):
     ACCEPT = auto()

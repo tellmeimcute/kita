@@ -51,6 +51,11 @@ class UserService:
         
         return UserDTO.model_validate(user_alchemy)
 
+    async def get_active(self):
+        async with self.session.begin():
+            active = await self.dao.get_active(self.session)
+        return UserDTO.from_model_list(active)
+
     async def set_role(self, user_dto: UserDTO, role: UserRole):
         user_dto.role = role
 
@@ -77,6 +82,8 @@ class UserService:
             target_dto.role = data.target_role
             async with self.session.begin():
                 await self.dao.update_by_id(self.session, data.target_id, target_dto.prepare_changed_data())
+                if data.target_role == UserRole.BANNED:
+                    await self.dao.decline_all_suggestions(self.session, data.target_id)
         except KeyError:
             i18n_kwargs = {"user_id": data.target_id}
             payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)

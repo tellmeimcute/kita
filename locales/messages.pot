@@ -110,6 +110,12 @@ msgstr ""
 msgid "viewer_decline"
 msgstr ""
 
+msgid "confirm"
+msgstr ""
+
+msgid "decline"
+msgstr ""
+
 msgid "viewer_accept_no_caption"
 msgstr ""
 
@@ -156,4 +162,25 @@ msgid "error_empty_suggestion"
 msgstr ""
 
 msgid "notify_author_suggestion_status"
+msgstr ""
+
+msgid "command_mass_message"
+msgstr ""
+
+msgid "mass_message_confirm"
+msgstr ""
+
+msgid "mass_message_wait_for_text"
+msgstr ""
+
+msgid "mass_message_started"
+msgstr ""
+
+msgid "in_process"
+msgstr ""
+
+msgid "completed"
+msgstr ""
+
+msgid "mass_message_status"
 msgstr ""

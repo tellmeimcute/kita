@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.dto import SuggestionFullDTO
-from handlers.keyboards import get_accept_decline_kb, get_main_kb_by_role
+from handlers.keyboards import get_viewer_accept_decline_kb, get_main_kb_by_role
 from helpers.enums import RenderType, ViewerAdminAction
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
@@ -80,7 +80,7 @@ class SuggestionViewerRenderer:
         return payload
 
     async def render_send_verdict(self, i18n_key="send_verdict"):
-        payload = MessagePayload(i18n_key=i18n_key, reply_markup=get_accept_decline_kb())
+        payload = MessagePayload(i18n_key=i18n_key, reply_markup=get_viewer_accept_decline_kb())
         await self.notifier.notify_user(self.data.user_dto, payload)
 
     async def render_verdict_rewrite(self):
@@ -100,7 +100,7 @@ class SuggestionViewerRenderer:
                 payload = MessagePayload(
                     i18n_key="admin_get_suggestion_caption",
                     i18n_kwargs=self._get_i18n_kwargs(),
-                    reply_markup=get_accept_decline_kb(),
+                    reply_markup=get_viewer_accept_decline_kb(),
                 )
             case RenderType.MEDIAGROUP:
                 payload = self._build_media_group_payload()

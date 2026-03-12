@@ -15,8 +15,17 @@ def get_cancel_kb():
     )
     return cancel_kb
 
+def get_confirm_decline_kb():
+    confirm_decline_kb = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text=_("confirm")), KeyboardButton(text=_("decline"))],
+        ],
+        resize_keyboard=True,
+        is_persistent=True,
+    )
+    return confirm_decline_kb
 
-def get_accept_decline_kb():
+def get_viewer_accept_decline_kb():
     accept_decline_kb = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=_("viewer_accept")), KeyboardButton(text=_("viewer_decline"))],
@@ -53,7 +62,7 @@ def get_main_kb_by_role(user_role: UserRole):
 def get_admin_kb():
     admin_kb = ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text=_("command_post_banner")), KeyboardButton(text=_("command_admin_stats"))],
+            [KeyboardButton(text=_("command_post_banner")), KeyboardButton(text=_("command_admin_stats")), KeyboardButton(text=_("command_mass_message"))],
             [KeyboardButton(text=_("command_ban_filter")), KeyboardButton(text=_("command_unban_filter"))],
             [KeyboardButton(text=_("command_admin_help"))], [KeyboardButton(text=_("command_cancel"))],
         ],

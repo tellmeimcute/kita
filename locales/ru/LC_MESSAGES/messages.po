@@ -136,6 +136,12 @@ msgstr "Принять"
 msgid "viewer_decline"
 msgstr "Отказ"
 
+msgid "confirm"
+msgstr "Подтвердить"
+
+msgid "decline"
+msgstr "Отклонить"
+
 msgid "viewer_accept_no_caption"
 msgstr "Запостить без подписи"
 
@@ -186,4 +192,30 @@ msgstr "Нельзя опубликовать пустое сообщение."
 
 msgid "notify_author_suggestion_status"
 msgstr "Ваша предложка с ID: {suggestion_id} : <b>{verdict}</b>."
+
+msgid "command_mass_message"
+msgstr "Рассылка"
+
+msgid "mass_message_confirm"
+msgstr "Подтвердите рассылку этого сообщения <b>{users_count} пользователям.</b>"
+
+msgid "mass_message_wait_for_text"
+msgstr "Отправьте текст сообщения"
+
+msgid "mass_message_started"
+msgstr "Рассылка запущена..."
+
+msgid "in_process"
+msgstr "⌚ В процессе"
+
+msgid "completed"
+msgstr "🟢 Заверщено"
+
+msgid "mass_message_status"
+msgstr ""
+"Пользователей выбрано для рассылки <b>{users_count}</b>\n"
+"Общий прогресс <b>{progress}</b>\n"
+"Успешно доставлено: <b>{success}</b>\n"
+"Не удалось доставить: <b>{failure}</b>\n"
+"{status}"
 

@@ -18,29 +18,14 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         return await cls.get_one_or_none(session, filters=cls.model.user_id == data_id)
 
     @classmethod
-    async def get_or_create_user(
-        cls,
-        session: AsyncSession,
-        user_tg: UserTelegram,
-        role: UserRole,
-    ):
-        user_alchemy = await cls.get_one_or_none_by_id(session, user_tg.id)
-
-        if not user_alchemy:
-            user_alchemy = await cls.create_from_data(
-                session, 
-                user_id=user_tg.id, 
-                username=user_tg.username, 
-                name=user_tg.full_name, 
-                role=role,
-            )
-        return user_alchemy
-
-    @classmethod
     async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
         stmt = update(cls.model).where(cls.model.user_id == data_id).values(data)
         await session.execute(stmt)
         await session.flush()
+
+    @classmethod
+    async def get_active(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
+        return await cls.get(session, UserAlchemy.role != UserRole.BANNED)
 
     @classmethod
     async def get_admins(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
@@ -65,6 +50,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     ):
         stmt = select(
             func.count(cls.model.id).label("total"),
+            func.count(cls.model.id).filter(cls.model.role == UserRole.USER).label("users"),
             func.count(cls.model.id).filter(cls.model.role == UserRole.ADMIN).label("admins"),
             func.count(cls.model.id).filter(cls.model.role == UserRole.BANNED).label("banned"),
         )
@@ -79,18 +65,3 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
 
         await session.execute(decline_suggestion)
         await session.flush()
-
-    @classmethod
-    async def change_role(cls, session: AsyncSession, user_id: int, role: UserRole | str):
-        if isinstance(role, str):
-            role = UserRole(role)
-
-        target = await cls.get_one_or_none_by_id(session, user_id)
-        if not target:
-            raise KeyError("User not found")
-
-        if role == UserRole.BANNED:
-            await cls.decline_all_suggestions(session, user_id)
-
-        target.role = role
-        return target

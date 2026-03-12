@@ -26,6 +26,7 @@ async def start(
     payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
     await notifier.notify_user(user_dto, payload)
 
+@router.message(I18nTextFilter("decline"))
 @router.message(I18nTextFilter("command_cancel"))
 @router.message(Command("cancel"))
 async def cmd_cancel_state(
