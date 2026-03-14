@@ -197,7 +197,9 @@ msgid "command_mass_message"
 msgstr "Рассылка"
 
 msgid "mass_message_confirm"
-msgstr "Подтвердите рассылку этого сообщения <b>{users_count} пользователям.</b>"
+msgstr ""
+"Подтвердите рассылку этого сообщения <b>{users_count} пользователям.</b>\n"
+"Расчетное время выполнения <b>{estimated_time} секунд</b>"
 
 msgid "mass_message_wait_for_text"
 msgstr "Отправьте текст сообщения"

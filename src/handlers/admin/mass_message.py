@@ -37,7 +37,7 @@ async def mass_message_task(notifier: Notifier, data: MassMessageData, status_me
             new_status = notifier.get_i18n_text("mass_message_status", i18n_kwargs)
             await notifier.edit_message(status_message, new_status)
 
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.3)
 
 @router.message(I18nTextFilter("command_mass_message"))
 async def mass_message_start(
@@ -87,9 +87,14 @@ async def mass_message_get_message(
 
     await state.update_data(mass_message_data=data)
 
+    i18n_kwargs = data.model_dump()
+    i18n_kwargs.update(
+        {"estimated_time": data.users_count * 0.3}
+    )
+
     payload = MessagePayload(
         i18n_key="mass_message_confirm",
-        i18n_kwargs=data.model_dump(), 
+        i18n_kwargs=i18n_kwargs,
         reply_markup=get_confirm_decline_kb(),
     )
     await notifier.notify_user(user_dto, payload)
