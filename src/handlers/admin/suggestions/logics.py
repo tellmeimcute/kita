@@ -13,7 +13,7 @@ from helpers.utils import get_media_group
 from services.notifier import Notifier
 from config import Config
 
-logger = getLogger("kita_suggestions")
+logger = getLogger("kita.suggestion_viewer")
 
 class SuggestionViewerRenderer:
     def __init__(self, notifier: Notifier, data: SuggestionViewerData, config: Config):
@@ -50,7 +50,7 @@ class SuggestionViewerRenderer:
             "suggestion_id": suggestion_dto.id,
             "original_caption": suggestion_dto.caption,
             "verdict": verdict,
-            "bot_url": self.config.bot_url,
+            "bot_url": self.config.runtime_config.bot_url,
         }
         return i18n_kwargs
 

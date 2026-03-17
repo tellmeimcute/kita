@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
+from handlers.keyboards import get_main_kb_by_role
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, ChangeRoleData
@@ -21,7 +22,6 @@ router = Router()
 async def get_admin_menu(
     message: Message,
     user_dto: UserDTO,
-    config: Config,
     notifier: Notifier,
 ):
     payload = MessagePayload(i18n_key="success", reply_markup=get_admin_kb())
@@ -35,9 +35,11 @@ async def post_channel_banner(
     config: Config,
     notifier: Notifier,
 ):
+    runtime_config = config.runtime_config
+
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Предложка", url=config.bot_url
+        text="Предложка", url=runtime_config.bot_url
     )
 
     payload = MessagePayload(i18n_key="channel_banner", reply_markup=builder.as_markup())
@@ -71,6 +73,7 @@ async def change_user_role(
             target_role=command.target_role,
             caller_dto=user_dto,
             notifier=notifier,
+            target_new_kb=get_main_kb_by_role(command.target_role),
         )
         await user_service.change_role(cmd_data)
     except (ValueError, ValidationError):

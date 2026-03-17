@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.dto import UserDTO
 
-logger = getLogger("ban_middleware")
+logger = getLogger("kita.ban_middleware")
 
 class BanCheckMiddleware(BaseMiddleware):
     """

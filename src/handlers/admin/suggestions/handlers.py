@@ -25,7 +25,7 @@ from .logics import SuggestionViewerRenderer
 from .state import SuggestionViewerState
 
 router = Router(name="admin_suggestions")
-logger = getLogger()
+logger = getLogger("kita.admin_suggestions")
 
 
 @router.message(TextArgsFilter("command_open_solo_view", IDCommand))

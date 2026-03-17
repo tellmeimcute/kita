@@ -6,17 +6,17 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
-from config import config
+from config import config, RuntimeConfig
 from database import DatabaseManager
-from handlers import root_router
+#from handlers import root_router
 from services.notifier import Notifier
 
-from helpers.utils.startup import register_middlewares
+from startup import register_middlewares, register_routers
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("kita_main")
+logger = logging.getLogger("kita.main")
 
-db = DatabaseManager()
+db = DatabaseManager(config.DB_URL)
 
 proxy_session = AiohttpSession(proxy=config.PROXY)
 bot = Bot(
@@ -26,23 +26,29 @@ bot = Bot(
 )
 
 dp = Dispatcher(
-    config=config,
     notifier=Notifier(bot, db.session_maker),
 )
-dp.include_router(root_router)
+
+#dp.include_router(root_router)
 
 async def on_startup():
     try:
         channel_info = await bot.get_chat(config.CHANNEL_ID)
         bot_user = await bot.get_me()
 
-        config.channel_name = channel_info.full_name
-        config.bot_username = bot_user.username
-        config.bot_url = f"https://t.me/{bot_user.username}"
+        runtime_config = RuntimeConfig(
+            channel_name=channel_info.full_name,
+            bot_username=bot_user.username,
+            bot_url=f"https://t.me/{bot_user.username}"
+        )
 
-        logger.info("Bot info loaded in config")
+        dp.workflow_data["config"] = config.model_copy(
+            update={"runtime_config": runtime_config}
+        )
+
+        logger.info("Runtime config loaded")
     except Exception as e:
-        logger.error("Failed to load bot/channel info %s", e)
+        logger.error("Failed to load runtime config: %s", e)
 
 async def on_shutdown():
     await db.engine.dispose()
@@ -50,7 +56,9 @@ async def on_shutdown():
 async def main():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
+
     register_middlewares(dp, db)
+    register_routers(dp)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

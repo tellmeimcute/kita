@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, computed_field
 
-from aiogram.types import Message
+from aiogram.types import ReplyKeyboardMarkup
 
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
@@ -21,6 +21,8 @@ class ChangeRoleData(BaseData):
 
     caller_dto: UserDTO
     notifier: Notifier
+
+    target_new_kb: ReplyKeyboardMarkup | None = None
 
 class SuggestionViewerData(BaseData):
     suggestion_dto: SuggestionFullDTO

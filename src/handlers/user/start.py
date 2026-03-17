@@ -3,7 +3,7 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import Config
+from config import Config, RuntimeConfig
 from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
 from helpers.filters import I18nTextFilter
@@ -20,8 +20,10 @@ async def start(
     config: Config,
     notifier: Notifier,
 ):
+    runtime_config = config.runtime_config
+
     main_kb = get_main_kb_by_role(user_dto.role)
-    i18n_kwargs = {"channel_name": html.bold(config.channel_name)}
+    i18n_kwargs = {"channel_name": html.bold(runtime_config.channel_name)}
 
     payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
     await notifier.notify_user(user_dto, payload)

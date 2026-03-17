@@ -19,7 +19,7 @@ class Notifier:
     def __init__(self, bot: Bot, sessionmaker: async_sessionmaker):
         self.bot: Bot = bot
         self.sessionmaker: async_sessionmaker = sessionmaker
-        self.logger: Logger = getLogger("notifier_service")
+        self.logger: Logger = getLogger("kita.notifier_service")
 
     async def _handle_blocked_user(self, user_dto: UserDTO):
         session: AsyncSession

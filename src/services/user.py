@@ -10,11 +10,10 @@ from database.models import UserAlchemy
 
 from helpers.schemas import ChangeRoleData
 from helpers.message_payload import MessagePayload
-from handlers.keyboards import get_main_kb_by_role
 
 from config import Config
 
-logger = getLogger("user_service")
+logger = getLogger("kita.user_service")
 
 class UserService:
     dao = UserAlchemyDAO
@@ -93,7 +92,6 @@ class UserService:
             logger.error(e)
             return
 
-        # NOTIFY CALLER
         i18n_kwargs = {
             "username": target_dto.username,
             "user_id": target_dto.user_id,
@@ -102,12 +100,10 @@ class UserService:
         payload = MessagePayload(i18n_key="answer_admin_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)
         await notifier.notify_user(caller_dto, payload)
 
-        # NOTIFY USER
         if notify_user:
-            kb = get_main_kb_by_role(data.target_role)
             i18n_kwargs = {"role": data.target_role}
             payload = MessagePayload(
-                i18n_key="notify_user_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=kb
+                i18n_key="notify_user_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=data.target_new_kb
             )
             await notifier.notify_user(target_dto, payload)
 

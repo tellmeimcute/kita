@@ -19,7 +19,7 @@ from services.notifier import Notifier
 from .logics import notify_admins_task
 from .state import PostStates
 
-logger = getLogger("user_suggestions")
+logger = getLogger("kita.user_suggestions")
 
 router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
