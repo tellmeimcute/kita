@@ -5,9 +5,16 @@ from aiogram.utils.i18n import I18n
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 
 from database import DatabaseManager
-from handlers import root_router
-
 from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
+
+from handlers import (
+    user_start_router,
+    user_suggestion_router,
+    admin_suggestion_router,
+    admin_general_router,
+    admin_ban_user_handler,
+    admin_mass_message_router,
+)
 
 logger = logging.getLogger("kita.startup")
 
@@ -28,6 +35,13 @@ def register_middlewares(dp: Dispatcher, db: DatabaseManager):
 
 
 def register_routers(dp: Dispatcher):
-    dp.include_router(root_router)
+    dp.include_routers(
+        user_start_router,
+        user_suggestion_router,
+        admin_suggestion_router,
+        admin_general_router,
+        admin_ban_user_handler,
+        admin_mass_message_router,
+    )
 
     logger.info("Successfully registered routers")
