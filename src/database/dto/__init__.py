@@ -1,8 +1,10 @@
 from .suggestion import SuggestionBaseDTO, SuggestionFullDTO
 from .user import UserDTO
+from .media import MediaDTO
 
 __all__ = (
-    UserDTO,
-    SuggestionBaseDTO,
-    SuggestionFullDTO,
+    "UserDTO",
+    "MediaDTO",
+    "SuggestionBaseDTO",
+    "SuggestionFullDTO",
 )
