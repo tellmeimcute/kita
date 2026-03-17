@@ -10,6 +10,8 @@ class SuggestionBaseDTO(BaseDTO):
 
     caption: str | None
     media_group_id: str | None
+    forwarded_from: str | None
+
     accepted: bool | None
 
 

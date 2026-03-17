@@ -2,9 +2,9 @@ import asyncio
 from logging import getLogger
 from typing import List
 
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO, UserAlchemyDAO
@@ -56,9 +56,18 @@ async def process_suggestion(
     first = album[0]
     caption = first.caption or first.text
 
+    origin = first.forward_origin
+    forwarded_from = None
+    if isinstance(origin, MessageOriginChannel):
+        forwarded_from = origin.chat.full_name
+
     async with session.begin():
         suggestion = await SuggestionDAO.create_from_data(
-            session, author_id=user_id, media_group_id=media_group_id, caption=caption
+            session, 
+            author_id=user_id, 
+            media_group_id=media_group_id, 
+            caption=caption,
+            forwarded_from=forwarded_from,
         )
         medias = await create_medias(session, album, suggestion)
 

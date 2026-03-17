@@ -16,6 +16,7 @@ class Suggestion(AbstractModel, TimestampMixin):
 
     caption: Mapped[str | None] = mapped_column(nullable=True)
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
+    forwarded_from: Mapped[str | None] = mapped_column(nullable=True, default=None)
 
     author_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), index=True)
 

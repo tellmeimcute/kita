@@ -184,3 +184,6 @@ msgstr ""
 
 msgid "mass_message_status"
 msgstr ""
+
+msgid "author_plus_origin"
+msgstr ""

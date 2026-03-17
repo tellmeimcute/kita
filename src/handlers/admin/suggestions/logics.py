@@ -42,13 +42,22 @@ class SuggestionViewerRenderer:
             i18n_key = "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
 
         verdict = self.notifier.get_translated_text(i18n_key)
+        author_plus_origin = self.notifier.get_i18n_text(
+            i18n_key="author_plus_origin", i18n_kwargs={
+                "author_name": suggestion_dto.author.name,
+                "forwarded_from": suggestion_dto.forwarded_from,
+            }
+        )
 
         i18n_kwargs = {
             "author_username": suggestion_dto.author.username,
             "author_name": suggestion_dto.author.name,
+            "author_string": author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name,
             "author_id": suggestion_dto.author_id,
             "suggestion_id": suggestion_dto.id,
             "original_caption": suggestion_dto.caption,
+            "forwarded_from": suggestion_dto.forwarded_from,
+            "author_plus_origin": author_plus_origin,
             "verdict": verdict,
             "bot_url": self.config.runtime_config.bot_url,
         }
