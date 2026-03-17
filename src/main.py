@@ -8,7 +8,6 @@ from aiogram.enums import ParseMode
 
 from config import config, RuntimeConfig
 from database import DatabaseManager
-#from handlers import root_router
 from services.notifier import Notifier
 
 from startup import register_middlewares, register_routers
@@ -28,8 +27,6 @@ bot = Bot(
 dp = Dispatcher(
     notifier=Notifier(bot, db.session_maker),
 )
-
-#dp.include_router(root_router)
 
 async def on_startup():
     try:
