@@ -5,7 +5,7 @@ from aiogram.types import ReplyKeyboardMarkup
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
 from helpers.enums import RenderType
-from services.notifier import Notifier
+from services.notifier import NotifierService
 
 class BaseData(BaseModel):
     model_config = ConfigDict(
@@ -20,7 +20,7 @@ class ChangeRoleData(BaseData):
     target_role: UserRole
 
     caller_dto: UserDTO
-    notifier: Notifier
+    notifier: NotifierService
 
     target_new_kb: ReplyKeyboardMarkup | None = None
 

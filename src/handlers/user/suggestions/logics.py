@@ -8,7 +8,7 @@ from aiogram.types import User as UserTelegram
 
 from database.models import Suggestion, UserAlchemy
 from helpers.message_payload import MessagePayload
-from services.notifier import Notifier
+from services.notifier import NotifierService
 
 
 async def notify_admins_task(
@@ -16,7 +16,7 @@ async def notify_admins_task(
     admins: List[UserAlchemy],
     author: UserTelegram,
     logger: Logger,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     for admin in admins:
         try:

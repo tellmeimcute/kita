@@ -12,7 +12,7 @@ from handlers.keyboards import get_main_kb_by_role
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, ChangeRoleData
-from services import Notifier, UserService
+from services import NotifierService, UserService
 
 from handlers.keyboards import get_admin_kb
 
@@ -22,7 +22,7 @@ router = Router()
 async def get_admin_menu(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     payload = MessagePayload(i18n_key="success", reply_markup=get_admin_kb())
     await notifier.notify_user(user_dto, payload)
@@ -33,7 +33,7 @@ async def post_channel_banner(
     message: Message,
     user_dto: UserDTO,
     config: Config,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     runtime_config = config.runtime_config
 
@@ -53,7 +53,7 @@ async def post_channel_banner(
 async def admin_help(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     payload = MessagePayload(i18n_key="admin_help_msg")
     await notifier.notify_user(user_dto, payload)
@@ -63,7 +63,7 @@ async def admin_help(
 async def change_user_role(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     command: ChangeRoleCommand,
     user_service: UserService,
 ):    

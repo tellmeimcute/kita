@@ -10,7 +10,7 @@ from database.dto import UserDTO
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand
-from services import Notifier, UserService
+from services import NotifierService, UserService
 from handlers.keyboards import get_cancel_kb, get_admin_kb
 from handlers.state import CommandBanState
 
@@ -24,7 +24,7 @@ async def ban_user_id_handler(
     message: Message,
     user_dto: UserDTO,
     command: IDCommand,
-    notifier: Notifier,
+    notifier: NotifierService,
     user_service: UserService,
     action: BanAdminAction,
 ):
@@ -50,7 +50,7 @@ async def ban_user_state_start(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     action: BanAdminAction
 ):
     payload = MessagePayload(i18n_key="state_wait_for_id", reply_markup=get_cancel_kb())
@@ -65,7 +65,7 @@ async def ban_user_state(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     user_service: UserService,
 ):
     data = await state.get_data()

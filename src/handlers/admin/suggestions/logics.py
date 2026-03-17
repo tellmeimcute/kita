@@ -10,13 +10,13 @@ from helpers.enums import RenderType, ViewerAdminAction
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
 from helpers.utils import get_media_group
-from services.notifier import Notifier
+from services.notifier import NotifierService
 from config import Config
 
 logger = getLogger("kita.suggestion_viewer")
 
 class SuggestionViewerRenderer:
-    def __init__(self, notifier: Notifier, data: SuggestionViewerData, config: Config):
+    def __init__(self, notifier: NotifierService, data: SuggestionViewerData, config: Config):
         self.notifier = notifier
         self.data = data
 
@@ -25,13 +25,13 @@ class SuggestionViewerRenderer:
         self._update_render_type()
 
     @classmethod
-    async def from_state(cls, notifier: Notifier, state: FSMContext, config: Config):
+    async def from_state(cls, notifier: NotifierService, state: FSMContext, config: Config):
         state_data = await state.get_data()
         viewer_data = state_data.get("viewer_data")
         return cls(notifier, viewer_data, config)
 
     @classmethod
-    def from_data(cls, notifier: Notifier, viewer_data: SuggestionViewerData, config: Config):
+    def from_data(cls, notifier: NotifierService, viewer_data: SuggestionViewerData, config: Config):
         return cls(notifier, viewer_data, config)
 
     def _get_i18n_kwargs(self):

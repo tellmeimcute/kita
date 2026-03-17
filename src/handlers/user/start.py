@@ -8,7 +8,7 @@ from database.dto import UserDTO
 from handlers.keyboards import get_main_kb_by_role
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
-from services.notifier import Notifier
+from services.notifier import NotifierService
 
 router = Router(name="start_handlers")
 
@@ -18,7 +18,7 @@ async def start(
     message: Message,
     user_dto: UserDTO,
     config: Config,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     runtime_config = config.runtime_config
 
@@ -35,7 +35,7 @@ async def cmd_cancel_state(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     current_state = await state.get_state()
     if current_state:

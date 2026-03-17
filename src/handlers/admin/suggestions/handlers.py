@@ -18,7 +18,7 @@ from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
 
 from services.user import UserService
-from services.notifier import Notifier
+from services.notifier import NotifierService
 
 from .filters import viewer_action
 from .logics import SuggestionViewerRenderer
@@ -33,7 +33,7 @@ async def get_suggestion_solo_view(
     message: Message,
     session: AsyncSession,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     state: FSMContext,
     config: Config,
     command: IDCommand,
@@ -68,7 +68,7 @@ async def verdict_solo_view(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    notifier: Notifier,
+    notifier: NotifierService,
     config: Config,
     viewer_action: str,
     verdict: bool,
@@ -100,7 +100,7 @@ async def show_suggestions_admin_menu(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     config: Config,
 ):
     suggestion_orm = await SuggestionDAO.get_active(session)
@@ -132,7 +132,7 @@ async def accept_deny_suggestion(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    notifier: Notifier,
+    notifier: NotifierService,
     config: Config,
     viewer_action: str,
     verdict: bool,
@@ -176,7 +176,7 @@ async def ban_suggestion_author(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     user_service: UserService,
     config: Config,
 ):

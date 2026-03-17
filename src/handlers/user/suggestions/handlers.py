@@ -14,7 +14,7 @@ from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.utils import create_medias
 from middlewares import MediaGroupMiddleware
-from services.notifier import Notifier
+from services.notifier import NotifierService
 
 from .logics import notify_admins_task
 from .state import PostStates
@@ -30,7 +30,7 @@ async def suggest_post(
     message: Message,
     user_dto: UserDTO,
     state: FSMContext,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     await state.set_state(PostStates.waiting_for_post)
 
@@ -43,7 +43,7 @@ async def process_suggestion(
     state: FSMContext,
     session: AsyncSession,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     media_group_id: int | None = None,
     album: List[Message] | None = None,
 ):
@@ -90,7 +90,7 @@ async def statistic(
     message: Message,
     session: AsyncSession,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
 ):
     user_id = message.from_user.id
     stats = await SuggestionDAO.get_stats_by_user_id(session, user_id)

@@ -11,12 +11,12 @@ from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import MassMessageData
 from middlewares import MediaGroupMiddleware
-from services import Notifier, UserService
+from services import NotifierService, UserService
 
 router = Router()
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
-async def mass_message_task(notifier: Notifier, data: MassMessageData, status_message: Message):
+async def mass_message_task(notifier: NotifierService, data: MassMessageData, status_message: Message):
     send_func = (
         notifier.forward_messages
         if data.is_forwarded
@@ -43,7 +43,7 @@ async def mass_message_task(notifier: Notifier, data: MassMessageData, status_me
 async def mass_message_start(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     user_service: UserService,
     state: FSMContext,
 ):
@@ -65,7 +65,7 @@ async def mass_message_start(
 async def mass_message_get_message(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     state: FSMContext,
     media_group_id: int | None = None,
     album: list[Message] | None = None,
@@ -105,7 +105,7 @@ async def mass_message_get_message(
 async def mass_message_confirm(
     message: Message,
     user_dto: UserDTO,
-    notifier: Notifier,
+    notifier: NotifierService,
     state: FSMContext,
 ):
     kb = get_main_kb_by_role(user_dto.role)

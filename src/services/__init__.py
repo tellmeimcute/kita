@@ -1,7 +1,7 @@
-from .notifier import Notifier
+from .notifier import NotifierService
 from .user import UserService
 
 __all__ = (
-    "Notifier",
+    "NotifierService",
     "UserService"
 )

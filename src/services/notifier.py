@@ -11,11 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
-from database.models import UserAlchemy
 from helpers.message_payload import MessagePayload
 
 
-class Notifier:
+class NotifierService:
     def __init__(self, bot: Bot, sessionmaker: async_sessionmaker):
         self.bot: Bot = bot
         self.sessionmaker: async_sessionmaker = sessionmaker
@@ -30,7 +29,7 @@ class Notifier:
                 await UserAlchemyDAO.update_by_id(session, user_dto.user_id, data)
 
         self.logger.info(
-            "User %s (%s) blocked the bot. Status updated.",
+            "User %s (%s) blocked the bot. Status updated",
             user_dto.username, user_dto.user_id
         )
 
@@ -59,7 +58,10 @@ class Notifier:
                     target, content, disable_notification=silent
                 )
         except TelegramForbiddenError:
-            await self._handle_blocked_user(user_dto)
+            if user_dto is not None:
+                await self._handle_blocked_user(user_dto)
+            else:
+                self.logger.warning("Forbidden on channel %s", channel_id)
         except Exception as e:
             self.logger.error(
                 "Failed to send message to target %s: %s", target, e
@@ -108,21 +110,21 @@ class Notifier:
         translated = self.get_translated_text(i18n_key)
         return self.get_formatted_text(translated, i18n_kwargs)
 
-    async def notify_user(self, user: UserAlchemy | UserDTO, payload: MessagePayload):
-        if user.is_bot_blocked:
+    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
+        if user_dto.is_bot_blocked:
             return self.logger.info(
                 "User %s (%s) has blocked the bot. Skip.",
-                user.username, user.user_id,
+                user_dto.username, user_dto.user_id,
             )
         
         # STRING message
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._safe_send(content, user_dto=user, kb=payload.reply_markup)
+            return await self._safe_send(content, user_dto=user_dto, kb=payload.reply_markup)
         
         # MEDIA GROUP message
         return await self._safe_send(
-            payload.content, user_dto=user, method="media_group", kb=payload.reply_markup
+            payload.content, user_dto=user_dto, method="media_group", kb=payload.reply_markup
         )
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
