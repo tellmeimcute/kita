@@ -12,7 +12,7 @@ from handlers import (
     user_suggestion_router,
     admin_suggestion_router,
     admin_general_router,
-    admin_ban_user_handler,
+    admin_ban_user_router,
     admin_mass_message_router,
 )
 
@@ -40,7 +40,7 @@ def register_routers(dp: Dispatcher):
         user_suggestion_router,
         admin_suggestion_router,
         admin_general_router,
-        admin_ban_user_handler,
+        admin_ban_user_router,
         admin_mass_message_router,
     )
 
