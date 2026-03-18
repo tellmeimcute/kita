@@ -19,9 +19,7 @@ class SuggestionViewerRenderer:
     def __init__(self, notifier: NotifierService, data: SuggestionViewerData, config: Config):
         self.notifier = notifier
         self.data = data
-
         self.config = config
-        self._update_render_type()
 
     @classmethod
     async def from_state(cls, notifier: NotifierService, state: FSMContext, config: Config):
@@ -61,19 +59,6 @@ class SuggestionViewerRenderer:
             "bot_url": self.config.runtime_config.bot_url,
         }
         return i18n_kwargs
-
-    def _update_render_type(self):
-        suggestion_dto = self.data.suggestion_dto
-
-        render_type = (
-            RenderType.MESSAGE 
-            if not suggestion_dto.media and suggestion_dto.caption else
-            RenderType.MEDIAGROUP
-        )
-
-        self.data = self.data.model_copy(
-            update={"render_type": render_type}
-        )
 
     def _build_media_group_payload(self, i18n_key="admin_get_suggestion_caption"):
         suggestion_dto = self.data.suggestion_dto
@@ -120,11 +105,8 @@ class SuggestionViewerRenderer:
 
         return await notifier.notify_user(user_dto, payload)
 
-    async def update_state_data(self, state: FSMContext):
-        self._update_render_type()
-        await state.set_data(
-            {"viewer_data": self.data}
-        )
+    async def update_state_data(self, state: FSMContext, data: SuggestionViewerData):
+        await state.set_data({"viewer_data": data})
 
     async def _post_in_channel(self, with_caption: bool = True):
         notifier = self.notifier
@@ -213,7 +195,7 @@ class SuggestionViewerRenderer:
             update={"suggestion_dto": new_active_dto}
         )
 
-        await self.update_state_data(state)
+        await self.update_state_data(state, self.data)
         await self.render_suggestion()
 
         logger.debug(

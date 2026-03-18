@@ -29,7 +29,12 @@ class SuggestionViewerData(BaseData):
     user_dto: UserDTO
     channel_id: int
     
-    render_type: RenderType | None = None
+    @computed_field
+    @property
+    def render_type(self) -> RenderType:
+        if not self.suggestion_dto.media and self.suggestion_dto.caption:
+            return RenderType.MESSAGE
+        return RenderType.MEDIAGROUP
 
 class MassMessageData(BaseData):
     users: list[UserDTO] | None = None
