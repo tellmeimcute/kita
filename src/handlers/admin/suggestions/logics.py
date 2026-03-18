@@ -21,7 +21,6 @@ class SuggestionViewerRenderer:
         self.data = data
 
         self.config = config
-
         self._update_render_type()
 
     @classmethod
@@ -66,10 +65,15 @@ class SuggestionViewerRenderer:
     def _update_render_type(self):
         suggestion_dto = self.data.suggestion_dto
 
-        if not suggestion_dto.media and suggestion_dto.caption:
-            self.data.render_type = RenderType.MESSAGE
-        else:
-            self.data.render_type = RenderType.MEDIAGROUP
+        render_type = (
+            RenderType.MESSAGE 
+            if not suggestion_dto.media and suggestion_dto.caption else
+            RenderType.MEDIAGROUP
+        )
+
+        self.data = self.data.model_copy(
+            update={"render_type": render_type}
+        )
 
     def _build_media_group_payload(self, i18n_key="admin_get_suggestion_caption"):
         suggestion_dto = self.data.suggestion_dto
@@ -194,8 +198,8 @@ class SuggestionViewerRenderer:
         return await notifier.notify_user(user_dto, payload)
 
     async def go_next(
-        self, 
-        session: AsyncSession, 
+        self,
+        session: AsyncSession,
         state: FSMContext
     ):
         new_active = await SuggestionDAO.get_active(session)
@@ -205,10 +209,13 @@ class SuggestionViewerRenderer:
         
         # Update
         new_active_dto = SuggestionFullDTO.model_validate(new_active)
-        self.data.suggestion_dto = new_active_dto
+        self.data = self.data.model_copy(
+            update={"suggestion_dto": new_active_dto}
+        )
+
         await self.update_state_data(state)
         await self.render_suggestion()
 
         logger.debug(
-            "SuggestionViewerRenderer revnder next suggestion ID %s", new_active_dto.id
+            "SuggestionViewerRenderer render next suggestion ID %s", new_active_dto.id
         )
