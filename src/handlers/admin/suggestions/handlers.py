@@ -57,7 +57,7 @@ async def get_suggestion_solo_view(
     viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
 
     await viewer.render_suggestion()
-    await viewer.update_state_data(state)
+    await viewer.update_state_data(state, viewer.data)
     await viewer.render_send_verdict()
 
 
@@ -122,7 +122,7 @@ async def show_suggestions_admin_menu(
 
     await viewer.render_send_verdict(i18n_key="start_review_suggestions")
     await viewer.render_suggestion()
-    await viewer.update_state_data(state)
+    await viewer.update_state_data(state, viewer.data)
 
 
 @router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_accept"))
