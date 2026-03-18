@@ -50,6 +50,20 @@ class UserService:
         
         return UserDTO.model_validate(user_alchemy)
 
+    async def update(self, user_dto: UserDTO, user_tg: UserTelegram):
+        user_dto.update_from_tg(user_tg)
+        changed_data = user_dto.prepare_changed_data()
+        if not changed_data:
+            return
+        
+        async with self.session.begin():
+            await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
+        
+        logger.info(
+            "Update database info for user %s. New data: %s",
+            user_dto.user_id, changed_data
+        )
+
     async def get_active(self):
         async with self.session.begin():
             active = await self.dao.get_active(self.session)

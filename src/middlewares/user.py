@@ -34,6 +34,8 @@ class UserMiddleware(BaseMiddleware):
         user_service: UserService = data["user_service"]
 
         user_dto = await user_service.get(user_tg.id)
+        if user_dto:
+            await user_service.update(user_dto, user_tg)
         if not user_dto:
             user_dto = await user_service.create(user_tg)
 
