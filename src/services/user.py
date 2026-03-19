@@ -22,6 +22,9 @@ class UserService:
         self.session = session
         self.config = config
 
+    def is_immune(self, user_id: int):
+        return user_id == self.config.ADMIN_ID
+
     async def create(self, user_tg: UserTelegram):
         role = UserRole.ADMIN if user_tg.id == self.config.ADMIN_ID else UserRole.USER
 
@@ -83,7 +86,7 @@ class UserService:
         notifier = data.notifier
         caller_dto = data.caller_dto
 
-        if data.target_id == self.config.ADMIN_ID or data.target_id == data.caller_dto.user_id:
+        if self.is_immune(data.target_id) or data.target_id == caller_dto.user_id:
             payload = MessagePayload(i18n_key="error_user_immune", reply_markup=return_kb)
             await notifier.notify_user(caller_dto, payload)
             return
@@ -95,7 +98,7 @@ class UserService:
             target_dto.role = data.target_role
             async with self.session.begin():
                 await self.dao.update_by_id(self.session, data.target_id, target_dto.prepare_changed_data())
-                if data.target_role == UserRole.BANNED:
+                if target_dto.is_banned:
                     await self.dao.decline_all_suggestions(self.session, data.target_id)
         except KeyError:
             i18n_kwargs = {"user_id": data.target_id}
@@ -106,18 +109,19 @@ class UserService:
             logger.error(e)
             return
 
-        i18n_kwargs = {
-            "username": target_dto.username,
-            "user_id": target_dto.user_id,
-            "role": target_dto.role,
-        }
-        payload = MessagePayload(i18n_key="answer_admin_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)
+        payload = MessagePayload(
+            i18n_key="answer_admin_role_changed", 
+            i18n_kwargs=target_dto.model_dump(), 
+            reply_markup=return_kb,
+        )
         await notifier.notify_user(caller_dto, payload)
 
         if notify_user:
             i18n_kwargs = {"role": data.target_role}
             payload = MessagePayload(
-                i18n_key="notify_user_role_changed", i18n_kwargs=i18n_kwargs, reply_markup=data.target_new_kb
+                i18n_key="notify_user_role_changed",
+                i18n_kwargs=i18n_kwargs,
+                reply_markup=data.target_new_kb,
             )
             await notifier.notify_user(target_dto, payload)
 
