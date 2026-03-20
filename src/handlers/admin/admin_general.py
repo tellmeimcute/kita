@@ -8,13 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
-from handlers.keyboards import get_main_kb_by_role
+from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand, ChangeRoleData
 from services import NotifierService, UserService
 
-from handlers.keyboards import get_admin_kb
+from handlers.keyboards import ReplyKeyboard
 
 router = Router()
 
@@ -24,7 +24,7 @@ async def get_admin_menu(
     user_dto: UserDTO,
     notifier: NotifierService,
 ):
-    payload = MessagePayload(i18n_key="success", reply_markup=get_admin_kb())
+    payload = MessagePayload(i18n_key="success", reply_markup=ReplyKeyboard.admin_menu())
     await notifier.notify_user(user_dto, payload)
 
 
@@ -68,12 +68,13 @@ async def change_user_role(
     user_service: UserService,
 ):    
     try:
+        target_new_kb = ReplyKeyboard.main_by_role(command.target_role)
         cmd_data = ChangeRoleData(
             target_id=command.target_id,
             target_role=command.target_role,
             caller_dto=user_dto,
             notifier=notifier,
-            target_new_kb=get_main_kb_by_role(command.target_role),
+            target_new_kb=target_new_kb,
         )
         await user_service.change_role(cmd_data)
     except (ValueError, ValidationError):

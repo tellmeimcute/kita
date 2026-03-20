@@ -11,7 +11,7 @@ from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand
 from services import NotifierService, UserService
-from handlers.keyboards import get_cancel_kb, get_admin_kb
+from handlers.keyboards import ReplyKeyboard
 from handlers.state import CommandBanState
 
 from helpers.enums import BanAdminAction
@@ -53,7 +53,7 @@ async def ban_user_state_start(
     notifier: NotifierService,
     action: BanAdminAction
 ):
-    payload = MessagePayload(i18n_key="state_wait_for_id", reply_markup=get_cancel_kb())
+    payload = MessagePayload(i18n_key="state_wait_for_id", reply_markup=ReplyKeyboard.cancel())
     await notifier.notify_user(user_dto, payload)
     await state.set_state(CommandBanState.wait_for_id)
 
@@ -79,7 +79,7 @@ async def ban_user_state(
             caller_dto=user_dto,
             notifier=notifier,
         )
-        await user_service.change_role(cmd_data, notify_user=False, return_kb=get_admin_kb())
+        await user_service.change_role(cmd_data, notify_user=False, return_kb=ReplyKeyboard.admin_menu())
         await state.clear()
     except (ValueError, ValidationError):
         payload = MessagePayload(

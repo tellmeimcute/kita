@@ -3,9 +3,9 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import Config, RuntimeConfig
+from config import Config
 from database.dto import UserDTO
-from handlers.keyboards import get_main_kb_by_role
+from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from services.notifier import NotifierService
@@ -21,11 +21,9 @@ async def start(
     notifier: NotifierService,
 ):
     runtime_config = config.runtime_config
-
-    main_kb = get_main_kb_by_role(user_dto.role)
     i18n_kwargs = {"channel_name": html.bold(runtime_config.channel_name)}
 
-    payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=main_kb)
+    payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload)
 
 @router.message(I18nTextFilter("decline"))
@@ -41,6 +39,5 @@ async def cmd_cancel_state(
     if current_state:
         await state.clear()
 
-    kb = get_main_kb_by_role(user_dto.role)
-    payload = MessagePayload(i18n_key="state_reset", reply_markup=kb)
+    payload = MessagePayload(i18n_key="state_reset", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload=payload)

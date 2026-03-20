@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.dto import UserDTO, SuggestionFullDTO
-from handlers.keyboards import get_cancel_kb, get_main_kb_by_role
+from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from middlewares import MediaGroupMiddleware
@@ -53,7 +53,8 @@ async def suggest_post(
 ):
     await state.set_state(PostStates.waiting_for_post)
 
-    payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=get_cancel_kb())
+
+    payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=ReplyKeyboard.cancel())
     await notifier.notify_user(user_dto, payload=payload)
 
 @router.message(PostStates.waiting_for_post)
@@ -74,8 +75,7 @@ async def process_suggestion(
 
     suggestion_dto = await suggestion_service.create(user_dto, album)
 
-    kb = get_main_kb_by_role(user_dto.role)
-    payload = MessagePayload(i18n_key="on_moderation", reply_markup=kb)
+    payload = MessagePayload(i18n_key="on_moderation", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload=payload)
 
     await state.clear()

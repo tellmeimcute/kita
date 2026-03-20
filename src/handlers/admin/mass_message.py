@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 
 from database.dto import UserDTO
 from handlers.state import MassMessageState
-from handlers.keyboards import get_main_kb_by_role, get_confirm_decline_kb, get_cancel_kb
+from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import MassMessageData
@@ -57,7 +57,7 @@ async def mass_message_start(
     payload = MessagePayload(
         i18n_key="mass_message_wait_for_text",
         i18n_kwargs=data.model_dump(),
-        reply_markup=get_cancel_kb(),
+        reply_markup=ReplyKeyboard.cancel(),
     )
     await notifier.notify_user(user_dto, payload)
 
@@ -95,7 +95,7 @@ async def mass_message_get_message(
     payload = MessagePayload(
         i18n_key="mass_message_confirm",
         i18n_kwargs=i18n_kwargs,
-        reply_markup=get_confirm_decline_kb(),
+        reply_markup=ReplyKeyboard.confirm_decline(),
     )
     await notifier.notify_user(user_dto, payload)
 
@@ -108,13 +108,11 @@ async def mass_message_confirm(
     notifier: NotifierService,
     state: FSMContext,
 ):
-    kb = get_main_kb_by_role(user_dto.role)
-
     state_data = await state.get_data()
     raw_data = state_data.get("mass_message_data")
     data = MassMessageData.model_validate(raw_data)
 
-    payload = MessagePayload(i18n_key="mass_message_started", reply_markup=kb)
+    payload = MessagePayload(i18n_key="mass_message_started", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload)
 
     i18n_kwargs = data.model_dump()

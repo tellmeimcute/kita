@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
 from database.dto import SuggestionFullDTO, MediaDTO
-from handlers.keyboards import get_viewer_accept_decline_kb, get_main_kb_by_role
+from handlers.keyboards import ReplyKeyboard
 from helpers.enums import RenderType, ViewerAdminAction
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
@@ -84,15 +84,14 @@ class SuggestionViewerRenderer:
         return payload
 
     async def render_send_verdict(self, i18n_key="send_verdict"):
-        payload = MessagePayload(i18n_key=i18n_key, reply_markup=get_viewer_accept_decline_kb())
+        payload = MessagePayload(i18n_key=i18n_key, reply_markup=ReplyKeyboard.viewer_admin_action())
         await self.notifier.notify_user(self.data.user_dto, payload)
 
     async def render_verdict_rewrite(self):
         notifier = self.notifier
         user_dto = self.data.user_dto
 
-        kb = get_main_kb_by_role(user_dto.role)
-        payload = MessagePayload(i18n_key="verdict_rewrite", reply_markup=kb)
+        payload = MessagePayload(i18n_key="verdict_rewrite", reply_markup=ReplyKeyboard.main(user_dto))
         await notifier.notify_user(user_dto, payload)
 
     async def render_suggestion(self):
@@ -104,7 +103,7 @@ class SuggestionViewerRenderer:
                 payload = MessagePayload(
                     i18n_key="admin_get_suggestion_caption",
                     i18n_kwargs=self._get_i18n_kwargs(),
-                    reply_markup=get_viewer_accept_decline_kb(),
+                    reply_markup=ReplyKeyboard.viewer_admin_action(),
                 )
             case RenderType.MEDIAGROUP:
                 payload = self._build_media_group_payload()
@@ -181,8 +180,7 @@ class SuggestionViewerRenderer:
         notifier = self.notifier
         user_dto = self.data.user_dto
 
-        kb = get_main_kb_by_role(user_dto.role)
-        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
+        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto))
         return await notifier.notify_user(user_dto, payload)
 
     async def go_next(

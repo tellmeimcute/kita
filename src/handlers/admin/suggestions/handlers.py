@@ -11,8 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO
-from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from handlers.keyboards import get_main_kb_by_role
+from database.dto import SuggestionFullDTO, UserDTO
+from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
@@ -106,8 +106,7 @@ async def show_suggestions_admin_menu(
     suggestion_orm = await SuggestionDAO.get_active(session)
 
     if not suggestion_orm:
-        kb = get_main_kb_by_role(user_dto.role)
-        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=kb)
+        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto))
         return await notifier.notify_user(user_dto, payload=payload)
 
     await state.set_state(SuggestionViewerState.in_viewer)
