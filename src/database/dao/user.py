@@ -49,7 +49,7 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
         session: AsyncSession,
     ):
         stmt = select(
-            func.count(cls.model.id).label("total"),
+            func.count(cls.model.id).label("users_total"),
             func.count(cls.model.id).filter(cls.model.role == UserRole.USER).label("users"),
             func.count(cls.model.id).filter(cls.model.role == UserRole.ADMIN).label("admins"),
             func.count(cls.model.id).filter(cls.model.role == UserRole.BANNED).label("banned"),

@@ -224,3 +224,13 @@ msgstr ""
 
 msgid "author_plus_origin"
 msgstr "{author_name} (источник {forwarded_from})"
+
+msgid "global_stats"
+msgstr ""
+"👤 Всего пользователей: {users_total}\n"
+"🤡 Забаненых пользователей: {banned}\n"
+"😎 Кол-во админов: {admins}\n"
+"\n"
+"📄 Всего постов предложено: {suggestions}\n"
+"🎨 Всего медиа файлов: {medias}\n"
+

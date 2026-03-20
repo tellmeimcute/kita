@@ -18,6 +18,16 @@ from handlers.keyboards import ReplyKeyboard
 
 router = Router()
 
+
+@router.message(I18nTextFilter("command_admin_help"))
+async def admin_help(
+    message: Message,
+    user_dto: UserDTO,
+    notifier: NotifierService,
+):
+    payload = MessagePayload(i18n_key="admin_help_msg")
+    await notifier.notify_user(user_dto, payload)
+
 @router.message(I18nTextFilter("command_get_admin_menu"))
 async def get_admin_menu(
     message: Message,
@@ -26,7 +36,6 @@ async def get_admin_menu(
 ):
     payload = MessagePayload(i18n_key="success", reply_markup=ReplyKeyboard.admin_menu())
     await notifier.notify_user(user_dto, payload)
-
 
 @router.message(I18nTextFilter("command_post_banner"))
 async def post_channel_banner(
@@ -47,17 +56,6 @@ async def post_channel_banner(
 
     payload = MessagePayload(i18n_key="channel_banner_sent")
     await notifier.notify_user(user_dto, payload)
-
-
-@router.message(I18nTextFilter("command_admin_help"))
-async def admin_help(
-    message: Message,
-    user_dto: UserDTO,
-    notifier: NotifierService,
-):
-    payload = MessagePayload(i18n_key="admin_help_msg")
-    await notifier.notify_user(user_dto, payload)
-
 
 @router.message(TextArgsFilter("command_change_role", ChangeRoleCommand))
 async def change_user_role(
@@ -84,21 +82,19 @@ async def change_user_role(
         )
         await notifier.notify_user(user_dto, payload)
 
-
 @router.message(I18nTextFilter("command_admin_stats"))
-async def global_stats_handler(
+async def global_stats(
     message: Message,
+    user_dto: UserDTO,
     session: AsyncSession,
+    notifier: NotifierService,
 ):
     suggestions_count = await SuggestionDAO.count(session)
     media_count = await MediaDAO.count(session)
-
     user_stats = await UserAlchemyDAO.get_users_stats(session)
 
-    await message.answer(
-        f"👤 Всего пользователей: {user_stats.total}\n"
-        f"🤡 Забаненых пользователей: {user_stats.banned}\n"
-        f"😎 Кол-во админов: {user_stats.admins}\n\n"
-        f"📄 Всего постов предложено: {suggestions_count}\n"
-        f"🎨 Всего медиа файлов: {media_count}\n"
-    )
+    i18n_kwargs = user_stats._asdict()
+    i18n_kwargs.update(suggestions=suggestions_count, medias=media_count)
+    
+    payload = MessagePayload(i18n_key="global_stats", i18n_kwargs=i18n_kwargs)
+    await notifier.notify_user(user_dto, payload)

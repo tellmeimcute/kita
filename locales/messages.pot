@@ -187,3 +187,6 @@ msgstr ""
 
 msgid "author_plus_origin"
 msgstr ""
+
+msgid "global_stats"
+msgstr ""
