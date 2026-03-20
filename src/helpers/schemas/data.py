@@ -27,7 +27,6 @@ class ChangeRoleData(BaseData):
 class SuggestionViewerData(BaseData):
     suggestion_dto: SuggestionFullDTO
     user_dto: UserDTO
-    channel_id: int
     
     @computed_field
     @property

@@ -51,7 +51,8 @@ class UserService:
         if not user_alchemy:
             return None
         
-        return UserDTO.model_validate(user_alchemy)
+        user_dto = UserDTO.model_validate(user_alchemy)
+        return user_dto
 
     async def update(self, user_dto: UserDTO, user_tg: UserTelegram):
         user_dto.update_from_tg(user_tg)
@@ -70,6 +71,11 @@ class UserService:
     async def get_active(self):
         async with self.session.begin():
             active = await self.dao.get_active(self.session)
+        return UserDTO.from_model_list(active)
+
+    async def get_admins(self):
+        async with self.session.begin():
+            active = await self.dao.get_admins(self.session)
         return UserDTO.from_model_list(active)
 
     async def set_role(self, user_dto: UserDTO, role: UserRole):

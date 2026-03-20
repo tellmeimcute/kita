@@ -1,5 +1,5 @@
+import asyncio
 from logging import Logger, getLogger
-
 from typing import Literal, Optional
 
 from aiogram import Bot
@@ -126,6 +126,14 @@ class NotifierService:
         return await self._safe_send(
             payload.content, user_dto=user_dto, method="media_group", kb=payload.reply_markup
         )
+
+    async def notify_admins(self, admins_dto: list[UserDTO], payload: MessagePayload):
+        for admin_dto in admins_dto:
+            await self.notify_user(admin_dto, payload)
+            self.logger.info(
+                "New suggestion notify sended to %s (%s)", admin_dto.username, admin_dto.user_id
+            )
+            await asyncio.sleep(0.05)
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         return await self._deliver_messages(messages, source, user_dto=user_dto, method="forward")

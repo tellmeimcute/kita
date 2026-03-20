@@ -19,6 +19,7 @@ from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
 
 from services.user import UserService
 from services.notifier import NotifierService
+from services.suggestion import SuggestionService
 
 from .filters import viewer_action
 from .logics import SuggestionViewerRenderer
@@ -38,11 +39,11 @@ async def get_suggestion_solo_view(
     config: Config,
     command: IDCommand,
 ):
+    suggestion_service = SuggestionService(session, config)
+
     try:
-        async with session.begin():
-            suggestion = await SuggestionDAO.get_one_or_none_by_id(session, command.target_id)
-            suggestion_dto = SuggestionFullDTO.model_validate(suggestion)
-    except (ValueError, ValidationError) as e:
+        suggestion_dto = await suggestion_service.get(command.target_id, solo=False)
+    except (ValueError, ValidationError):
         i18n_kwargs = {"suggestion_id": command.target_id}
         payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
         return await notifier.notify_user(user_dto, payload=payload)
@@ -52,7 +53,6 @@ async def get_suggestion_solo_view(
     viewer_data = SuggestionViewerData(
         suggestion_dto=suggestion_dto, 
         user_dto=user_dto,
-        channel_id=config.CHANNEL_ID
     )
     viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
 
@@ -73,22 +73,22 @@ async def verdict_solo_view(
     viewer_action: str,
     verdict: bool,
 ):
+    suggestion_service = SuggestionService(session, config)
+
     data = await state.get_data()
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
+    viewer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
 
     if verdict:
         status = await viewer.post_in_channel(viewer_action)
         if not status:
             return
-        
         await viewer.notify_author(status)
-        
-    async with session.begin():
-        data_orm = {"accepted": verdict}
-        await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
+    
+    suggestion_dto.accepted = verdict
+    await suggestion_service.update(suggestion_dto)
 
     await viewer.render_verdict_rewrite()
     await state.clear()
@@ -114,9 +114,8 @@ async def show_suggestions_admin_menu(
 
     suggestion_dto = SuggestionFullDTO.model_validate(suggestion_orm)
     viewer_data = SuggestionViewerData(
-        suggestion_dto=suggestion_dto, 
+        suggestion_dto=suggestion_dto,
         user_dto=user_dto,
-        channel_id=config.CHANNEL_ID
     )
     viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
 
@@ -137,19 +136,17 @@ async def accept_deny_suggestion(
     viewer_action: str,
     verdict: bool,
 ):
-    data = await state.get_data()
+    suggestion_service = SuggestionService(session, config)
 
+    data = await state.get_data()
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
     viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
 
-    async with session.begin():
-        suggestion = await SuggestionDAO.get_one_or_none_by_id(session, suggestion_dto.id, solo=True)
-        updated_dto = SuggestionBaseDTO.model_validate(suggestion)
-        
-        suggestion_dto.accepted = updated_dto.accepted
-        viewer.data.suggestion_dto = suggestion_dto
+    updated_dto = await suggestion_service.get(suggestion_dto.id, solo=True)
+    suggestion_dto = suggestion_dto.model_copy(update={"accepted": updated_dto.accepted})
+    viewer.data = viewer.data.model_copy(update={"suggestion_dto": suggestion_dto})
 
     if suggestion_dto.accepted is not None:
         await viewer.render_verdict_exists()
@@ -161,9 +158,8 @@ async def accept_deny_suggestion(
             return
         await viewer.notify_author(status)
 
-    async with session.begin():
-        data_orm = {"accepted": verdict}
-        await SuggestionDAO.update_by_id(session, suggestion_dto.id, data_orm)
+    suggestion_dto.accepted = verdict
+    await suggestion_service.update(suggestion_dto)
 
     return await viewer.go_next(session, state)
 

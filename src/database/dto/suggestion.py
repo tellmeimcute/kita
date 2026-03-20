@@ -2,9 +2,9 @@
 from .base import BaseDTO
 from .media import MediaDTO
 from .user import UserDTO
+from .base import TrackableDto
 
-
-class SuggestionBaseDTO(BaseDTO):
+class SuggestionBaseDTO(TrackableDto):
     id: int
     author_id: int
 

@@ -2,21 +2,25 @@ import asyncio
 from logging import getLogger
 from typing import List
 
-from aiogram import Router
+from aiogram import Router, html
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, MessageOriginChannel
+from aiogram.types import Message
+from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.dao import SuggestionDAO, UserAlchemyDAO
-from database.dto import UserDTO
+from database.dao import SuggestionDAO
+from database.dto import UserDTO, SuggestionFullDTO
 from handlers.keyboards import get_cancel_kb, get_main_kb_by_role
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
-from helpers.utils import create_medias
 from middlewares import MediaGroupMiddleware
-from services.notifier import NotifierService
 
-from .logics import notify_admins_task
+from services.notifier import NotifierService
+from services.suggestion import SuggestionService
+from services.user import UserService
+
+from config import Config
+
 from .state import PostStates
 
 logger = getLogger("kita.user_suggestions")
@@ -24,6 +28,21 @@ logger = getLogger("kita.user_suggestions")
 router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
+async def notify_admins_task(
+    suggestion: SuggestionFullDTO,
+    admins: List[UserDTO],
+    notifier: NotifierService,
+):
+    i18n_kwargs = {
+        "new_suggestion_id": suggestion.id,
+        "new_suggestion_author_id": suggestion.author.user_id,
+        "new_suggestion_author_username": suggestion.author.username,
+        "new_suggestion_author_fullname": suggestion.author.name,
+        "new_suggestion_view_command": html.code(f"{_("command_open_solo_view")} {suggestion.id}"),
+    }
+
+    payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
+    await notifier.notify_admins(admins, payload)
 
 @router.message(I18nTextFilter("command_suggest_post"))
 async def suggest_post(
@@ -44,37 +63,16 @@ async def process_suggestion(
     session: AsyncSession,
     user_dto: UserDTO,
     notifier: NotifierService,
-    media_group_id: int | None = None,
+    user_service: UserService,
+    config: Config,
     album: List[Message] | None = None,
 ):
-    author = message.from_user
-    user_id = author.id
+    suggestion_service = SuggestionService(session, config)
 
     if not album:
         album = (message,)
 
-    first = album[0]
-    caption = first.caption or first.text
-
-    origin = first.forward_origin
-    forwarded_from = None
-    if isinstance(origin, MessageOriginChannel):
-        forwarded_from = origin.chat.full_name
-
-    async with session.begin():
-        suggestion = await SuggestionDAO.create_from_data(
-            session, 
-            author_id=user_id, 
-            media_group_id=media_group_id, 
-            caption=caption,
-            forwarded_from=forwarded_from,
-        )
-        medias = await create_medias(session, album, suggestion)
-
-        if not medias and not caption:
-            payload = MessagePayload(i18n_key="error_media_suggestion")
-            await notifier.notify_user(user_dto, payload=payload)
-            return await session.rollback()
+    suggestion_dto = await suggestion_service.create(user_dto, album)
 
     kb = get_main_kb_by_role(user_dto.role)
     payload = MessagePayload(i18n_key="on_moderation", reply_markup=kb)
@@ -82,8 +80,8 @@ async def process_suggestion(
 
     await state.clear()
 
-    admins = await UserAlchemyDAO.get_admins(session)
-    asyncio.create_task(notify_admins_task(suggestion, admins, author, logger, notifier))
+    admins = await user_service.get_admins()
+    asyncio.create_task(notify_admins_task(suggestion_dto, admins, notifier))
 
 @router.message(I18nTextFilter("command_user_stats"))
 async def statistic(

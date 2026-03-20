@@ -1,15 +1,15 @@
 from logging import getLogger
 
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.media_group import MediaGroupBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import SuggestionDAO
-from database.dto import SuggestionFullDTO
+from database.dto import SuggestionFullDTO, MediaDTO
 from handlers.keyboards import get_viewer_accept_decline_kb, get_main_kb_by_role
 from helpers.enums import RenderType, ViewerAdminAction
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
-from helpers.utils import get_media_group
 from services.notifier import NotifierService
 from config import Config
 
@@ -30,6 +30,12 @@ class SuggestionViewerRenderer:
     @classmethod
     def from_data(cls, notifier: NotifierService, viewer_data: SuggestionViewerData, config: Config):
         return cls(notifier, viewer_data, config)
+
+    def _get_media_group(self, medias: list[MediaDTO], caption: str | None = None) -> MediaGroupBuilder:
+        media_group = MediaGroupBuilder(caption=caption)
+        for media in medias:
+            media_group.add(type=media.filetype, media=media.telegram_file_id)
+        return media_group
 
     def _get_i18n_kwargs(self):
         suggestion_dto = self.data.suggestion_dto
@@ -64,7 +70,7 @@ class SuggestionViewerRenderer:
         suggestion_dto = self.data.suggestion_dto
         notifier = self.notifier
 
-        media_group = get_media_group(
+        media_group: MediaGroupBuilder = self._get_media_group(
             suggestion_dto.media, suggestion_dto.media_group_id
         )
 
@@ -110,7 +116,7 @@ class SuggestionViewerRenderer:
 
     async def _post_in_channel(self, with_caption: bool = True):
         notifier = self.notifier
-        channel_id = self.data.channel_id
+        channel_id = self.config.CHANNEL_ID
 
         i18n_key = "channel_post_message"
         i18n_key = i18n_key if with_caption else f"{i18n_key}_no_caption"
