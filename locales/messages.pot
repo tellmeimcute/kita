@@ -155,9 +155,6 @@ msgstr ""
 msgid "channel_post_message"
 msgstr ""
 
-msgid "channel_post_message_no_caption"
-msgstr ""
-
 msgid "error_empty_suggestion"
 msgstr ""
 

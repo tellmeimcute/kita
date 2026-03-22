@@ -10,27 +10,24 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO
 from database.dto import SuggestionFullDTO, UserDTO
 from handlers.keyboards import ReplyKeyboard
+
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
 
-from services.user import UserService
-from services.notifier import NotifierService
-from services.suggestion import SuggestionService
+from helpers.suggestion_viewer import SuggestionViewer
 
-from .filters import viewer_action
-from .logics import SuggestionViewerRenderer
-from .state import SuggestionViewerState
+from services import UserService, NotifierService, SuggestionService
+from handlers.state import SuggestionViewerState
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")
 
 
 @router.message(TextArgsFilter("command_open_solo_view", IDCommand))
-async def get_suggestion_solo_view(
+async def solo_suggestion(
     message: Message,
     session: AsyncSession,
     user_dto: UserDTO,
@@ -42,7 +39,7 @@ async def get_suggestion_solo_view(
     suggestion_service = SuggestionService(session, config)
 
     try:
-        suggestion_dto = await suggestion_service.get(command.target_id, solo=False)
+        suggestion_dto = await suggestion_service.get(command.target_id)
     except (ValueError, ValidationError):
         i18n_kwargs = {"suggestion_id": command.target_id}
         payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
@@ -51,26 +48,24 @@ async def get_suggestion_solo_view(
     await state.set_state(SuggestionViewerState.in_solo_view)
 
     viewer_data = SuggestionViewerData(
-        suggestion_dto=suggestion_dto, 
+        suggestion_dto=suggestion_dto,
         user_dto=user_dto,
     )
-    viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
+
+    viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)
 
     await viewer.render_suggestion()
-    await viewer.update_state_data(state, viewer.data)
-    await viewer.render_send_verdict()
+    await viewer.dump_into_state(state, viewer.data)
+    await viewer.render_wait_verdict()
 
-
-@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_accept"))
-@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_accept_no_caption"))
-@router.message(SuggestionViewerState.in_solo_view, viewer_action("viewer_decline"))
-async def verdict_solo_view(
+@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=True))
+@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False))
+async def solo_suggestion_verdict(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
     notifier: NotifierService,
     config: Config,
-    viewer_action: str,
     verdict: bool,
 ):
     suggestion_service = SuggestionService(session, config)
@@ -79,23 +74,20 @@ async def verdict_solo_view(
     viewer_data: SuggestionViewerData = data.get("viewer_data")
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
-    viewer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
+    viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)
 
-    if verdict:
-        status = await viewer.post_in_channel(viewer_action)
-        if not status:
-            return
-        await viewer.notify_author(status)
-    
-    suggestion_dto.accepted = verdict
+    viewer.utils.update_status(suggestion_dto, verdict)
     await suggestion_service.update(suggestion_dto)
+
+    if suggestion_dto.accepted:
+        await viewer.post_channel()
+        await viewer.notify_author()
 
     await viewer.render_verdict_rewrite()
     await state.clear()
 
-
 @router.message(I18nTextFilter("command_enter_viewer"))
-async def show_suggestions_admin_menu(
+async def enter_suggestion_viewer(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
@@ -103,45 +95,36 @@ async def show_suggestions_admin_menu(
     notifier: NotifierService,
     config: Config,
 ):
-    suggestion_orm = await SuggestionDAO.get_active(session)
+    suggestion_service = SuggestionService(session, config)
+    suggestion_dto = await suggestion_service.get_active()
 
-    if not suggestion_orm:
+    if not suggestion_dto:
         payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto))
         return await notifier.notify_user(user_dto, payload=payload)
 
     await state.set_state(SuggestionViewerState.in_viewer)
 
-    suggestion_dto = SuggestionFullDTO.model_validate(suggestion_orm)
-    viewer_data = SuggestionViewerData(
-        suggestion_dto=suggestion_dto,
-        user_dto=user_dto,
-    )
-    viewer = SuggestionViewerRenderer(notifier, viewer_data, config)
+    viewer_data = SuggestionViewerData(suggestion_dto=suggestion_dto, user_dto=user_dto)
+    viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)
 
-    await viewer.render_send_verdict(i18n_key="start_review_suggestions")
+    await viewer.render_start_review()
     await viewer.render_suggestion()
-    await viewer.update_state_data(state, viewer.data)
+    await viewer.dump_into_state(state, viewer.data)
 
-
-@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_accept"))
-@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_accept_no_caption"))
-@router.message(SuggestionViewerState.in_viewer, viewer_action("viewer_decline"))
-async def accept_deny_suggestion(
+@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=True))
+@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
+async def viewer_apply_verdict(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
     notifier: NotifierService,
     config: Config,
-    viewer_action: str,
     verdict: bool,
 ):
     suggestion_service = SuggestionService(session, config)
 
-    data = await state.get_data()
-    viewer_data: SuggestionViewerData = data.get("viewer_data")
-    suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
-
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
+    viewer = await SuggestionViewer.from_state(state, suggestion_service, notifier, config)
+    suggestion_dto: SuggestionFullDTO = viewer.data.suggestion_dto
 
     updated_dto = await suggestion_service.get(suggestion_dto.id, solo=True)
     suggestion_dto = suggestion_dto.model_copy(update={"accepted": updated_dto.accepted})
@@ -149,19 +132,16 @@ async def accept_deny_suggestion(
 
     if suggestion_dto.accepted is not None:
         await viewer.render_verdict_exists()
-        return await viewer.go_next(session, state)
+        return await viewer.go_next_suggestion(state)
 
-    if verdict:
-        status = await viewer.post_in_channel(viewer_action)
-        if not status:
-            return
-        await viewer.notify_author(status)
-
-    suggestion_dto.accepted = verdict
+    viewer.utils.update_status(suggestion_dto, verdict)
     await suggestion_service.update(suggestion_dto)
 
-    return await viewer.go_next(session, state)
+    if suggestion_dto.accepted:
+        await viewer.post_channel()
+        await viewer.notify_author()
 
+    await viewer.go_next_suggestion(state)
 
 VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
 @router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
@@ -175,16 +155,12 @@ async def ban_suggestion_author(
     user_service: UserService,
     config: Config,
 ):
-    data = await state.get_data()
-
-    viewer_data: SuggestionViewerData = data.get("viewer_data")
-    suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
-
-    viewer: SuggestionViewerRenderer = SuggestionViewerRenderer.from_data(notifier, viewer_data, config)
+    suggestion_service = SuggestionService(session, config)
+    viewer = await SuggestionViewer.from_state(state, suggestion_service, notifier, config)
 
     try:
         cmd_data = ChangeRoleData(
-            target_id=suggestion_dto.author_id,
+            target_id=viewer.data.suggestion_dto.author_id,
             target_role="BANNED",
             caller_dto=user_dto,
             notifier=notifier,
@@ -197,7 +173,6 @@ async def ban_suggestion_author(
         )
         return await notifier.notify_user(user_dto, payload)
 
-    # Получаем новый (следующий) suggestion
     current_state = await state.get_state()
     if current_state != "SuggestionViewerState:in_solo_view":
-        await viewer.go_next(session, state)
+        await viewer.render_suggestion()

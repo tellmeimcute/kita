@@ -185,9 +185,6 @@ msgstr ""
 "\n"
 "👤 <code><b>{author_string}</b></code>"
 
-msgid "channel_post_message_no_caption"
-msgstr "👤 <code><b>{author_string}</b></code>"
-
 msgid "error_empty_suggestion"
 msgstr "Нельзя опубликовать пустое сообщение."
 

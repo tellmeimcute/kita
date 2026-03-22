@@ -34,7 +34,7 @@ class ReplyKeyboard:
     def viewer_admin_action(cls):
         return cls.build(
             [KeyboardButton(text=_("viewer_accept")), KeyboardButton(text=_("viewer_decline"))],
-            [KeyboardButton(text=_("viewer_accept_no_caption")), KeyboardButton(text=_("command_ban_filter"))],
+            [KeyboardButton(text=_("command_ban_filter"))],
             [KeyboardButton(text=_("command_cancel"))],
         )
 

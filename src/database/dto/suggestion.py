@@ -18,3 +18,6 @@ class SuggestionBaseDTO(TrackableDto):
 class SuggestionFullDTO(SuggestionBaseDTO):
     author: UserDTO
     media: list[MediaDTO] = []
+
+
+SUGGESTION_DTOS = SuggestionFullDTO | SuggestionBaseDTO

@@ -1,14 +1,11 @@
 from logging import getLogger
 
-from aiogram.types import User as UserTelegram
 from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Media, Suggestion
 from database.dao import SuggestionDAO, MediaDAO
-from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO, MediaDTO
-
-from helpers.message_payload import MessagePayload
+from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO, SUGGESTION_DTOS, MediaDTO
 
 from config import Config
 
@@ -50,7 +47,17 @@ class SuggestionService:
         suggestion_dto = dto_obj.model_validate(suggestion_orm)
         return suggestion_dto
 
-    async def update(self, suggestion_dto: SuggestionBaseDTO | SuggestionFullDTO):
+    async def get_active(self) -> SuggestionFullDTO | None:
+        async with self.session.begin():
+            active_orm = await self.dao.get_active(self.session)
+
+        if not active_orm:
+            return
+        
+        active_dto = SuggestionFullDTO.model_validate(active_orm)
+        return active_dto
+
+    async def update(self, suggestion_dto: SUGGESTION_DTOS):
         changed_data = suggestion_dto.prepare_changed_data()
         if not changed_data:
             return
