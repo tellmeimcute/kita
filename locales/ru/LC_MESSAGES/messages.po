@@ -82,13 +82,13 @@ msgstr "Предложки с ID {suggestion_id} не найдено 😢"
 
 msgid "admin_get_suggestion_caption"
 msgstr ""
-"Предложка ID {suggestion_id}\n"
-"Автор @{author_username} ({author_id})\n"
+"Предложка ID {id}\n"
+"Автор @{author[username]} ({author[user_id]})\n"
 "Источник <code><b>{forwarded_from}</b></code>\n"
 "Статус: <b>{verdict}</b>\n"
 "\n"
 "Оригинальная подпись:\n"
-"{original_caption}"
+"{caption}"
 
 msgid "no_active_suggestions"
 msgstr "Нет активной предложки 😢"
@@ -181,7 +181,7 @@ msgstr "Запостить или отказать? А может забанит
 
 msgid "channel_post_message"
 msgstr ""
-"{original_caption}\n"
+"{caption}\n"
 "\n"
 "👤 <code><b>{author_string}</b></code>"
 
@@ -189,7 +189,9 @@ msgid "error_empty_suggestion"
 msgstr "Нельзя опубликовать пустое сообщение."
 
 msgid "notify_author_suggestion_status"
-msgstr "Ваша предложка с ID: {suggestion_id} : <b>{verdict}</b>."
+msgstr ""
+"Ваша предложка с ID: {id}\n"
+"<b>{verdict}</b>"
 
 msgid "command_mass_message"
 msgstr "Рассылка"

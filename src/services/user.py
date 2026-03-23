@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from aiogram.types import User as UserTelegram
+from aiogram.types import User as UserAiogram
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dao import UserAlchemyDAO
@@ -9,6 +9,8 @@ from database.roles import UserRole
 from database.models import UserAlchemy
 
 from helpers.schemas import ChangeRoleData
+from helpers.schemas.objects import UserData
+
 from helpers.message_payload import MessagePayload
 
 from config import Config
@@ -25,13 +27,13 @@ class UserService:
     def is_immune(self, user_id: int):
         return user_id == self.config.ADMIN_ID
 
-    async def create(self, user_tg: UserTelegram):
-        role = UserRole.ADMIN if user_tg.id == self.config.ADMIN_ID else UserRole.USER
+    async def create(self, user_data: UserData | UserAiogram):
+        role = UserRole.ADMIN if user_data.id == self.config.ADMIN_ID else UserRole.USER
 
         prep_user_dto = UserDTO(
-            user_id=user_tg.id,
-            username=user_tg.username,
-            name=user_tg.full_name,
+            user_id=user_data.id,
+            username=user_data.username,
+            name=user_data.full_name,
             role=role,
             is_bot_blocked=False
         )
@@ -41,7 +43,7 @@ class UserService:
         async with self.session.begin():
             user_alchemy = await self.dao.create(self.session, prep_user_alchemy)
 
-        logger.info("Created new user %s", user_tg.id)
+        logger.info("Created new user %s", user_data.id)
         return UserDTO.model_validate(user_alchemy)
     
     async def get(self, user_id: int) -> UserDTO | None:
@@ -54,8 +56,8 @@ class UserService:
         user_dto = UserDTO.model_validate(user_alchemy)
         return user_dto
 
-    async def update(self, user_dto: UserDTO, user_tg: UserTelegram):
-        user_dto.update_from_tg(user_tg)
+    async def update(self, user_dto: UserDTO, user_data: UserData | UserAiogram):
+        user_dto.update_from_tg(user_data)
         changed_data = user_dto.prepare_changed_data()
         if not changed_data:
             return

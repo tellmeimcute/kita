@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dto import SuggestionFullDTO, UserDTO
-from handlers.keyboards import ReplyKeyboard
 
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
@@ -47,11 +46,7 @@ async def solo_suggestion(
 
     await state.set_state(SuggestionViewerState.in_solo_view)
 
-    viewer_data = SuggestionViewerData(
-        suggestion_dto=suggestion_dto,
-        user_dto=user_dto,
-    )
-
+    viewer_data = SuggestionViewerData(user_dto=user_dto, suggestion_dto=suggestion_dto)
     viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)
 
     await viewer.render_suggestion()
@@ -96,20 +91,13 @@ async def enter_suggestion_viewer(
     config: Config,
 ):
     suggestion_service = SuggestionService(session, config)
-    suggestion_dto = await suggestion_service.get_active()
-
-    if not suggestion_dto:
-        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto))
-        return await notifier.notify_user(user_dto, payload=payload)
-
     await state.set_state(SuggestionViewerState.in_viewer)
 
-    viewer_data = SuggestionViewerData(suggestion_dto=suggestion_dto, user_dto=user_dto)
+    viewer_data = SuggestionViewerData(user_dto=user_dto)
     viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)
 
     await viewer.render_start_review()
-    await viewer.render_suggestion()
-    await viewer.dump_into_state(state, viewer.data)
+    await viewer.go_next_suggestion(state)
 
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=True))
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
@@ -124,11 +112,7 @@ async def viewer_apply_verdict(
     suggestion_service = SuggestionService(session, config)
 
     viewer = await SuggestionViewer.from_state(state, suggestion_service, notifier, config)
-    suggestion_dto: SuggestionFullDTO = viewer.data.suggestion_dto
-
-    updated_dto = await suggestion_service.get(suggestion_dto.id, solo=True)
-    suggestion_dto = suggestion_dto.model_copy(update={"accepted": updated_dto.accepted})
-    viewer.data = viewer.data.model_copy(update={"suggestion_dto": suggestion_dto})
+    suggestion_dto = await viewer.get_updated_dto()
 
     if suggestion_dto.accepted is not None:
         await viewer.render_verdict_exists()

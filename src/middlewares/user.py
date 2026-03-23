@@ -2,10 +2,11 @@ from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
-from aiogram.types import User as UserTelegram
+from aiogram.types import User as UserAiogram
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.user import UserService
+
 
 class UserMiddleware(BaseMiddleware):
     """
@@ -23,14 +24,14 @@ class UserMiddleware(BaseMiddleware):
         if not session:
             return await handler(event, data)
 
-        user_tg: UserTelegram = None
+        user_tg: UserAiogram = None
 
         if isinstance(event, (Message, CallbackQuery)):
             user_tg = event.from_user
 
         if not user_tg:
             return await handler(event, data)
-
+        
         user_service: UserService = data["user_service"]
 
         user_dto = await user_service.get(user_tg.id)

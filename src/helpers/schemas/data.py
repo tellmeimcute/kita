@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, computed_field
+from pydantic import computed_field
 
 from aiogram.types import ReplyKeyboardMarkup
 
@@ -7,13 +7,8 @@ from database.roles import UserRole
 from helpers.enums import RenderType
 from services.notifier import NotifierService
 
-class BaseData(BaseModel):
-    model_config = ConfigDict(
-        extra="ignore",
-        from_attributes=True,
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-    )
+from .base import BaseData
+
 
 class ChangeRoleData(BaseData):
     target_id: int
@@ -25,7 +20,7 @@ class ChangeRoleData(BaseData):
     target_new_kb: ReplyKeyboardMarkup | None = None
 
 class SuggestionViewerData(BaseData):
-    suggestion_dto: SuggestionFullDTO
+    suggestion_dto: SuggestionFullDTO | None = None
     user_dto: UserDTO
     
     @computed_field
