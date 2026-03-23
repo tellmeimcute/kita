@@ -3,13 +3,13 @@ from logging import getLogger
 from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Media, Suggestion
-from database.dao import SuggestionDAO, MediaDAO
-from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO, SUGGESTION_DTOS, MediaDTO
-
 from config import Config
+from database.dao import MediaDAO, SuggestionDAO
+from database.dto import SUGGESTION_DTOS, MediaDTO, SuggestionBaseDTO, SuggestionFullDTO, UserDTO
+from database.models import Media, Suggestion
 
 logger = getLogger("kita.suggestion_service")
+
 
 class SuggestionService:
     dao = SuggestionDAO
@@ -28,22 +28,24 @@ class SuggestionService:
         elif message.document:
             return "document", message.document.file_id
         return None
-    
+
     def _parse_origin_info(self, message: Message):
         origin = message.forward_origin
         if isinstance(origin, MessageOriginChannel):
             return origin.chat.full_name
         return None
 
-    async def get(self, suggestion_id: int, solo = False):
+    async def get(self, suggestion_id: int, solo=False):
         dto_obj = SuggestionBaseDTO if solo else SuggestionFullDTO
 
         async with self.session.begin():
-            suggestion_orm = await self.dao.get_one_or_none_by_id(self.session, suggestion_id, solo=solo)
+            suggestion_orm = await self.dao.get_one_or_none_by_id(
+                self.session, suggestion_id, solo=solo
+            )
 
         if not suggestion_orm:
             raise ValueError("Suggestion %s not found", suggestion_id)
-        
+
         suggestion_dto = dto_obj.model_validate(suggestion_orm)
         return suggestion_dto
 
@@ -53,7 +55,7 @@ class SuggestionService:
 
         if not active_orm:
             return
-        
+
         active_dto = SuggestionFullDTO.model_validate(active_orm)
         return active_dto
 
@@ -61,20 +63,19 @@ class SuggestionService:
         changed_data = suggestion_dto.prepare_changed_data()
         if not changed_data:
             return
-        
+
         async with self.session.begin():
             await self.dao.update_by_id(self.session, suggestion_dto.id, changed_data)
-        
+
         logger.info(
-            "Update database info for suggestion %s. New data: %s",
-            suggestion_dto.id, changed_data
+            "Update database info for suggestion %s. New data: %s", suggestion_dto.id, changed_data
         )
 
     async def create_media(self, message: Message, suggestion: Suggestion):
         media_info = self._parse_media_info(message)
         if not media_info:
             return
-        
+
         media_type, media_id = media_info
         media = await MediaDAO.create_from_data(
             self.session,
@@ -107,7 +108,7 @@ class SuggestionService:
 
         media_dtos = MediaDTO.from_model_list(medias)
         suggestion_base_dto = SuggestionBaseDTO.model_validate(suggestion_orm)
-        
+
         suggestion_dto = SuggestionFullDTO(
             **suggestion_base_dto.model_dump(),
             author=author_dto,
@@ -115,4 +116,3 @@ class SuggestionService:
         )
 
         return suggestion_dto
-

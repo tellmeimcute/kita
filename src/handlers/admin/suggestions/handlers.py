@@ -1,6 +1,3 @@
-
-
-
 from logging import getLogger
 
 from aiogram import Router, html
@@ -11,15 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dto import SuggestionFullDTO, UserDTO
-
+from handlers.state import SuggestionViewerState
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand, SuggestionViewerData
-
 from helpers.suggestion_viewer import SuggestionViewer
-
-from services import UserService, NotifierService, SuggestionService
-from handlers.state import SuggestionViewerState
+from services import NotifierService, SuggestionService, UserService
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")
@@ -53,8 +47,11 @@ async def solo_suggestion(
     await viewer.dump_into_state(state, viewer.data)
     await viewer.render_wait_verdict()
 
+
 @router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=True))
-@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False))
+@router.message(
+    SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False)
+)
 async def solo_suggestion_verdict(
     message: Message,
     session: AsyncSession,
@@ -81,6 +78,7 @@ async def solo_suggestion_verdict(
     await viewer.render_verdict_rewrite()
     await state.clear()
 
+
 @router.message(I18nTextFilter("command_enter_viewer"))
 async def enter_suggestion_viewer(
     message: Message,
@@ -98,6 +96,7 @@ async def enter_suggestion_viewer(
 
     await viewer.render_start_review()
     await viewer.go_next_suggestion(state)
+
 
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=True))
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
@@ -127,7 +126,10 @@ async def viewer_apply_verdict(
 
     await viewer.go_next_suggestion(state)
 
+
 VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
+
+
 @router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
 @router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(

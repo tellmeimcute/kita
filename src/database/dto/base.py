@@ -1,6 +1,4 @@
-
-
-from typing import TypeVar, Iterable, Any
+from typing import Any, Iterable, TypeVar
 
 from pydantic import BaseModel, ConfigDict, PrivateAttr
 
@@ -22,12 +20,9 @@ class BaseDTO(BaseModel):
         cls: type[ModelDTO],
         model_instances: Iterable[ModelSQL],
     ):
-        return [
-            cls.model_validate(model)
-            for model in model_instances
-            if model is not None
-        ]
-    
+        return [cls.model_validate(model) for model in model_instances if model is not None]
+
+
 class TrackableDto(BaseDTO):
     __changed_data: dict[str, Any] = PrivateAttr(default_factory=dict)
 
@@ -38,10 +33,6 @@ class TrackableDto(BaseDTO):
     @property
     def changed_data(self) -> dict[str, Any]:
         return self.__changed_data
-    
+
     def prepare_changed_data(self) -> dict[str, Any]:
-        return {
-            k: v
-            for k, v in self.changed_data.items()
-            if not k.startswith("_")
-        }
+        return {k: v for k, v in self.changed_data.items() if not k.startswith("_")}

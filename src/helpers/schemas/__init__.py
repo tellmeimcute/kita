@@ -1,7 +1,5 @@
-
-
 from .commands import ChangeRoleCommand, IDCommand, StrCommand
-from .data import ChangeRoleData, SuggestionViewerData, MassMessageData
+from .data import ChangeRoleData, MassMessageData, SuggestionViewerData
 
 __all__ = (
     "ChangeRoleData",

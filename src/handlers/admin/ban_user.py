@@ -1,22 +1,19 @@
-
-
 from aiogram import Router, html
-from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
-
+from aiogram.types import Message
 from pydantic import ValidationError
 
 from database.dto import UserDTO
+from handlers.keyboards import ReplyKeyboard
+from handlers.state import CommandBanState
+from helpers.enums import BanAdminAction
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData, IDCommand
 from services import NotifierService, UserService
-from handlers.keyboards import ReplyKeyboard
-from handlers.state import CommandBanState
-
-from helpers.enums import BanAdminAction
 
 router = Router()
+
 
 @router.message(TextArgsFilter("command_ban_filter", IDCommand, action=BanAdminAction.BAN))
 @router.message(TextArgsFilter("command_unban_filter", IDCommand, action=BanAdminAction.UNBAN))
@@ -44,6 +41,7 @@ async def ban_user_id_handler(
         )
         return await notifier.notify_user(user_dto, payload)
 
+
 @router.message(I18nTextFilter("command_ban_filter", action=BanAdminAction.BAN))
 @router.message(I18nTextFilter("command_unban_filter", action=BanAdminAction.UNBAN))
 async def ban_user_state_start(
@@ -51,7 +49,7 @@ async def ban_user_state_start(
     state: FSMContext,
     user_dto: UserDTO,
     notifier: NotifierService,
-    action: BanAdminAction
+    action: BanAdminAction,
 ):
     payload = MessagePayload(i18n_key="state_wait_for_id", reply_markup=ReplyKeyboard.cancel())
     await notifier.notify_user(user_dto, payload)
@@ -59,6 +57,7 @@ async def ban_user_state_start(
 
     state_data = {"action": action}
     await state.set_data(state_data)
+
 
 @router.message(CommandBanState.wait_for_id)
 async def ban_user_state(
@@ -79,7 +78,9 @@ async def ban_user_state(
             caller_dto=user_dto,
             notifier=notifier,
         )
-        await user_service.change_role(cmd_data, notify_user=False, return_kb=ReplyKeyboard.admin_menu())
+        await user_service.change_role(
+            cmd_data, notify_user=False, return_kb=ReplyKeyboard.admin_menu()
+        )
         await state.clear()
     except (ValueError, ValidationError):
         payload = MessagePayload(

@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError
-from aiogram.types import ReplyKeyboardMarkup, Message
+from aiogram.types import Message, ReplyKeyboardMarkup
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.media_group import MediaType
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -29,8 +29,7 @@ class NotifierService:
                 await UserAlchemyDAO.update_by_id(session, user_dto.user_id, data)
 
         self.logger.info(
-            "User %s (%s) blocked the bot. Status updated",
-            user_dto.username, user_dto.user_id
+            "User %s (%s) blocked the bot. Status updated", user_dto.username, user_dto.user_id
         )
 
     async def _safe_send(
@@ -45,7 +44,7 @@ class NotifierService:
         payload = user_dto, channel_id
         if not any(payload) or all(payload):
             raise ValueError("only one UserDTO or channel_id should be provided")
-        
+
         target = channel_id if channel_id else user_dto.user_id
 
         try:
@@ -63,10 +62,8 @@ class NotifierService:
             else:
                 self.logger.warning("Forbidden on channel %s", channel_id)
         except Exception as e:
-            self.logger.error(
-                "Failed to send message to target %s: %s", target, e
-            )
-        
+            self.logger.error("Failed to send message to target %s: %s", target, e)
+
         return None
 
     async def _deliver_messages(
@@ -82,9 +79,7 @@ class NotifierService:
             raise ValueError("only one UserDTO or channel_id should be provided")
         target = channel_id if channel_id else user_dto.user_id
 
-        send_func = (
-            self.bot.forward_messages if method == "forward" else self.bot.copy_messages
-        )
+        send_func = self.bot.forward_messages if method == "forward" else self.bot.copy_messages
 
         try:
             return await send_func(
@@ -93,10 +88,7 @@ class NotifierService:
                 message_ids=message_ids,
             )
         except Exception as e:
-            self.logger.error(
-                "Failed to %s message to target %s: %s", 
-                method, target, e
-            )
+            self.logger.error("Failed to %s message to target %s: %s", method, target, e)
 
         return None
 
@@ -114,14 +106,15 @@ class NotifierService:
         if user_dto.is_bot_blocked:
             return self.logger.info(
                 "User %s (%s) has blocked the bot. Skip.",
-                user_dto.username, user_dto.user_id,
+                user_dto.username,
+                user_dto.user_id,
             )
-        
+
         # STRING message
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
             return await self._safe_send(content, user_dto=user_dto, kb=payload.reply_markup)
-        
+
         # MEDIA GROUP message
         return await self._safe_send(
             payload.content, user_dto=user_dto, method="media_group", kb=payload.reply_markup
@@ -137,24 +130,20 @@ class NotifierService:
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         return await self._deliver_messages(messages, source, user_dto=user_dto, method="forward")
-        
+
     async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         return await self._deliver_messages(messages, source, user_dto=user_dto, method="copy")
-        
+
     async def edit_message(self, message: Message, text: str):
         await self.bot.edit_message_text(
-            text=text,
-            chat_id=message.chat.id,
-            message_id=message.message_id
+            text=text, chat_id=message.chat.id, message_id=message.message_id
         )
 
     async def send_channel(self, channel_id: int, payload: MessagePayload):
         if payload.i18n_key:
             content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
-            return await self._safe_send(
-                content, channel_id=channel_id, kb=payload.reply_markup
-            )
-        
+            return await self._safe_send(content, channel_id=channel_id, kb=payload.reply_markup)
+
         # MEDIA GROUP message
         return await self._safe_send(
             payload.content, channel_id=channel_id, method="media_group", kb=payload.reply_markup

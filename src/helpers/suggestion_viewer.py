@@ -3,17 +3,17 @@ from logging import getLogger
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.media_group import MediaGroupBuilder
 
+from config import Config
 from database.dto import SUGGESTION_DTOS, SuggestionFullDTO
 from handlers.keyboards import ReplyKeyboard
-from helpers.schemas.objects import SuggestionData
 from helpers.enums import RenderType
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
-
+from helpers.schemas.objects import SuggestionData
 from services import NotifierService, SuggestionService
-from config import Config
 
 logger = getLogger("kita.suggestion_viewer")
+
 
 class SuggestionViewerUtils:
     def __init__(self, config: Config, notifier: NotifierService):
@@ -23,27 +23,32 @@ class SuggestionViewerUtils:
     @classmethod
     def from_viewer(cls, viewer: "SuggestionViewer"):
         return cls(viewer.config, viewer.notifier)
-        
+
     def get_verdict(self, suggestion_dto: SUGGESTION_DTOS):
         i18n_key = "none_suggestion"
         if suggestion_dto.accepted is not None:
-            i18n_key = "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
+            i18n_key = (
+                "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
+            )
         return self.notifier.get_translated_text(i18n_key)
 
     def get_author_plus_origin(self, suggestion_dto: SUGGESTION_DTOS):
         return self.notifier.get_i18n_text(
-            i18n_key="author_plus_origin", i18n_kwargs={
+            i18n_key="author_plus_origin",
+            i18n_kwargs={
                 "author_name": suggestion_dto.author.name,
                 "forwarded_from": suggestion_dto.forwarded_from,
-            }
+            },
         )
 
     def get_i18n_kwargs(self, suggestion_dto: SuggestionFullDTO | SuggestionData):
         verdict = self.get_verdict(suggestion_dto)
         author_plus_origin = self.get_author_plus_origin(suggestion_dto)
-        author_string = author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
+        author_string = (
+            author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
+        )
         caption = suggestion_dto.caption if suggestion_dto.caption else ""
-        
+
         i18n_kwargs = suggestion_dto.model_dump()
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
@@ -62,7 +67,7 @@ class SuggestionViewerUtils:
             media_group.add(type=media.filetype, media=media.telegram_file_id)
 
         return media_group
-    
+
     def media_group_payload(self, suggestion_dto: SuggestionFullDTO, i18n_key: str | None = None):
         if not i18n_key:
             i18n_key = "admin_get_suggestion_caption"
@@ -77,6 +82,7 @@ class SuggestionViewerUtils:
 
     def update_status(self, suggestion_dto: SUGGESTION_DTOS, new_status: bool):
         suggestion_dto.accepted = new_status
+
 
 class SuggestionViewer:
     def __init__(
@@ -111,7 +117,7 @@ class SuggestionViewer:
     def suggestion_data(self) -> SuggestionData:
         if self._suggestion_data:
             return self._suggestion_data
-        
+
         if self.data.suggestion_dto:
             self._suggestion_data = SuggestionData.model_validate(self.data.suggestion_dto)
             return self._suggestion_data
@@ -124,15 +130,21 @@ class SuggestionViewer:
         await state.set_data({"viewer_data": data})
 
     async def render_wait_verdict(self):
-        payload = MessagePayload(i18n_key="send_verdict", reply_markup=ReplyKeyboard.viewer_admin_action())
+        payload = MessagePayload(
+            i18n_key="send_verdict", reply_markup=ReplyKeyboard.viewer_admin_action()
+        )
         await self.notifier.notify_user(self.data.user_dto, payload)
 
     async def render_start_review(self):
-        payload = MessagePayload(i18n_key="start_review_suggestions", reply_markup=ReplyKeyboard.viewer_admin_action())
+        payload = MessagePayload(
+            i18n_key="start_review_suggestions", reply_markup=ReplyKeyboard.viewer_admin_action()
+        )
         await self.notifier.notify_user(self.data.user_dto, payload)
 
     async def render_verdict_rewrite(self):
-        payload = MessagePayload(i18n_key="verdict_rewrite", reply_markup=ReplyKeyboard.main(self.data.user_dto))
+        payload = MessagePayload(
+            i18n_key="verdict_rewrite", reply_markup=ReplyKeyboard.main(self.data.user_dto)
+        )
         await self.notifier.notify_user(self.data.user_dto, payload)
 
     async def render_suggestion(self):
@@ -148,12 +160,14 @@ class SuggestionViewer:
             payload = self.utils.media_group_payload(self.data.suggestion_dto)
 
         return await self.notifier.notify_user(self.data.user_dto, payload)
-    
+
     async def render_empty_queue(self):
         user_dto = self.data.user_dto
-        payload = MessagePayload(i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto))
+        payload = MessagePayload(
+            i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto)
+        )
         return await self.notifier.notify_user(user_dto, payload)
-    
+
     async def render_verdict_exists(self):
         i18n_kwargs = self.utils.get_i18n_kwargs(self.data.suggestion_dto)
         payload = MessagePayload(i18n_key="suggestion_verdict_exists", i18n_kwargs=i18n_kwargs)
@@ -186,16 +200,14 @@ class SuggestionViewer:
         new_active = await self.suggestion_service.get_active()
         if not new_active:
             return
-        
-        self.data = self.data.model_copy(
-            update={"suggestion_dto": new_active}
-        )
+
+        self.data = self.data.model_copy(update={"suggestion_dto": new_active})
         self._suggestion_data = SuggestionData.model_validate(self.data.suggestion_dto)
 
         await self.dump_into_state(state, self.data)
 
         return new_active
-    
+
     async def post_channel(self):
         i18n_key = "channel_post_message"
         i18n_kwargs = self.utils.get_i18n_kwargs(self.suggestion_data)
@@ -207,7 +219,7 @@ class SuggestionViewer:
             payload = self.utils.media_group_payload(self.suggestion_data, i18n_key)
 
         return await self.notifier.send_channel(self.config.CHANNEL_ID, payload)
-    
+
     async def go_next_suggestion(self, state: FSMContext):
         """
         Render and store in state next_suggestion if any.
@@ -215,6 +227,6 @@ class SuggestionViewer:
         """
         if await self.to_next_suggestion(state):
             return await self.render_suggestion()
-        
+
         await state.clear()
         await self.render_empty_queue()

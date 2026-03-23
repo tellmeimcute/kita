@@ -1,8 +1,7 @@
-from .general import router as admin_general_router
 from .ban_user import router as admin_ban_user_router
-from .suggestions import router as admin_suggestion_router
+from .general import router as admin_general_router
 from .mass_message import router as admin_mass_message_router
-
+from .suggestions import router as admin_suggestion_router
 
 __all__ = (
     "admin_suggestion_router",

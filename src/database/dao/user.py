@@ -1,7 +1,5 @@
 from typing import Sequence
 
-from aiogram.types import User as UserTelegram
-
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 

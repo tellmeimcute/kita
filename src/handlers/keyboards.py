@@ -1,5 +1,3 @@
-
-
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.i18n import gettext as _
 
@@ -8,10 +6,9 @@ from database.roles import UserRole
 
 
 class ReplyKeyboard:
-
     @classmethod
     def build(cls, *buttons: list[KeyboardButton], one_time: bool = False):
-        new_kb  = ReplyKeyboardMarkup(
+        new_kb = ReplyKeyboardMarkup(
             keyboard=buttons,
             resize_keyboard=True,
             one_time_keyboard=one_time,
@@ -20,16 +17,12 @@ class ReplyKeyboard:
 
     @classmethod
     def cancel(cls):
-        return cls.build(
-            [KeyboardButton(text=_("command_cancel"))]
-        )
+        return cls.build([KeyboardButton(text=_("command_cancel"))])
 
     @classmethod
     def confirm_decline(cls):
-        return cls.build(
-            [KeyboardButton(text=_("confirm")), KeyboardButton(text=_("decline"))]
-        )
-    
+        return cls.build([KeyboardButton(text=_("confirm")), KeyboardButton(text=_("decline"))])
+
     @classmethod
     def viewer_admin_action(cls):
         return cls.build(
@@ -41,13 +34,19 @@ class ReplyKeyboard:
     @classmethod
     def user_main(cls):
         return cls.build(
-            [KeyboardButton(text=_("command_suggest_post")), KeyboardButton(text=_("command_user_stats"))],
+            [
+                KeyboardButton(text=_("command_suggest_post")),
+                KeyboardButton(text=_("command_user_stats")),
+            ],
         )
 
     @classmethod
     def admin_main(cls):
         return cls.build(
-            [KeyboardButton(text=_("command_suggest_post")), KeyboardButton(text=_("command_user_stats"))],
+            [
+                KeyboardButton(text=_("command_suggest_post")),
+                KeyboardButton(text=_("command_user_stats")),
+            ],
             [KeyboardButton(text=_("command_enter_viewer"))],
             [KeyboardButton(text=_("command_get_admin_menu"))],
         )
@@ -57,7 +56,7 @@ class ReplyKeyboard:
         if user_dto.is_admin:
             return cls.admin_main()
         return cls.user_main()
-    
+
     @classmethod
     def main_by_role(cls, role: UserRole):
         if role == UserRole.ADMIN:
@@ -67,7 +66,15 @@ class ReplyKeyboard:
     @classmethod
     def admin_menu(cls):
         return cls.build(
-            [KeyboardButton(text=_("command_post_banner")), KeyboardButton(text=_("command_admin_stats")), KeyboardButton(text=_("command_mass_message"))],
-            [KeyboardButton(text=_("command_ban_filter")), KeyboardButton(text=_("command_unban_filter"))],
-            [KeyboardButton(text=_("command_admin_help"))], [KeyboardButton(text=_("command_cancel"))],
+            [
+                KeyboardButton(text=_("command_post_banner")),
+                KeyboardButton(text=_("command_admin_stats")),
+                KeyboardButton(text=_("command_mass_message")),
+            ],
+            [
+                KeyboardButton(text=_("command_ban_filter")),
+                KeyboardButton(text=_("command_unban_filter")),
+            ],
+            [KeyboardButton(text=_("command_admin_help"))],
+            [KeyboardButton(text=_("command_cancel"))],
         )

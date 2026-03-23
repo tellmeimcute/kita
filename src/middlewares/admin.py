@@ -5,6 +5,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.dto import UserDTO
 
+
 class AdminMiddleware(BaseMiddleware):
     """
     Пропускает дальше только если пользователь админ.

@@ -1,7 +1,9 @@
-
 from aiogram.types import User as UserTelegram
+
 from database.roles import UserRole
+
 from .base import TrackableDto
+
 
 class UserDTO(TrackableDto):
     user_id: int

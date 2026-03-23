@@ -31,7 +31,7 @@ class UserMiddleware(BaseMiddleware):
 
         if not user_tg:
             return await handler(event, data)
-        
+
         user_service: UserService = data["user_service"]
 
         user_dto = await user_service.get(user_tg.id)

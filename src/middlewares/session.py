@@ -4,9 +4,9 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from config import Config
 from services.user import UserService
 
-from config import Config
 
 class SessionMiddleware(BaseMiddleware):
     """

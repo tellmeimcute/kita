@@ -1,6 +1,6 @@
 from .notifier import NotifierService
-from .user import UserService
 from .suggestion import SuggestionService
+from .user import UserService
 
 __all__ = (
     "NotifierService",

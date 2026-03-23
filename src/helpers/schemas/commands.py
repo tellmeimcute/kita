@@ -1,5 +1,3 @@
-
-
 from pydantic import BaseModel, field_validator
 
 from database.roles import UserRole
@@ -8,8 +6,10 @@ from database.roles import UserRole
 class IDCommand(BaseModel):
     target_id: int
 
+
 class StrCommand(BaseModel):
     string: str
+
 
 class ChangeRoleCommand(BaseModel):
     target_id: int

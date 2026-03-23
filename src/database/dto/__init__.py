@@ -1,6 +1,6 @@
-from .suggestion import SuggestionBaseDTO, SuggestionFullDTO, SUGGESTION_DTOS
-from .user import UserDTO
 from .media import MediaDTO
+from .suggestion import SUGGESTION_DTOS, SuggestionBaseDTO, SuggestionFullDTO
+from .user import UserDTO
 
 __all__ = (
     "UserDTO",

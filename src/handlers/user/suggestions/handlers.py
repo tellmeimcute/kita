@@ -8,18 +8,16 @@ from aiogram.types import Message
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
 from database.dao import SuggestionDAO
-from database.dto import UserDTO, SuggestionFullDTO
+from database.dto import SuggestionFullDTO, UserDTO
 from handlers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from middlewares import MediaGroupMiddleware
-
 from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 from services.user import UserService
-
-from config import Config
 
 from .state import PostStates
 
@@ -27,6 +25,7 @@ logger = getLogger("kita.user_suggestions")
 
 router = Router(name="suggestions_user")
 router.message.middleware(MediaGroupMiddleware(latency=0.25))
+
 
 async def notify_admins_task(
     suggestion: SuggestionFullDTO,
@@ -38,11 +37,12 @@ async def notify_admins_task(
         "new_suggestion_author_id": suggestion.author.user_id,
         "new_suggestion_author_username": suggestion.author.username,
         "new_suggestion_author_fullname": suggestion.author.name,
-        "new_suggestion_view_command": html.code(f"{_("command_open_solo_view")} {suggestion.id}"),
+        "new_suggestion_view_command": html.code(f"{_('command_open_solo_view')} {suggestion.id}"),
     }
 
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
     await notifier.notify_admins(admins, payload)
+
 
 @router.message(I18nTextFilter("command_suggest_post"))
 async def suggest_post(
@@ -53,9 +53,9 @@ async def suggest_post(
 ):
     await state.set_state(PostStates.waiting_for_post)
 
-
     payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=ReplyKeyboard.cancel())
     await notifier.notify_user(user_dto, payload=payload)
+
 
 @router.message(PostStates.waiting_for_post)
 async def process_suggestion(
@@ -82,6 +82,7 @@ async def process_suggestion(
 
     admins = await user_service.get_admins()
     asyncio.create_task(notify_admins_task(suggestion_dto, admins, notifier))
+
 
 @router.message(I18nTextFilter("command_user_stats"))
 async def statistic(

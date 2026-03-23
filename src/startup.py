@@ -1,22 +1,22 @@
-
 import logging
+
 from aiogram import Dispatcher
 from aiogram.utils.i18n import I18n
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 
 from database import DatabaseManager
-from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
-
 from handlers import (
+    admin_ban_user_router,
+    admin_general_router,
+    admin_mass_message_router,
+    admin_suggestion_router,
     user_start_router,
     user_suggestion_router,
-    admin_suggestion_router,
-    admin_general_router,
-    admin_ban_user_router,
-    admin_mass_message_router,
 )
+from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
 
 logger = logging.getLogger("kita.startup")
+
 
 def register_middlewares(dp: Dispatcher, db: DatabaseManager):
     session_middleware = SessionMiddleware(db.session_maker)

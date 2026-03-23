@@ -1,6 +1,4 @@
-
 from logging import getLogger
-
 from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
@@ -9,6 +7,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from database.dto import UserDTO
 
 logger = getLogger("kita.ban_middleware")
+
 
 class BanCheckMiddleware(BaseMiddleware):
     """

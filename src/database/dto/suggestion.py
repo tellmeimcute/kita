@@ -1,6 +1,7 @@
+from .base import TrackableDto
 from .media import MediaDTO
 from .user import UserDTO
-from .base import TrackableDto
+
 
 class SuggestionBaseDTO(TrackableDto):
     id: int

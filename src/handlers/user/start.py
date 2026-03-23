@@ -23,8 +23,11 @@ async def start(
     runtime_config = config.runtime_config
     i18n_kwargs = {"channel_name": html.bold(runtime_config.channel_name)}
 
-    payload = MessagePayload(i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=ReplyKeyboard.main(user_dto))
+    payload = MessagePayload(
+        i18n_key="start_msg", i18n_kwargs=i18n_kwargs, reply_markup=ReplyKeyboard.main(user_dto)
+    )
     await notifier.notify_user(user_dto, payload)
+
 
 @router.message(I18nTextFilter("decline"))
 @router.message(I18nTextFilter("command_cancel"))

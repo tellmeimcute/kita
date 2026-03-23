@@ -1,6 +1,5 @@
-from pydantic import computed_field
-
 from aiogram.types import ReplyKeyboardMarkup
+from pydantic import computed_field
 
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
@@ -19,10 +18,11 @@ class ChangeRoleData(BaseData):
 
     target_new_kb: ReplyKeyboardMarkup | None = None
 
+
 class SuggestionViewerData(BaseData):
     suggestion_dto: SuggestionFullDTO | None = None
     user_dto: UserDTO
-    
+
     @computed_field
     @property
     def render_type(self) -> RenderType:
@@ -30,9 +30,10 @@ class SuggestionViewerData(BaseData):
             return RenderType.MESSAGE
         return RenderType.MEDIAGROUP
 
+
 class MassMessageData(BaseData):
     users: list[UserDTO] | None = None
-    
+
     is_forwarded: bool = False
     source_chat_id: int | None = None
     source_message_ids: list[int] | None = None
@@ -45,7 +46,7 @@ class MassMessageData(BaseData):
     @property
     def users_count(self) -> int:
         return 0 if self.users is None else len(self.users)
-    
+
     @computed_field
     @property
     def status(self) -> bool:

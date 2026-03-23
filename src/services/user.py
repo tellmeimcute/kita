@@ -3,19 +3,17 @@ from logging import getLogger
 from aiogram.types import User as UserAiogram
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
-from database.roles import UserRole
 from database.models import UserAlchemy
-
+from database.roles import UserRole
+from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleData
 from helpers.schemas.objects import UserData
 
-from helpers.message_payload import MessagePayload
-
-from config import Config
-
 logger = getLogger("kita.user_service")
+
 
 class UserService:
     dao = UserAlchemyDAO
@@ -35,7 +33,7 @@ class UserService:
             username=user_data.username,
             name=user_data.full_name,
             role=role,
-            is_bot_blocked=False
+            is_bot_blocked=False,
         )
 
         prep_user_alchemy = UserAlchemy(**prep_user_dto.model_dump())
@@ -45,14 +43,14 @@ class UserService:
 
         logger.info("Created new user %s", user_data.id)
         return UserDTO.model_validate(user_alchemy)
-    
+
     async def get(self, user_id: int) -> UserDTO | None:
         async with self.session.begin():
             user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
 
         if not user_alchemy:
             return None
-        
+
         user_dto = UserDTO.model_validate(user_alchemy)
         return user_dto
 
@@ -61,13 +59,12 @@ class UserService:
         changed_data = user_dto.prepare_changed_data()
         if not changed_data:
             return
-        
+
         async with self.session.begin():
             await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
-        
+
         logger.info(
-            "Update database info for user %s. New data: %s",
-            user_dto.user_id, changed_data
+            "Update database info for user %s. New data: %s", user_dto.user_id, changed_data
         )
 
     async def get_active(self):
@@ -87,10 +84,10 @@ class UserService:
             result = await self.dao.update_by_id(
                 self.session, user_dto.user_id, user_dto.prepare_changed_data()
             )
-        
+
         return result
 
-    async def change_role(self, data: ChangeRoleData, notify_user: bool = True, return_kb = None):
+    async def change_role(self, data: ChangeRoleData, notify_user: bool = True, return_kb=None):
         notifier = data.notifier
         caller_dto = data.caller_dto
 
@@ -98,19 +95,23 @@ class UserService:
             payload = MessagePayload(i18n_key="error_user_immune", reply_markup=return_kb)
             await notifier.notify_user(caller_dto, payload)
             return
-    
+
         try:
             target_dto = await self.get(data.target_id)
             if not target_dto:
                 raise KeyError("User not found")
             target_dto.role = data.target_role
             async with self.session.begin():
-                await self.dao.update_by_id(self.session, data.target_id, target_dto.prepare_changed_data())
+                await self.dao.update_by_id(
+                    self.session, data.target_id, target_dto.prepare_changed_data()
+                )
                 if target_dto.is_banned:
                     await self.dao.decline_all_suggestions(self.session, data.target_id)
         except KeyError:
             i18n_kwargs = {"user_id": data.target_id}
-            payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs, reply_markup=return_kb)
+            payload = MessagePayload(
+                i18n_key="user_not_found", i18n_kwargs=i18n_kwargs, reply_markup=return_kb
+            )
             await notifier.notify_user(caller_dto, payload)
             return
         except Exception as e:
@@ -118,8 +119,8 @@ class UserService:
             return
 
         payload = MessagePayload(
-            i18n_key="answer_admin_role_changed", 
-            i18n_kwargs=target_dto.model_dump(), 
+            i18n_key="answer_admin_role_changed",
+            i18n_kwargs=target_dto.model_dump(),
             reply_markup=return_kb,
         )
         await notifier.notify_user(caller_dto, payload)
