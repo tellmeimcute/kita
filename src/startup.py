@@ -1,10 +1,16 @@
 import logging
+import asyncio
+from redis.asyncio import Redis
+from redis.exceptions import RedisError, ConnectionError
 
 from aiogram import Dispatcher
 from aiogram.utils.i18n import I18n
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 
 from database import DatabaseManager
+from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware, MediaGroupMiddleware
+from config import Config
+
 from handlers import (
     admin_ban_user_router,
     admin_general_router,
@@ -13,10 +19,22 @@ from handlers import (
     user_start_router,
     user_suggestion_router,
 )
-from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware
 
 logger = logging.getLogger("kita.startup")
 
+async def check_redis(redis: Redis, timeout: float = 5.0):
+    try:
+        pong = await asyncio.wait_for(redis.ping(), timeout=timeout)
+        if pong:
+            logger.info("Redis client successfully connected")
+            return True
+        raise RedisError("Unexpected ping response")
+    except asyncio.TimeoutError:
+        logger.error("Redis timeout")
+        raise
+    except (ConnectionError, RedisError, Exception) as e:
+        logger.error("Error Redis ping: %s", e)
+        raise
 
 def register_middlewares(dp: Dispatcher, db: DatabaseManager):
     session_middleware = SessionMiddleware(db.session_maker)
@@ -31,10 +49,15 @@ def register_middlewares(dp: Dispatcher, db: DatabaseManager):
     dp.message.middleware(bancheck_middleware)
     dp.message.outer_middleware(i18n_middleware)
 
-    logger.info("Successfully registered middlewares")
+    logger.info("Middlewares successfully registered ")
 
 
-def register_routers(dp: Dispatcher):
+def register_routers(dp: Dispatcher, config: Config):
+    media_group_middleware = MediaGroupMiddleware(redis_client=config.redis)
+
+    user_suggestion_router.message.middleware(media_group_middleware)
+    admin_mass_message_router.message.middleware(media_group_middleware)
+
     dp.include_routers(
         user_start_router,
         user_suggestion_router,
@@ -44,4 +67,5 @@ def register_routers(dp: Dispatcher):
         admin_mass_message_router,
     )
 
-    logger.info("Successfully registered routers")
+    logger.info("Routers successfully registered")
+

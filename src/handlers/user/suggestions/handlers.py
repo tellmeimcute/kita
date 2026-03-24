@@ -10,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import SuggestionDAO
-from database.dto import SuggestionFullDTO, UserDTO
+from database.dto import UserDTO
 from handlers.keyboards import ReplyKeyboard
+from helpers.suggestion_viewer import SuggestionViewerUtils
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
-from middlewares import MediaGroupMiddleware
 from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 from services.user import UserService
@@ -24,24 +24,6 @@ from .state import PostStates
 logger = getLogger("kita.user_suggestions")
 
 router = Router(name="suggestions_user")
-router.message.middleware(MediaGroupMiddleware(latency=0.25))
-
-
-async def notify_admins_task(
-    suggestion: SuggestionFullDTO,
-    admins: List[UserDTO],
-    notifier: NotifierService,
-):
-    i18n_kwargs = {
-        "new_suggestion_id": suggestion.id,
-        "new_suggestion_author_id": suggestion.author.user_id,
-        "new_suggestion_author_username": suggestion.author.username,
-        "new_suggestion_author_fullname": suggestion.author.name,
-        "new_suggestion_view_command": html.code(f"{_('command_open_solo_view')} {suggestion.id}"),
-    }
-
-    payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
-    await notifier.notify_admins(admins, payload)
 
 
 @router.message(I18nTextFilter("command_suggest_post"))
@@ -80,8 +62,14 @@ async def process_suggestion(
 
     await state.clear()
 
+    suggestion_utils = SuggestionViewerUtils(config, notifier)
+
+    i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
+    i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))
+    payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
+
     admins = await user_service.get_admins()
-    asyncio.create_task(notify_admins_task(suggestion_dto, admins, notifier))
+    asyncio.create_task(suggestion_utils.notifier.notify_admins(admins, payload))
 
 
 @router.message(I18nTextFilter("command_user_stats"))
@@ -93,11 +81,5 @@ async def statistic(
 ):
     user_id = message.from_user.id
     stats = await SuggestionDAO.get_stats_by_user_id(session, user_id)
-
-    i18n_kwargs = {
-        "total_user_suggestions": stats.total,
-        "accepted_user_suggestions": stats.accepted,
-        "declined_user_suggestions": stats.declined,
-    }
-    payload = MessagePayload(i18n_key="user_stats", i18n_kwargs=i18n_kwargs)
+    payload = MessagePayload(i18n_key="user_stats", i18n_kwargs=stats._asdict())
     await notifier.notify_user(user_dto, payload=payload)

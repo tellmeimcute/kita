@@ -10,11 +10,9 @@ from handlers.state import MassMessageState
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import MassMessageData
-from middlewares import MediaGroupMiddleware
 from services import NotifierService, UserService
 
 router = Router()
-router.message.middleware(MediaGroupMiddleware(latency=0.25))
 
 
 async def mass_message_task(
@@ -92,7 +90,7 @@ async def mass_message_get_message(
         }
     )
 
-    await state.update_data(mass_message_data=data)
+    await state.update_data(mass_message_data=data.model_dump())
 
     i18n_kwargs = data.model_dump()
     i18n_kwargs.update({"estimated_time": data.users_count * 0.3})

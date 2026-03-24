@@ -9,22 +9,34 @@ from aiogram.enums import ParseMode
 from config import RuntimeConfig, config
 from database import DatabaseManager
 from services.notifier import NotifierService
-from startup import register_middlewares, register_routers
+from startup import register_middlewares, register_routers, check_redis
+
+from redis.asyncio import Redis
+from aiogram.fsm.storage.redis import RedisStorage
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kita.main")
 
+redis = Redis(
+    host=config.REDIS_HOST,
+    port=config.REDIS_PORT,
+    password=config.REDIS_PASSWORD,
+    db=config.REDIS_DB
+)
+
+config = config.model_copy(update={"redis": redis})
+
 db = DatabaseManager(config.DB_URL)
 
-proxy_session = AiohttpSession(proxy=config.PROXY)
 bot = Bot(
     config.TG_TOKEN.get_secret_value(),
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-    session=proxy_session,
+    session=AiohttpSession(proxy=config.PROXY),
 )
 
 dp = Dispatcher(
     notifier=NotifierService(bot, db.session_maker),
+    storage=RedisStorage(redis=redis),
 )
 
 
@@ -51,11 +63,13 @@ async def on_shutdown():
 
 
 async def main():
+    await check_redis(redis)
+
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
 
     register_middlewares(dp, db)
-    register_routers(dp)
+    register_routers(dp, config)
 
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

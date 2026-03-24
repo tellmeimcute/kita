@@ -63,7 +63,7 @@ async def solo_suggestion_verdict(
     suggestion_service = SuggestionService(session, config)
 
     data = await state.get_data()
-    viewer_data: SuggestionViewerData = data.get("viewer_data")
+    viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
     suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
 
     viewer = SuggestionViewer(viewer_data, suggestion_service, notifier, config)

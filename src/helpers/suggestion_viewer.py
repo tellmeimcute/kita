@@ -110,7 +110,7 @@ class SuggestionViewer:
         config: Config,
     ):
         data = await state.get_data()
-        viewer_data: SuggestionViewerData = data.get("viewer_data")
+        viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
         return self(viewer_data, suggestion_service, notifier, config)
 
     @property
@@ -127,7 +127,7 @@ class SuggestionViewer:
         self._suggestion_data = value
 
     async def dump_into_state(self, state: FSMContext, data: SuggestionViewerData):
-        await state.set_data({"viewer_data": data})
+        await state.set_data({"viewer_data": data.model_dump()})
 
     async def render_wait_verdict(self):
         payload = MessagePayload(

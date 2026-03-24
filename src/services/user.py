@@ -1,3 +1,4 @@
+import json
 from logging import getLogger
 
 from aiogram.types import User as UserAiogram
@@ -25,6 +26,34 @@ class UserService:
     def is_immune(self, user_id: int):
         return user_id == self.config.ADMIN_ID
 
+    async def cache_user(self, user_dto: UserDTO):
+        key = f"user:{user_dto.user_id}"
+        data = user_dto.model_dump_json()
+        await self.config.redis.set(
+            name=key,
+            value=json.dumps(data),
+            ex=60,
+        )
+
+    async def get_cache_user(self, user_id: int):
+        key = f"user:{user_id}"
+        raw = await self.config.redis.get(key)
+        if not raw:
+            return None
+        try:
+            data = json.loads(raw)
+            return UserDTO.model_validate_json(data)
+        except Exception as e:
+            logger.error("Fail to get user from cache: %s", e, exc_info=True)
+            await self.config.redis.delete(key)
+            return None
+        
+    async def cache_user_exists(self, user_id: int) -> bool:
+        return bool(await self.config.redis.exists(f"user:{user_id}"))
+    
+    async def cache_user_delete(self, user_id: int):
+        return await self.config.redis.delete(f"user:{user_id}")
+
     async def create(self, user_data: UserData | UserAiogram):
         role = UserRole.ADMIN if user_data.id == self.config.ADMIN_ID else UserRole.USER
 
@@ -42,9 +71,16 @@ class UserService:
             user_alchemy = await self.dao.create(self.session, prep_user_alchemy)
 
         logger.info("Created new user %s", user_data.id)
-        return UserDTO.model_validate(user_alchemy)
+        user_dto = UserDTO.model_validate(user_alchemy)
+        await self.cache_user(user_dto)
+
+        return user_dto
 
     async def get(self, user_id: int) -> UserDTO | None:
+        cached_user = await self.get_cache_user(user_id)
+        if cached_user:
+            return cached_user
+
         async with self.session.begin():
             user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
 
@@ -52,6 +88,7 @@ class UserService:
             return None
 
         user_dto = UserDTO.model_validate(user_alchemy)
+        await self.cache_user(user_dto)
         return user_dto
 
     async def update(self, user_dto: UserDTO, user_data: UserData | UserAiogram):
@@ -62,6 +99,7 @@ class UserService:
 
         async with self.session.begin():
             await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
+        await self.cache_user_delete(user_dto.user_id)
 
         logger.info(
             "Update database info for user %s. New data: %s", user_dto.user_id, changed_data
@@ -107,6 +145,7 @@ class UserService:
                 )
                 if target_dto.is_banned:
                     await self.dao.decline_all_suggestions(self.session, data.target_id)
+            await self.cache_user_delete(target_dto.user_id)
         except KeyError:
             i18n_kwargs = {"user_id": data.target_id}
             payload = MessagePayload(
