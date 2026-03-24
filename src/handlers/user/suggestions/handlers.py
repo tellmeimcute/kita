@@ -69,7 +69,7 @@ async def process_suggestion(
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
 
     admins = await user_service.get_admins()
-    asyncio.create_task(suggestion_utils.notifier.notify_admins(admins, payload))
+    asyncio.create_task(suggestion_utils.notifier.notify_many(admins, payload))
 
 
 @router.message(I18nTextFilter("command_user_stats"))

@@ -1,9 +1,10 @@
 import asyncio
 from logging import Logger, getLogger
 from typing import Literal, Optional
+from itertools import batched
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramRetryAfter
 from aiogram.types import Message, ReplyKeyboardMarkup
 from aiogram.utils.i18n import gettext as _
 from aiogram.utils.media_group import MediaType
@@ -12,13 +13,25 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
 from helpers.message_payload import MessagePayload
+from helpers.i18n_translator import Translator
 
+logger: Logger = getLogger("kita.notifier_service")
 
 class NotifierService:
-    def __init__(self, bot: Bot, sessionmaker: async_sessionmaker):
+    def __init__(
+        self,
+        bot: Bot,
+        sessionmaker: async_sessionmaker,
+        chunk_size: int = 5,
+        chunk_delay: float = 3.0
+    ):
         self.bot: Bot = bot
         self.sessionmaker: async_sessionmaker = sessionmaker
-        self.logger: Logger = getLogger("kita.notifier_service")
+        
+        self.chunk_delay = chunk_delay
+        self.chunk_size = chunk_size
+
+        self.translator = Translator()
 
     async def _handle_blocked_user(self, user_dto: UserDTO):
         session: AsyncSession
@@ -27,10 +40,6 @@ class NotifierService:
             async with session.begin():
                 data = {"is_bot_blocked": True}
                 await UserAlchemyDAO.update_by_id(session, user_dto.user_id, data)
-
-        self.logger.info(
-            "User %s (%s) blocked the bot. Status updated", user_dto.username, user_dto.user_id
-        )
 
     async def _safe_send(
         self,
@@ -59,10 +68,17 @@ class NotifierService:
         except TelegramForbiddenError:
             if user_dto is not None:
                 await self._handle_blocked_user(user_dto)
+                logger.info(
+                    "User %s (%s) blocked the bot. Status updated", user_dto.username, user_dto.user_id
+                )
             else:
-                self.logger.warning("Forbidden on channel %s", channel_id)
+                logger.warning("Forbidden on channel %s", channel_id)
+        except TelegramRetryAfter as e:
+            logger.warning("Rate limit exceeded. Sleeping for %s seconds", e.retry_after)
+            await asyncio.sleep(e.retry_after + 0.1)
+            return await self._safe_send(content, user_dto, channel_id, method, kb, silent)
         except Exception as e:
-            self.logger.error("Failed to send message to target %s: %s", target, e)
+            logger.error("Failed to send message to target %s: %s", target, e)
 
         return None
 
@@ -88,45 +104,31 @@ class NotifierService:
                 message_ids=message_ids,
             )
         except Exception as e:
-            self.logger.error("Failed to %s message to target %s: %s", method, target, e)
+            logger.error("Failed to %s message to target %s: %s", method, target, e)
 
         return None
 
-    def get_translated_text(self, i18n_key: str) -> str:
-        return _(i18n_key)
-
-    def get_formatted_text(self, text: str, i18n_kwargs: dict[str, str]) -> str:
-        return text.format(**i18n_kwargs)
-
-    def get_i18n_text(self, i18n_key, i18n_kwargs) -> str:
-        translated = self.get_translated_text(i18n_key)
-        return self.get_formatted_text(translated, i18n_kwargs)
-
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
         if user_dto.is_bot_blocked:
-            return self.logger.info(
+            return logger.info(
                 "User %s (%s) has blocked the bot. Skip.",
                 user_dto.username,
                 user_dto.user_id,
             )
 
-        # STRING message
         if payload.i18n_key:
-            content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
+            content = self.translator.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
             return await self._safe_send(content, user_dto=user_dto, kb=payload.reply_markup)
 
-        # MEDIA GROUP message
         return await self._safe_send(
             payload.content, user_dto=user_dto, method="media_group", kb=payload.reply_markup
         )
 
-    async def notify_admins(self, admins_dto: list[UserDTO], payload: MessagePayload):
-        for admin_dto in admins_dto:
-            await self.notify_user(admin_dto, payload)
-            self.logger.info(
-                "New suggestion notify sended to %s (%s)", admin_dto.username, admin_dto.user_id
-            )
-            await asyncio.sleep(0.05)
+    async def notify_many(self, users_dto: list[UserDTO], payload: MessagePayload):
+        for chunk in batched(users_dto, self.chunk_size):
+            tasks = [self.notify_user(user_dto, payload) for user_dto in chunk]
+            await asyncio.gather(*tasks)
+            await asyncio.sleep(self.chunk_delay)
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         return await self._deliver_messages(messages, source, user_dto=user_dto, method="forward")
@@ -141,7 +143,7 @@ class NotifierService:
 
     async def send_channel(self, channel_id: int, payload: MessagePayload):
         if payload.i18n_key:
-            content = self.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
+            content = self.translator.get_i18n_text(payload.i18n_key, payload.i18n_kwargs)
             return await self._safe_send(content, channel_id=channel_id, kb=payload.reply_markup)
 
         # MEDIA GROUP message

@@ -1,4 +1,5 @@
 import asyncio
+from itertools import batched
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -19,27 +20,29 @@ async def mass_message_task(
     notifier: NotifierService, data: MassMessageData, status_message: Message
 ):
     send_func = notifier.forward_messages if data.is_forwarded else notifier.copy_messages
-
-    for user in data.users:
-        sended = await send_func(user, data.source_message_ids, data.source_chat_id)
+    for chunk in batched(data.users, notifier.chunk_size):
+        tasks = [
+            send_func(user_dto, data.source_message_ids, data.source_chat_id) for user_dto in chunk
+        ]
+        result = await asyncio.gather(*tasks)
+        success = [r for r in result if r]
         data = data.model_copy(
             update={
-                "progress": data.progress + 1,
-                "success": data.success + 1 if sended else data.success,
-                "failure": data.failure + 1 if not sended else data.failure,
+                "progress": data.progress + len(result),
+                "success": data.success + len(success),
+                "failure": data.failure + len(result) - len(success),
             }
         )
 
         if data.progress % 10 == 0 or data.progress == len(data.users):
             i18n_kwargs = data.model_dump()
-            i18n_kwargs["status"] = notifier.get_translated_text(
+            i18n_kwargs["status"] = notifier.translator.get_translated_text(
                 i18n_key="completed" if data.status else "in_process"
             )
-            new_status = notifier.get_i18n_text("mass_message_status", i18n_kwargs)
+            new_status = notifier.translator.get_i18n_text("mass_message_status", i18n_kwargs)
             await notifier.edit_message(status_message, new_status)
-
-        await asyncio.sleep(0.3)
-
+    
+        await asyncio.sleep(notifier.chunk_delay)
 
 @router.message(I18nTextFilter("command_mass_message"))
 async def mass_message_start(
@@ -93,7 +96,8 @@ async def mass_message_get_message(
     await state.update_data(mass_message_data=data.model_dump())
 
     i18n_kwargs = data.model_dump()
-    i18n_kwargs.update({"estimated_time": data.users_count * 0.3})
+    estimated_time = (data.users_count / notifier.chunk_size) * notifier.chunk_delay
+    i18n_kwargs.update({"estimated_time": int(estimated_time)})
 
     payload = MessagePayload(
         i18n_key="mass_message_confirm",
@@ -122,7 +126,7 @@ async def mass_message_confirm(
     await notifier.notify_user(user_dto, payload)
 
     i18n_kwargs = data.model_dump()
-    i18n_kwargs["status"] = notifier.get_translated_text(
+    i18n_kwargs["status"] = notifier.translator.get_translated_text(
         i18n_key="completed" if data.status else "in_process"
     )
     payload = MessagePayload(

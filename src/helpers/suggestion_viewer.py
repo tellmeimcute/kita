@@ -30,10 +30,10 @@ class SuggestionViewerUtils:
             i18n_key = (
                 "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
             )
-        return self.notifier.get_translated_text(i18n_key)
+        return self.notifier.translator.get_translated_text(i18n_key)
 
     def get_author_plus_origin(self, suggestion_dto: SUGGESTION_DTOS):
-        return self.notifier.get_i18n_text(
+        return self.notifier.translator.get_i18n_text(
             i18n_key="author_plus_origin",
             i18n_kwargs={
                 "author_name": suggestion_dto.author.name,
@@ -75,7 +75,7 @@ class SuggestionViewerUtils:
         media_group: MediaGroupBuilder = self.get_media_group(suggestion_dto)
 
         i18n_kwargs = self.get_i18n_kwargs(suggestion_dto)
-        media_group.caption = self.notifier.get_i18n_text(i18n_key, i18n_kwargs)
+        media_group.caption = self.notifier.translator.get_i18n_text(i18n_key, i18n_kwargs)
 
         payload = MessagePayload(content=media_group.build())
         return payload
