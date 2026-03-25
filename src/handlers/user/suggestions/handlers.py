@@ -55,7 +55,9 @@ async def process_suggestion(
     if not album:
         album = (message,)
 
-    suggestion_dto = await suggestion_service.create(user_dto, album)
+    async with session.begin():
+        suggestion_dto = await suggestion_service.create(user_dto, album)
+        admins = await user_service.get_admins()
 
     payload = MessagePayload(i18n_key="on_moderation", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload=payload)
@@ -68,7 +70,6 @@ async def process_suggestion(
     i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
 
-    admins = await user_service.get_admins()
     asyncio.create_task(suggestion_utils.notifier.notify_many(admins, payload))
 
 

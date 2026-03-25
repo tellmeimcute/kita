@@ -1,5 +1,6 @@
 import asyncio
 from itertools import batched
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
@@ -10,7 +11,7 @@ from handlers.keyboards import ReplyKeyboard
 from handlers.state import MassMessageState
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
-from helpers.schemas import MassMessageData
+from helpers.schemas.data import MassMessageData
 from services import NotifierService, UserService
 
 router = Router()
@@ -48,13 +49,16 @@ async def mass_message_task(
 async def mass_message_start(
     message: Message,
     user_dto: UserDTO,
+    session: AsyncSession,
     notifier: NotifierService,
     user_service: UserService,
     state: FSMContext,
 ):
     await state.set_state(MassMessageState.wait_for_message)
 
-    active = await user_service.get_active()
+    async with session.begin():
+        active = await user_service.get_active()
+
     data = MassMessageData(users=active)
 
     await state.update_data(mass_message_data=data.model_dump())

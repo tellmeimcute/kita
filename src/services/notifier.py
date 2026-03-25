@@ -10,14 +10,17 @@ from aiogram.utils.i18n import gettext as _
 from aiogram.utils.media_group import MediaType
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
+from database.dao import UserAlchemyDAO
 from helpers.message_payload import MessagePayload
 from helpers.i18n_translator import Translator
+
 
 logger: Logger = getLogger("kita.notifier_service")
 
 class NotifierService:
+    RETRY_TIMEOUT_BUFFER = 0.1
+
     def __init__(
         self,
         bot: Bot,
@@ -50,8 +53,7 @@ class NotifierService:
         kb: Optional[ReplyKeyboardMarkup] = None,
         silent: bool = True,
     ):
-        payload = user_dto, channel_id
-        if not any(payload) or all(payload):
+        if (user_dto is None) == (channel_id is None):
             raise ValueError("only one UserDTO or channel_id should be provided")
 
         target = channel_id if channel_id else user_dto.user_id
@@ -75,7 +77,7 @@ class NotifierService:
                 logger.warning("Forbidden on channel %s", channel_id)
         except TelegramRetryAfter as e:
             logger.warning("Rate limit exceeded. Sleeping for %s seconds", e.retry_after)
-            await asyncio.sleep(e.retry_after + 0.1)
+            await asyncio.sleep(e.retry_after + self.RETRY_TIMEOUT_BUFFER)
             return await self._safe_send(content, user_dto, channel_id, method, kb, silent)
         except Exception as e:
             logger.error("Failed to send message to target %s: %s", target, e)
@@ -90,8 +92,7 @@ class NotifierService:
         channel_id: Optional[int] = None,
         method: Literal["forward", "copy"] = "forward",
     ):
-        payload = user_dto, channel_id
-        if not any(payload) or all(payload):
+        if (user_dto is None) == (channel_id is None):
             raise ValueError("only one UserDTO or channel_id should be provided")
         target = channel_id if channel_id else user_dto.user_id
 

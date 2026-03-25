@@ -31,6 +31,24 @@ class BaseDao(Generic[T]):
         return stmt
 
     @classmethod
+    def parse_options(self, options: Sequence[Any] | Any):
+        if options is None:
+            opt_seq = ()
+        elif isinstance(options, Sequence) and not isinstance(options, str):
+            opt_seq = options
+        else:
+            opt_seq = (options,)
+
+        processed_options = []
+        for opt in opt_seq:
+            if isinstance(opt, InstrumentedAttribute):
+                processed_options.append(selectinload(opt))
+            else:
+                processed_options.append(opt)
+
+        return processed_options
+
+    @classmethod
     async def get_result(
         cls,
         session: AsyncSession,
@@ -57,20 +75,7 @@ class BaseDao(Generic[T]):
         options: Sequence[Any] | Any = None,
         order_by: Any = None,
     ) -> T | None:
-        if options is None:
-            opt_seq = ()
-        elif isinstance(options, Sequence) and not isinstance(options, str):
-            opt_seq = options
-        else:
-            opt_seq = (options,)
-
-        processed_options = []
-        for opt in opt_seq:
-            if isinstance(opt, InstrumentedAttribute):
-                processed_options.append(selectinload(opt))
-            else:
-                processed_options.append(opt)
-
+        processed_options = cls.parse_options(options)
         result = await cls.get_result(
             session,
             filters=filters,
@@ -103,7 +108,8 @@ class BaseDao(Generic[T]):
         offset: int = 0,
         limit: int | None = None,
     ) -> Sequence[T]:
-        result = await cls.get_result(session, filters, options, order_by, offset, limit)
+        processed_options = cls.parse_options(options)
+        result = await cls.get_result(session, filters, processed_options, order_by, offset, limit)
         return result.scalars().all()
 
     @classmethod

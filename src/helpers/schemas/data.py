@@ -1,26 +1,18 @@
-from aiogram.types import ReplyKeyboardMarkup
 from pydantic import computed_field
 
-from database.dto import SuggestionFullDTO, UserDTO
-from database.roles import UserRole
+
+from database.dto.user import UserDTO
+from database.dto.suggestion import SuggestionFullDTO
+
 from helpers.enums import RenderType
-from services.notifier import NotifierService
-
 from .base import BaseData
-
-
-class ChangeRoleData(BaseData):
-    target_id: int
-    target_role: UserRole
-
-    caller_dto: UserDTO
-    notifier: NotifierService
-
-    target_new_kb: ReplyKeyboardMarkup | None = None
-
+from .objects import SuggestionData
 
 class SuggestionViewerData(BaseData):
+    suggestion_dtos: list[SuggestionFullDTO] | None = None
     suggestion_dto: SuggestionFullDTO | None = None
+
+    suggestion_data: SuggestionData | None = None
     user_dto: UserDTO
 
     @computed_field

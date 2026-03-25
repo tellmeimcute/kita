@@ -33,12 +33,13 @@ class UserMiddleware(BaseMiddleware):
             return await handler(event, data)
 
         user_service: UserService = data["user_service"]
-
-        user_dto = await user_service.get(user_tg.id)
-        if user_dto:
-            await user_service.update(user_dto, user_tg)
-        if not user_dto:
-            user_dto = await user_service.create(user_tg)
+        
+        async with session.begin():
+            user_dto = await user_service.get(user_tg.id)
+            if user_dto:
+                await user_service.update_from_data(user_dto, user_tg)
+            if not user_dto:
+                user_dto = await user_service.create(user_tg)
 
         data["user_dto"] = user_dto
         return await handler(event, data)

@@ -30,7 +30,7 @@ class SuggestionDAO(BaseDao[Suggestion]):
         return await cls.count(session, cls.model.accepted.is_(None))
 
     @classmethod
-    async def get_active(cls, session: AsyncSession, last: bool = False) -> Suggestion | None:
+    async def get_one_active(cls, session: AsyncSession, last: bool = False) -> Suggestion | None:
         """
         Возвращает первый в очереди не рассмотренный Suggestion.
         Если last=True, возвращает последний.
@@ -39,6 +39,17 @@ class SuggestionDAO(BaseDao[Suggestion]):
         return await cls.get_one_or_none(
             session, Suggestion.accepted.is_(None), (Suggestion.media, Suggestion.author), order_by
         )
+
+    @classmethod
+    async def get_active(cls, session: AsyncSession, limit: int = 10, offset: int = 0) -> list[Suggestion] | None:
+        return await cls.get(
+            session=session,
+            filters=Suggestion.accepted.is_(None),
+            options=(Suggestion.media, Suggestion.author),
+            limit=limit,
+            offset=offset,
+        )
+
 
     @classmethod
     async def get_one_or_none_by_id(

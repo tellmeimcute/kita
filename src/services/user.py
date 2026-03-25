@@ -1,7 +1,5 @@
-import json
-from logging import getLogger
 
-from aiogram.types import User as UserAiogram
+from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
@@ -9,9 +7,8 @@ from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
 from database.models import UserAlchemy
 from database.roles import UserRole
-from helpers.message_payload import MessagePayload
-from helpers.schemas import ChangeRoleData
 from helpers.schemas.objects import UserData
+from helpers.exceptions import UserImmuneError, SQLModelNotFoundError
 
 logger = getLogger("kita.user_service")
 
@@ -31,7 +28,7 @@ class UserService:
         data = user_dto.model_dump_json()
         await self.config.redis.set(
             name=key,
-            value=json.dumps(data),
+            value=data,
             ex=60,
         )
 
@@ -41,8 +38,7 @@ class UserService:
         if not raw:
             return None
         try:
-            data = json.loads(raw)
-            return UserDTO.model_validate_json(data)
+            return UserDTO.model_validate_json(raw)
         except Exception as e:
             logger.error("Fail to get user from cache: %s", e, exc_info=True)
             await self.config.redis.delete(key)
@@ -54,7 +50,7 @@ class UserService:
     async def cache_user_delete(self, user_id: int):
         return await self.config.redis.delete(f"user:{user_id}")
 
-    async def create(self, user_data: UserData | UserAiogram):
+    async def create(self, user_data: UserData):
         role = UserRole.ADMIN if user_data.id == self.config.ADMIN_ID else UserRole.USER
 
         prep_user_dto = UserDTO(
@@ -67,8 +63,7 @@ class UserService:
 
         prep_user_alchemy = UserAlchemy(**prep_user_dto.model_dump())
 
-        async with self.session.begin():
-            user_alchemy = await self.dao.create(self.session, prep_user_alchemy)
+        user_alchemy = await self.dao.create(self.session, prep_user_alchemy)
 
         logger.info("Created new user %s", user_data.id)
         user_dto = UserDTO.model_validate(user_alchemy)
@@ -81,24 +76,22 @@ class UserService:
         if cached_user:
             return cached_user
 
-        async with self.session.begin():
-            user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
+        user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
 
         if not user_alchemy:
-            return None
+            raise SQLModelNotFoundError()
 
         user_dto = UserDTO.model_validate(user_alchemy)
         await self.cache_user(user_dto)
         return user_dto
 
-    async def update(self, user_dto: UserDTO, user_data: UserData | UserAiogram):
-        user_dto.update_from_tg(user_data)
+    async def update_from_data(self, user_dto: UserDTO, user_data: UserData):
+        user_dto.update_from_data(user_data)
         changed_data = user_dto.prepare_changed_data()
         if not changed_data:
             return
 
-        async with self.session.begin():
-            await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
+        await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
         await self.cache_user_delete(user_dto.user_id)
 
         logger.info(
@@ -106,80 +99,25 @@ class UserService:
         )
 
     async def get_active(self):
-        async with self.session.begin():
-            active = await self.dao.get_active(self.session)
+        active = await self.dao.get_active(self.session)
         return UserDTO.from_model_list(active)
 
     async def get_admins(self):
-        async with self.session.begin():
-            active = await self.dao.get_admins(self.session)
+        active = await self.dao.get_admins(self.session)
         return UserDTO.from_model_list(active)
 
     async def set_role(self, user_dto: UserDTO, role: UserRole):
-        user_dto.role = role
+        if self.is_immune(user_dto.user_id):
+            raise UserImmuneError()
 
-        async with self.session.begin():
-            result = await self.dao.update_by_id(
-                self.session, user_dto.user_id, user_dto.prepare_changed_data()
-            )
+        user_dto.role = role
+        result = await self.dao.update_by_id(
+            self.session, user_dto.user_id, user_dto.prepare_changed_data()
+        )
 
         return result
 
-    async def change_role(self, data: ChangeRoleData, notify_user: bool = True, return_kb=None):
-        notifier = data.notifier
-        caller_dto = data.caller_dto
+    async def decline_suggestion(self, user_dto: UserDTO):
+        await self.dao.decline_all_suggestions(self.session, user_dto.user_id)
 
-        if self.is_immune(data.target_id) or data.target_id == caller_dto.user_id:
-            payload = MessagePayload(i18n_key="error_user_immune", reply_markup=return_kb)
-            await notifier.notify_user(caller_dto, payload)
-            return
-
-        try:
-            target_dto = await self.get(data.target_id)
-            if not target_dto:
-                raise KeyError("User not found")
-            target_dto.role = data.target_role
-            async with self.session.begin():
-                await self.dao.update_by_id(
-                    self.session, data.target_id, target_dto.prepare_changed_data()
-                )
-                if target_dto.is_banned:
-                    await self.dao.decline_all_suggestions(self.session, data.target_id)
-            await self.cache_user_delete(target_dto.user_id)
-        except KeyError:
-            i18n_kwargs = {"user_id": data.target_id}
-            payload = MessagePayload(
-                i18n_key="user_not_found", i18n_kwargs=i18n_kwargs, reply_markup=return_kb
-            )
-            await notifier.notify_user(caller_dto, payload)
-            return
-        except Exception as e:
-            logger.error(e)
-            return
-
-        payload = MessagePayload(
-            i18n_key="answer_admin_role_changed",
-            i18n_kwargs=target_dto.model_dump(),
-            reply_markup=return_kb,
-        )
-        await notifier.notify_user(caller_dto, payload)
-
-        if notify_user:
-            i18n_kwargs = {"role": data.target_role}
-            payload = MessagePayload(
-                i18n_key="notify_user_role_changed",
-                i18n_kwargs=i18n_kwargs,
-                reply_markup=data.target_new_kb,
-            )
-            await notifier.notify_user(target_dto, payload)
-
-        logger.info(
-            "%s (%s) change user role %s (%s) to %s",
-            caller_dto.username,
-            caller_dto.user_id,
-            target_dto.username,
-            target_dto.user_id,
-            target_dto.role,
-        )
-
-        return target_dto
+        

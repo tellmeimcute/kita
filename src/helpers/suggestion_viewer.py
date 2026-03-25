@@ -1,5 +1,6 @@
 from logging import getLogger
 
+from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.media_group import MediaGroupBuilder
 
@@ -10,6 +11,8 @@ from helpers.enums import RenderType
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
 from helpers.schemas.objects import SuggestionData
+from helpers.exceptions import SQLModelNotFoundError
+
 from services import NotifierService, SuggestionService
 
 logger = getLogger("kita.suggestion_viewer")
@@ -88,43 +91,37 @@ class SuggestionViewer:
     def __init__(
         self,
         data: SuggestionViewerData,
+        session: AsyncSession,
         suggestion_service: SuggestionService,
         notifier: NotifierService,
         config: Config,
     ):
         self.data = data
+        self.session = session
         self.suggestion_service = suggestion_service
         self.notifier = notifier
         self.config = config
 
-        self.utils = SuggestionViewerUtils.from_viewer(self)
+        if self.data.suggestion_dto and not self.data.suggestion_data:
+            suggestion_data = SuggestionData.model_validate(self.data.suggestion_dto)
+            self.data = self.data.model_copy(
+                update={"suggestion_data": suggestion_data}
+            )
 
-        self._suggestion_data: SuggestionData = None
+        self.utils = SuggestionViewerUtils.from_viewer(self)
 
     @classmethod
     async def from_state(
         self,
         state: FSMContext,
+        session: AsyncSession,
         suggestion_service: SuggestionService,
         notifier: NotifierService,
         config: Config,
     ):
         data = await state.get_data()
         viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
-        return self(viewer_data, suggestion_service, notifier, config)
-
-    @property
-    def suggestion_data(self) -> SuggestionData:
-        if self._suggestion_data:
-            return self._suggestion_data
-
-        if self.data.suggestion_dto:
-            self._suggestion_data = SuggestionData.model_validate(self.data.suggestion_dto)
-            return self._suggestion_data
-
-    @suggestion_data.setter
-    def suggestion_data(self, value):
-        self._suggestion_data = value
+        return self(viewer_data, session, suggestion_service, notifier, config)
 
     async def dump_into_state(self, state: FSMContext, data: SuggestionViewerData):
         await state.set_data({"viewer_data": data.model_dump()})
@@ -173,20 +170,22 @@ class SuggestionViewer:
         payload = MessagePayload(i18n_key="suggestion_verdict_exists", i18n_kwargs=i18n_kwargs)
         await self.notifier.notify_user(self.data.user_dto, payload)
 
-    async def notify_author(self):
+    async def notify_author(self, suggestion_dto: SUGGESTION_DTOS):
         """send suggestion status to author"""
-        i18n_kwargs = self.utils.get_i18n_kwargs(self.data.suggestion_dto)
+        i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_dto)
         payload = MessagePayload(
             i18n_key="notify_author_suggestion_status",
             i18n_kwargs=i18n_kwargs,
         )
 
-        await self.notifier.notify_user(self.data.suggestion_dto.author, payload)
+        await self.notifier.notify_user(suggestion_dto.author, payload)
 
     async def get_updated_dto(self):
         suggestion_dto = self.data.suggestion_dto
 
-        updated_dto = await self.suggestion_service.get(suggestion_dto.id, solo=True)
+        async with self.session.begin():
+            updated_dto = await self.suggestion_service.get(suggestion_dto.id, solo=True)
+
         suggestion_dto = suggestion_dto.model_copy(update={"accepted": updated_dto.accepted})
         self.data = self.data.model_copy(update={"suggestion_dto": suggestion_dto})
 
@@ -196,27 +195,35 @@ class SuggestionViewer:
         """
         Теперь вообще не вызывает рендер, только обновляет состояние, внутреннее и aiogram FSM.
         """
+        try:
+            if not self.data.suggestion_dtos:
+                async with self.session.begin():
+                    active_list = await self.suggestion_service.get_active()
+                self.data = self.data.model_copy(update={"suggestion_dtos": active_list})
 
-        new_active = await self.suggestion_service.get_active()
-        if not new_active:
+        except SQLModelNotFoundError:
             return
 
-        self.data = self.data.model_copy(update={"suggestion_dto": new_active})
-        self._suggestion_data = SuggestionData.model_validate(self.data.suggestion_dto)
+        new_active = self.data.suggestion_dtos.pop(0)
+        suggestion_data = SuggestionData.model_validate(new_active)
+
+        self.data = self.data.model_copy(
+            update={"suggestion_dto": new_active, "suggestion_data": suggestion_data}
+        )
 
         await self.dump_into_state(state, self.data)
 
         return new_active
 
-    async def post_channel(self):
+    async def post_channel(self, suggestion_data: SuggestionData):
         i18n_key = "channel_post_message"
-        i18n_kwargs = self.utils.get_i18n_kwargs(self.suggestion_data)
+        i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_data)
 
         render_type = self.data.render_type
         if render_type == RenderType.MESSAGE:
             payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
         elif render_type == RenderType.MEDIAGROUP:
-            payload = self.utils.media_group_payload(self.suggestion_data, i18n_key)
+            payload = self.utils.media_group_payload(suggestion_data, i18n_key)
 
         return await self.notifier.send_channel(self.config.CHANNEL_ID, payload)
 

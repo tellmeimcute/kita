@@ -8,6 +8,8 @@ from database.dao import MediaDAO, SuggestionDAO
 from database.dto import SUGGESTION_DTOS, MediaDTO, SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from database.models import Media, Suggestion
 
+from helpers.exceptions import SQLModelNotFoundError
+
 logger = getLogger("kita.suggestion_service")
 
 
@@ -38,34 +40,40 @@ class SuggestionService:
     async def get(self, suggestion_id: int, solo=False):
         dto_obj = SuggestionBaseDTO if solo else SuggestionFullDTO
 
-        async with self.session.begin():
-            suggestion_orm = await self.dao.get_one_or_none_by_id(
-                self.session, suggestion_id, solo=solo
-            )
+        suggestion_orm = await self.dao.get_one_or_none_by_id(
+            self.session, suggestion_id, solo=solo
+        )
 
         if not suggestion_orm:
-            raise ValueError("Suggestion %s not found", suggestion_id)
+            raise SQLModelNotFoundError()
 
         suggestion_dto = dto_obj.model_validate(suggestion_orm)
         return suggestion_dto
 
-    async def get_active(self) -> SuggestionFullDTO | None:
-        async with self.session.begin():
-            active_orm = await self.dao.get_active(self.session)
+    async def get_one_active(self) -> SuggestionFullDTO | None:
+        active_orm = await self.dao.get_one_active(self.session)
 
         if not active_orm:
-            return
+            raise SQLModelNotFoundError()
 
         active_dto = SuggestionFullDTO.model_validate(active_orm)
         return active_dto
+    
+    async def get_active(self) -> list[SuggestionFullDTO] | None:
+        active_orm = await self.dao.get_active(self.session)
+
+        if not active_orm:
+            raise SQLModelNotFoundError()
+
+        active_dtos = SuggestionFullDTO.from_model_list(active_orm)
+        return active_dtos
 
     async def update(self, suggestion_dto: SUGGESTION_DTOS):
         changed_data = suggestion_dto.prepare_changed_data()
         if not changed_data:
             return
 
-        async with self.session.begin():
-            await self.dao.update_by_id(self.session, suggestion_dto.id, changed_data)
+        await self.dao.update_by_id(self.session, suggestion_dto.id, changed_data)
 
         logger.info(
             "Update database info for suggestion %s. New data: %s", suggestion_dto.id, changed_data
@@ -93,18 +101,18 @@ class SuggestionService:
         forwarded_from = self._parse_origin_info(first_msg)
 
         medias: list[Media] = []
-        async with self.session.begin():
-            suggestion_orm = await self.dao.create_from_data(
-                self.session,
-                author_id=author_dto.user_id,
-                media_group_id=media_group_id,
-                caption=caption,
-                forwarded_from=forwarded_from,
-            )
-            for msg in album:
-                media_orm = await self.create_media(msg, suggestion_orm)
-                if media_orm:
-                    medias.append(media_orm)
+
+        suggestion_orm = await self.dao.create_from_data(
+            self.session,
+            author_id=author_dto.user_id,
+            media_group_id=media_group_id,
+            caption=caption,
+            forwarded_from=forwarded_from,
+        )
+        for msg in album:
+            media_orm = await self.create_media(msg, suggestion_orm)
+            if media_orm:
+                medias.append(media_orm)
 
         media_dtos = MediaDTO.from_model_list(medias)
         suggestion_base_dto = SuggestionBaseDTO.model_validate(suggestion_orm)

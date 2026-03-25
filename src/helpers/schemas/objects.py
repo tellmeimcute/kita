@@ -1,5 +1,4 @@
 from database.dto import MediaDTO, UserDTO
-
 from .base import BaseData
 
 
@@ -12,7 +11,6 @@ class SuggestionData(BaseData):
     media: list[MediaDTO] | None
 
     accepted: bool | None
-
 
 class UserData(BaseData):
     id: int

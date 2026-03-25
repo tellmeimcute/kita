@@ -1,8 +1,11 @@
-from aiogram.types import User as UserTelegram
 
+from typing import TYPE_CHECKING
 from database.roles import UserRole
-
 from .base import TrackableDto
+
+if TYPE_CHECKING:
+    from helpers.schemas.objects import UserData
+
 
 
 class UserDTO(TrackableDto):
@@ -13,10 +16,10 @@ class UserDTO(TrackableDto):
 
     is_bot_blocked: bool | None
 
-    def update_from_tg(self, user_tg: UserTelegram):
+    def update_from_data(self, user_data: "UserData"):
         new_data = {
-            "name": user_tg.full_name,
-            "username": user_tg.username,
+            "name": user_data.full_name,
+            "username": user_data.username,
         }
 
         current_data = self.model_dump(include=new_data.keys())
