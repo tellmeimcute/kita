@@ -81,8 +81,11 @@ async def solo_suggestion_verdict(
         await suggestion_service.update(suggestion_dto)
 
     if suggestion_dto.accepted:
-        await viewer.post_channel(suggestion_dto)
-        await viewer.notify_author(suggestion_dto)
+        tasks = [viewer.post_channel(suggestion_dto), viewer.notify_author(suggestion_dto)]
+        asyncio.gather(*tasks)
+        
+        # await viewer.post_channel(suggestion_dto)
+        # await viewer.notify_author(suggestion_dto)
 
     await viewer.render_verdict_rewrite()
     await state.clear()
@@ -132,8 +135,10 @@ async def viewer_apply_verdict(
         await suggestion_service.update(suggestion_dto)
 
     if suggestion_dto.accepted:
-        await viewer.post_channel(suggestion_dto)
-        await viewer.notify_author(suggestion_dto)
+        tasks = [viewer.post_channel(suggestion_dto), viewer.notify_author(suggestion_dto)]
+        asyncio.gather(*tasks)
+        # await viewer.post_channel(suggestion_dto)
+        # await viewer.notify_author(suggestion_dto)
 
     await viewer.go_next_suggestion(state)
 

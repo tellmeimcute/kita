@@ -191,6 +191,18 @@ class SuggestionViewer:
 
         return self.data.suggestion_dto
 
+    async def post_channel(self, suggestion_data: SuggestionData):
+        i18n_key = "channel_post_message"
+        i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_data)
+
+        render_type = self.data.render_type
+        if render_type == RenderType.MESSAGE:
+            payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
+        elif render_type == RenderType.MEDIAGROUP:
+            payload = self.utils.media_group_payload(suggestion_data, i18n_key)
+
+        return await self.notifier.send_channel(self.config.CHANNEL_ID, payload)
+
     async def to_next_suggestion(self, state: FSMContext) -> SuggestionFullDTO | None:
         """
         Теперь вообще не вызывает рендер, только обновляет состояние, внутреннее и aiogram FSM.
@@ -200,7 +212,6 @@ class SuggestionViewer:
                 async with self.session.begin():
                     active_list = await self.suggestion_service.get_active()
                 self.data = self.data.model_copy(update={"suggestion_dtos": active_list})
-
         except SQLModelNotFoundError:
             return
 
@@ -214,18 +225,6 @@ class SuggestionViewer:
         await self.dump_into_state(state, self.data)
 
         return new_active
-
-    async def post_channel(self, suggestion_data: SuggestionData):
-        i18n_key = "channel_post_message"
-        i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_data)
-
-        render_type = self.data.render_type
-        if render_type == RenderType.MESSAGE:
-            payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
-        elif render_type == RenderType.MEDIAGROUP:
-            payload = self.utils.media_group_payload(suggestion_data, i18n_key)
-
-        return await self.notifier.send_channel(self.config.CHANNEL_ID, payload)
 
     async def go_next_suggestion(self, state: FSMContext):
         """

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.user import UserService
 
+from helpers.exceptions import SQLModelNotFoundError
 
 class UserMiddleware(BaseMiddleware):
     """
@@ -35,11 +36,12 @@ class UserMiddleware(BaseMiddleware):
         user_service: UserService = data["user_service"]
         
         async with session.begin():
-            user_dto = await user_service.get(user_tg.id)
+            try:
+                user_dto = await user_service.get(user_tg.id)
+            except SQLModelNotFoundError:
+                user_dto = await user_service.create(user_tg)
             if user_dto:
                 await user_service.update_from_data(user_dto, user_tg)
-            if not user_dto:
-                user_dto = await user_service.create(user_tg)
 
         data["user_dto"] = user_dto
         return await handler(event, data)
