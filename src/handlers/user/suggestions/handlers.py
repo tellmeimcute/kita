@@ -84,8 +84,10 @@ async def statistic(
     session: AsyncSession,
     user_dto: UserDTO,
     notifier: NotifierService,
+    config: Config,
 ):
-    user_id = message.from_user.id
-    stats = await SuggestionDAO.get_stats_by_user_id(session, user_id)
-    payload = MessagePayload(i18n_key="user_stats", i18n_kwargs=stats._asdict())
+    suggestion_service = SuggestionService(session, config)
+    
+    stats = await suggestion_service.get_user_stats(user_dto)
+    payload = MessagePayload(i18n_key="user_stats", i18n_kwargs=stats.model_dump())
     await notifier.notify_user(user_dto, payload=payload)

@@ -80,15 +80,12 @@ async def solo_suggestion_verdict(
     async with session.begin():
         await suggestion_service.update(suggestion_dto)
 
+    await viewer.render_verdict_rewrite()
+    await state.clear()
+
     if suggestion_dto.accepted:
         tasks = [viewer.post_channel(suggestion_dto), viewer.notify_author(suggestion_dto)]
         asyncio.gather(*tasks)
-        
-        # await viewer.post_channel(suggestion_dto)
-        # await viewer.notify_author(suggestion_dto)
-
-    await viewer.render_verdict_rewrite()
-    await state.clear()
 
 
 @router.message(I18nTextFilter("command_enter_viewer"))
@@ -124,7 +121,7 @@ async def viewer_apply_verdict(
 
     viewer = await SuggestionViewer.from_state(state, session, suggestion_service, notifier, config)
     suggestion_dto = await viewer.get_updated_dto()
-
+    
     if suggestion_dto.accepted is not None:
         await viewer.render_verdict_exists()
         return await viewer.go_next_suggestion(state)
@@ -134,13 +131,11 @@ async def viewer_apply_verdict(
     async with session.begin():
         await suggestion_service.update(suggestion_dto)
 
+    await viewer.go_next_suggestion(state)
+
     if suggestion_dto.accepted:
         tasks = [viewer.post_channel(suggestion_dto), viewer.notify_author(suggestion_dto)]
         asyncio.gather(*tasks)
-        # await viewer.post_channel(suggestion_dto)
-        # await viewer.notify_author(suggestion_dto)
-
-    await viewer.go_next_suggestion(state)
 
 
 VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
