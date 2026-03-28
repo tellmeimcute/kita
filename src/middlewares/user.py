@@ -22,17 +22,11 @@ class UserMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         session: AsyncSession | None = data.get("session")
-        if not session:
+
+        if not session or not event.from_user:
             return await handler(event, data)
-
-        user_tg: UserAiogram = None
-
-        if isinstance(event, (Message, CallbackQuery)):
-            user_tg = event.from_user
-
-        if not user_tg:
-            return await handler(event, data)
-
+        
+        user_tg = event.from_user
         user_service: UserService = data["user_service"]
         
         async with session.begin():
@@ -43,5 +37,5 @@ class UserMiddleware(BaseMiddleware):
             if user_dto:
                 await user_service.update_from_data(user_dto, user_tg)
 
-        data["user_dto"] = user_dto
+        data.update(user_dto=user_dto)
         return await handler(event, data)

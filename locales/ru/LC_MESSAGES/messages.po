@@ -41,7 +41,7 @@ msgid "state_reset"
 msgstr "Состояние сброшено."
 
 msgid "error_media_suggestion"
-msgstr "Отправь картинки/видео/gif."
+msgstr "Отправь текст/картинки/видео/gif."
 
 msgid "on_moderation"
 msgstr "Отправлено на модерацию."
