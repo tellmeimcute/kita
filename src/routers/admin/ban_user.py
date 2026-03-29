@@ -7,8 +7,8 @@ from pydantic import ValidationError
 
 from database.dto import UserDTO
 from database.roles import UserRole
-from handlers.keyboards import ReplyKeyboard
-from handlers.state import CommandBanState
+from routers.keyboards import ReplyKeyboard
+from routers.state import CommandBanState
 from helpers.enums import BanAdminAction
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload

@@ -6,7 +6,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 
 from config import Config
 from database.dto import SUGGESTION_DTOS, SuggestionFullDTO
-from handlers.keyboards import ReplyKeyboard
+from routers.keyboards import ReplyKeyboard
 from helpers.enums import RenderType
 from helpers.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData

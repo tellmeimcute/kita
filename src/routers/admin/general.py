@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
-from handlers.keyboards import ReplyKeyboard
+from routers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand

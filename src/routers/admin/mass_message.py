@@ -7,8 +7,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, MessageOriginChannel
 
 from database.dto import UserDTO
-from handlers.keyboards import ReplyKeyboard
-from handlers.state import MassMessageState
+from routers.keyboards import ReplyKeyboard
+from routers.state import MassMessageState
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
 from helpers.schemas.data import MassMessageData

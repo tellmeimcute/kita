@@ -9,9 +9,9 @@ from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
-from database.dao import SuggestionDAO
 from database.dto import UserDTO
-from handlers.keyboards import ReplyKeyboard
+from routers.keyboards import ReplyKeyboard
+from routers.state import SendSuggestionState
 from helpers.suggestion_viewer import SuggestionViewerUtils
 from helpers.filters import I18nTextFilter
 from helpers.message_payload import MessagePayload
@@ -19,10 +19,8 @@ from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 from services.user import UserService
 
-from .state import PostStates
 
 logger = getLogger("kita.user_suggestions")
-
 router = Router(name="suggestions_user")
 
 
@@ -33,13 +31,13 @@ async def suggest_post(
     state: FSMContext,
     notifier: NotifierService,
 ):
-    await state.set_state(PostStates.waiting_for_post)
+    await state.set_state(SendSuggestionState.waiting_for_post)
 
     payload = MessagePayload(i18n_key="suggestion_wait_media", reply_markup=ReplyKeyboard.cancel())
     await notifier.notify_user(user_dto, payload=payload)
 
 
-@router.message(PostStates.waiting_for_post)
+@router.message(SendSuggestionState.waiting_for_post)
 async def process_suggestion(
     message: Message,
     state: FSMContext,

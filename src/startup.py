@@ -11,7 +11,7 @@ from database import DatabaseManager
 from middlewares import BanCheckMiddleware, SessionMiddleware, UserMiddleware, MediaGroupMiddleware
 from config import Config
 
-from handlers import (
+from routers import (
     admin_ban_user_router,
     admin_general_router,
     admin_mass_message_router,

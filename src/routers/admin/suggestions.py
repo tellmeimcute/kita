@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
-from handlers.state import SuggestionViewerState
+from routers.state import SuggestionViewerState
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.message_payload import MessagePayload
 
