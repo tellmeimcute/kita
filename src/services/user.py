@@ -71,7 +71,7 @@ class UserService:
 
         return user_dto
 
-    async def get(self, user_id: int) -> UserDTO | None:
+    async def get(self, user_id: int) -> UserDTO:
         cached_user = await self.get_cache_user(user_id)
         if cached_user:
             return cached_user

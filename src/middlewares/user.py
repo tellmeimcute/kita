@@ -32,10 +32,9 @@ class UserMiddleware(BaseMiddleware):
         async with session.begin():
             try:
                 user_dto = await user_service.get(user_tg.id)
+                await user_service.update_from_data(user_dto, user_tg)
             except SQLModelNotFoundError:
                 user_dto = await user_service.create(user_tg)
-            if user_dto:
-                await user_service.update_from_data(user_dto, user_tg)
 
         data.update(user_dto=user_dto)
         return await handler(event, data)
