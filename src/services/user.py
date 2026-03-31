@@ -16,6 +16,11 @@ logger = getLogger("kita.user_service")
 class UserService:
     dao = UserAlchemyDAO
 
+    __slots__ = (
+        "session",
+        'config',
+    )
+
     def __init__(self, session: AsyncSession, config: Config):
         self.session = session
         self.config = config

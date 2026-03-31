@@ -21,12 +21,20 @@ logger: Logger = getLogger("kita.notifier_service")
 class NotifierService:
     RETRY_TIMEOUT_BUFFER = 0.1
 
+    __slots__ = (
+        "bot",
+        'sessionmaker',
+        "chunk_delay",
+        "chunk_size",
+        "translator",
+    )
+
     def __init__(
         self,
         bot: Bot,
         sessionmaker: async_sessionmaker,
+        chunk_delay: float = 3.0,
         chunk_size: int = 5,
-        chunk_delay: float = 3.0
     ):
         self.bot: Bot = bot
         self.sessionmaker: async_sessionmaker = sessionmaker

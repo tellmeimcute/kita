@@ -13,6 +13,10 @@ class SessionMiddleware(BaseMiddleware):
     ВЫДАЕТ AsyncSession и Сервисы В ХЕНДЛЕРЫ(data)
     """
 
+    __slots__ = (
+        "session_maker",
+    )
+
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]) -> None:
         self.session_maker = session_maker
 

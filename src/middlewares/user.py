@@ -2,7 +2,6 @@ from typing import Any, Awaitable, Callable, Dict, Union
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
-from aiogram.types import User as UserAiogram
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.user import UserService
@@ -28,7 +27,7 @@ class UserMiddleware(BaseMiddleware):
         
         user_tg = event.from_user
         user_service: UserService = data["user_service"]
-        
+
         async with session.begin():
             try:
                 user_dto = await user_service.get(user_tg.id)

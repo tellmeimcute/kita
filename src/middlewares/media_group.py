@@ -15,6 +15,12 @@ class MediaGroupMiddleware(BaseMiddleware):
     Дополнительно шлет media_group_id
     """
     
+    __slots__ = (
+        "redis",
+        'latency',
+        "prefix",
+    )
+
     # event fields to be cached in redis
     message_fields = {
         "message_id",
