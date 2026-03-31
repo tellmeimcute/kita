@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.dto import UserDTO
 from database.dao import UserAlchemyDAO
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 from helpers.i18n_translator import Translator
 
 

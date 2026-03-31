@@ -7,7 +7,7 @@ from config import Config
 from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 from services.notifier import NotifierService
 
 router = Router(name="start_handlers")

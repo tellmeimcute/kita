@@ -10,7 +10,7 @@ from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
 from routers.state import MassMessageState
 from helpers.filters import I18nTextFilter
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas.data import MassMessageData
 from services import NotifierService, UserService
 

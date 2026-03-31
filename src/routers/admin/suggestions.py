@@ -13,7 +13,7 @@ from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
 from routers.state import SuggestionViewerState
 from helpers.filters import I18nTextFilter, TextArgsFilter
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 
 from helpers.schemas import IDCommand
 from helpers.schemas.data import SuggestionViewerData

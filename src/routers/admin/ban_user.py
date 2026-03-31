@@ -11,7 +11,7 @@ from routers.keyboards import ReplyKeyboard
 from routers.state import CommandBanState
 from helpers.enums import BanAdminAction
 from helpers.filters import I18nTextFilter, TextArgsFilter
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import IDCommand
 from helpers.exceptions import UserImmuneError, SQLModelNotFoundError
 from services import NotifierService, UserService
@@ -91,14 +91,18 @@ async def ban_user_state(
     data = await state.get_data()
     action = data.get("action")
     target_role = UserRole.BANNED if action == BanAdminAction.BAN else UserRole.USER
+    
     await state.clear()
 
     try:
-        if message.text == user_dto.user_id:
+        command = IDCommand(target_id=message.text)
+        target_id = command.target_id
+
+        if target_id == user_dto.user_id:
             raise UserImmuneError()
         
         async with session.begin():
-            target_dto = await user_service.get(message.text)
+            target_dto = await user_service.get(target_id)
             await user_service.set_role(target_dto, target_role)
             if target_dto.is_banned:
                 await user_service.decline_suggestion(target_dto)
@@ -112,7 +116,7 @@ async def ban_user_state(
         payload = MessagePayload(i18n_key="error_user_immune")
         return await notifier.notify_user(user_dto, payload)
     except SQLModelNotFoundError:
-        i18n_kwargs = {"user_id": message.text}
+        i18n_kwargs = {"user_id": target_id}
         payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs)
         return await notifier.notify_user(user_dto, payload)
     

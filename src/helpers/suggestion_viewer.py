@@ -8,7 +8,7 @@ from config import Config
 from database.dto import SUGGESTION_DTOS, SuggestionFullDTO
 from routers.keyboards import ReplyKeyboard
 from helpers.enums import RenderType
-from helpers.message_payload import MessagePayload
+from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
 from helpers.schemas.objects import SuggestionData
 from helpers.exceptions import SQLModelNotFoundError
