@@ -1,16 +1,9 @@
-from pydantic import BaseModel, SecretStr, ConfigDict, Field
+from pydantic import BaseModel, SecretStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from redis.asyncio import Redis
 
 class RuntimeConfig(BaseModel):
-    model_config = ConfigDict(
-        extra="ignore",
-        from_attributes=True,
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-    )
-
     channel_name: str
     bot_username: str
     bot_url: str
@@ -18,20 +11,23 @@ class RuntimeConfig(BaseModel):
 
 class Config(BaseSettings):
     TG_TOKEN: SecretStr
-    DB_URL: str
-
     ADMIN_ID: int
     CHANNEL_ID: int
-    PROXY: str | None = None
 
-    # REDIS SETTINGS
-    REDIS_HOST: str
+    REDIS_HOST: str = "localhost"
     REDIS_PORT: int = Field(6379, ge=1, le=65535)
     REDIS_DB: int = 0
     REDIS_PASSWORD: str | None = None
 
-    runtime_config: RuntimeConfig | None = None
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_DB: str = "kita"
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_PORT: str = "5432"
+    POSTGRES_PASSWORD: str
 
+    PROXY: str | None = None
+
+    runtime_config: RuntimeConfig | None = None
     redis: Redis | None = None
 
     model_config = SettingsConfigDict(

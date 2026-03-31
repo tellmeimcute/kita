@@ -26,10 +26,10 @@ redis = Redis(
 
 config = config.model_copy(update={"redis": redis})
 
-db = DatabaseManager(config.DB_URL)
+db = DatabaseManager(config)
 
 bot = Bot(
-    config.TG_TOKEN.get_secret_value(),
+    token=config.TG_TOKEN.get_secret_value(),
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     session=AiohttpSession(proxy=config.PROXY),
 )
@@ -56,7 +56,6 @@ async def on_startup():
         logger.info("Runtime config loaded")
     except Exception as e:
         logger.error("Failed to load runtime config: %s", e)
-
 
 async def on_shutdown():
     await db.engine.dispose()
