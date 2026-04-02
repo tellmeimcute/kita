@@ -35,7 +35,7 @@ bot = Bot(
 )
 
 dp = Dispatcher(
-    notifier=NotifierService(bot, db.session_maker),
+    notifier=NotifierService(bot),
     storage=RedisStorage(redis=redis),
 )
 
