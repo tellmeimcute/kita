@@ -7,6 +7,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from config import Config
 from database.dto import SUGGESTION_DTOS, SuggestionFullDTO
 from routers.keyboards import ReplyKeyboard
+from helpers.i18n_translator import Translator
 from helpers.enums import RenderType
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
@@ -19,13 +20,13 @@ logger = getLogger("kita.suggestion_viewer")
 
 
 class SuggestionViewerUtils:
-    def __init__(self, config: Config, notifier: NotifierService):
+    def __init__(self, config: Config, translator: Translator):
         self.config = config
-        self.notifier = notifier
+        self.translator = translator 
 
     @classmethod
     def from_viewer(cls, viewer: "SuggestionViewer"):
-        return cls(viewer.config, viewer.notifier)
+        return cls(viewer.config, viewer.notifier.translator)
 
     def get_verdict(self, suggestion_dto: SUGGESTION_DTOS):
         i18n_key = "none_suggestion"
@@ -33,10 +34,10 @@ class SuggestionViewerUtils:
             i18n_key = (
                 "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
             )
-        return self.notifier.translator.get_translated_text(i18n_key)
+        return self.translator.get_translated_text(i18n_key)
 
     def get_author_plus_origin(self, suggestion_dto: SUGGESTION_DTOS):
-        return self.notifier.translator.get_i18n_text(
+        return self.translator.get_i18n_text(
             i18n_key="author_plus_origin",
             i18n_kwargs={
                 "author_name": suggestion_dto.author.name,
@@ -78,7 +79,7 @@ class SuggestionViewerUtils:
         media_group: MediaGroupBuilder = self.get_media_group(suggestion_dto)
 
         i18n_kwargs = self.get_i18n_kwargs(suggestion_dto)
-        media_group.caption = self.notifier.translator.get_i18n_text(i18n_key, i18n_kwargs)
+        media_group.caption = self.translator.get_i18n_text(i18n_key, i18n_kwargs)
 
         payload = MessagePayload(content=media_group.build())
         return payload
@@ -201,7 +202,7 @@ class SuggestionViewer:
         elif render_type == RenderType.MEDIAGROUP:
             payload = self.utils.media_group_payload(suggestion_data, i18n_key)
 
-        return await self.notifier.send_channel(self.config.CHANNEL_ID, payload)
+        return await self.notifier.send(self.config.CHANNEL_ID, payload)
 
     async def to_next_suggestion(self, state: FSMContext) -> SuggestionFullDTO | None:
         """

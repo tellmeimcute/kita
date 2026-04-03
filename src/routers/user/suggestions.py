@@ -68,12 +68,12 @@ async def process_suggestion(
 
     await state.clear()
 
-    suggestion_utils = SuggestionViewerUtils(config, notifier)
+    suggestion_utils = SuggestionViewerUtils(config, notifier.translator)
 
     i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
     i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
-    asyncio.create_task(suggestion_utils.notifier.notify_many(admins, payload))
+    asyncio.create_task(notifier.notify_many(admins, payload))
 
 
 @router.message(I18nTextFilter("command_user_stats"))

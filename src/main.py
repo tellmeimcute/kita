@@ -8,6 +8,7 @@ from aiogram.enums import ParseMode
 
 from config import RuntimeConfig, config
 from database import DatabaseManager
+from helpers.i18n_translator import Translator
 from services.notifier import NotifierService
 from startup import register_middlewares, register_routers, check_redis
 
@@ -34,8 +35,9 @@ bot = Bot(
     session=AiohttpSession(proxy=config.PROXY),
 )
 
+translator=Translator()
 dp = Dispatcher(
-    notifier=NotifierService(bot),
+    notifier=NotifierService(bot, translator),
     storage=RedisStorage(redis=redis),
 )
 

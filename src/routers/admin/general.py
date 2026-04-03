@@ -51,7 +51,7 @@ async def post_channel_banner(
     builder.button(text="Предложка", url=runtime_config.bot_url)
 
     payload = MessagePayload(i18n_key="channel_banner", reply_markup=builder.as_markup())
-    await notifier.send_channel(config.CHANNEL_ID, payload)
+    await notifier.send(config.CHANNEL_ID, payload)
 
     payload = MessagePayload(i18n_key="channel_banner_sent")
     await notifier.notify_user(user_dto, payload)
