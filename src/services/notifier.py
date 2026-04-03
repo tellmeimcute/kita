@@ -103,8 +103,8 @@ class NotifierService:
 
         try:
             return await method(chat_id=target, from_chat_id=message_source, message_ids=message_ids)
-        except Exception as e:
-            logger.error("Failed to %s message to target %s: %s", method, target, e)
+        except TelegramForbiddenError as e:
+            logger.error("Failed to forwards/copy message to target %s: %s", target, e)
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
         if user_dto.is_bot_blocked:
