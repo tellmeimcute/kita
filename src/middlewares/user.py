@@ -4,14 +4,14 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import Config
 from services.user import UserService
-
 from helpers.exceptions import SQLModelNotFoundError
+
 
 class UserMiddleware(BaseMiddleware):
     """
-    ВЫДАЕТ UserDTO В ХЕНДЛЕРЫ
-    data["user_dto]
+    ВЫДАЕТ UserDTO, UserService В ХЕНДЛЕРЫ
     """
 
     async def __call__(
@@ -20,13 +20,14 @@ class UserMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        session: AsyncSession | None = data.get("session")
+        session: AsyncSession = data.get("session")
+        config: Config = data.get("config")
 
-        if not session or not event.from_user:
+        if not session or not config or not event.from_user:
             return await handler(event, data)
         
         user_tg = event.from_user
-        user_service: UserService = data["user_service"]
+        user_service: UserService = UserService(session, config)
 
         async with session.begin():
             try:
@@ -35,5 +36,5 @@ class UserMiddleware(BaseMiddleware):
             except SQLModelNotFoundError:
                 user_dto = await user_service.create(user_tg)
 
-        data.update(user_dto=user_dto)
+        data.update(user_dto=user_dto, user_service=user_service)
         return await handler(event, data)
