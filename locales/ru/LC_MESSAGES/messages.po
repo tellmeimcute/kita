@@ -34,9 +34,6 @@ msgstr ""
 "\n"
 "Чтобы предложить пост используйте клавиатуру."
 
-msgid "admin_help_msg"
-msgstr "placeholder :)"
-
 msgid "state_reset"
 msgstr "Состояние сброшено."
 
@@ -119,9 +116,6 @@ msgstr "Забанить"
 
 msgid "command_unban_filter"
 msgstr "Разбанить"
-
-msgid "command_admin_help"
-msgstr "Админ помощь"
 
 msgid "command_get_admin_menu"
 msgstr "Админ панель"

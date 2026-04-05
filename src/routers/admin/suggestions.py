@@ -57,9 +57,7 @@ async def solo_suggestion(
 
 
 @router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=True))
-@router.message(
-    SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False)
-)
+@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False))
 async def solo_suggestion_verdict(
     message: Message,
     session: AsyncSession,
@@ -76,7 +74,7 @@ async def solo_suggestion_verdict(
 
     viewer = SuggestionViewer(viewer_data, session, suggestion_service, notifier, config)
 
-    viewer.utils.update_status(suggestion_dto, verdict)
+    suggestion_dto.accepted = verdict
     async with session.begin():
         await suggestion_service.update(suggestion_dto)
 
@@ -103,9 +101,12 @@ async def enter_suggestion_viewer(
     viewer_data = SuggestionViewerData(user_dto=user_dto)
     viewer = SuggestionViewer(viewer_data, session, suggestion_service, notifier, config)
 
-    await viewer.render_start_review()
-    await viewer.go_next_suggestion(state)
+    if await viewer.to_next_suggestion(state):
+        await viewer.render_start_review()
+        return await viewer.render_suggestion()
 
+    await state.clear()
+    await viewer.render_empty_queue()
 
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=True))
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
@@ -126,8 +127,7 @@ async def viewer_apply_verdict(
         await viewer.render_verdict_exists()
         return await viewer.go_next_suggestion(state)
 
-    viewer.utils.update_status(suggestion_dto, verdict)
-
+    suggestion_dto.accepted = verdict
     async with session.begin():
         await suggestion_service.update(suggestion_dto)
 

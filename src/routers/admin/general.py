@@ -18,16 +18,6 @@ from services import NotifierService, UserService
 router = Router()
 
 
-@router.message(I18nTextFilter("command_admin_help"))
-async def admin_help(
-    message: Message,
-    user_dto: UserDTO,
-    notifier: NotifierService,
-):
-    payload = MessagePayload(i18n_key="admin_help_msg")
-    await notifier.notify_user(user_dto, payload)
-
-
 @router.message(I18nTextFilter("command_get_admin_menu"))
 async def get_admin_menu(
     message: Message,

@@ -75,6 +75,5 @@ class ReplyKeyboard:
                 KeyboardButton(text=_("command_ban_filter")),
                 KeyboardButton(text=_("command_unban_filter")),
             ],
-            [KeyboardButton(text=_("command_admin_help"))],
             [KeyboardButton(text=_("command_cancel"))],
         )

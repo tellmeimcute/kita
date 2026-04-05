@@ -12,7 +12,7 @@ from config import Config
 from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
 from routers.state import SendSuggestionState
-from helpers.suggestion_viewer import SuggestionViewerUtils
+from helpers.suggestion_utils import SuggestionUtils
 from helpers.filters import I18nTextFilter
 from helpers.schemas.message_payload import MessagePayload
 from services.notifier import NotifierService
@@ -68,7 +68,7 @@ async def process_suggestion(
 
     await state.clear()
 
-    suggestion_utils = SuggestionViewerUtils(config, notifier.translator)
+    suggestion_utils = SuggestionUtils(config, notifier.translator)
 
     i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
     i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))

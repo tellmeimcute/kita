@@ -4,24 +4,12 @@ from pydantic import computed_field
 from database.dto.user import UserDTO
 from database.dto.suggestion import SuggestionFullDTO
 
-from helpers.enums import RenderType
 from .base import BaseData
-from .objects import SuggestionData
 
 class SuggestionViewerData(BaseData):
     suggestion_dtos: list[SuggestionFullDTO] | None = None
     suggestion_dto: SuggestionFullDTO | None = None
-
-    suggestion_data: SuggestionData | None = None
     user_dto: UserDTO
-
-    @computed_field
-    @property
-    def render_type(self) -> RenderType:
-        if not self.suggestion_dto.media and self.suggestion_dto.caption:
-            return RenderType.MESSAGE
-        return RenderType.MEDIAGROUP
-
 
 class MassMessageData(BaseData):
     users: list[UserDTO] | None = None
