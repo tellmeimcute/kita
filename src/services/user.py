@@ -120,6 +120,7 @@ class UserService:
             self.session, user_dto.user_id, user_dto.prepare_changed_data()
         )
 
+        await self.cache_user_delete(user_dto.user_id)
         return result
 
     async def decline_suggestion(self, user_dto: UserDTO):
