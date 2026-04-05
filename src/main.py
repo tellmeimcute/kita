@@ -5,76 +5,50 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
-
-from config import RuntimeConfig, config
-from database import DatabaseManager
-from helpers.i18n_translator import Translator
-from services.notifier import NotifierService
-from startup import register_middlewares, register_routers, check_redis
-
-from redis.asyncio import Redis
 from aiogram.fsm.storage.redis import RedisStorage
+from redis.asyncio import Redis
+
+from config import config as raw_config
+from database import DatabaseManager
+from startup import register_all
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("kita.main")
 
-redis = Redis(
-    host=config.REDIS_HOST,
-    port=config.REDIS_PORT,
-    password=config.REDIS_PASSWORD,
-    db=config.REDIS_DB
-)
-
-config = config.model_copy(update={"redis": redis})
-
-db = DatabaseManager(config)
-
-bot = Bot(
-    token=config.TG_TOKEN.get_secret_value(),
-    default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-    session=AiohttpSession(proxy=config.PROXY),
-)
-
-translator=Translator()
-dp = Dispatcher(
-    notifier=NotifierService(bot, translator),
-    storage=RedisStorage(redis=redis),
-)
-
-
-async def on_startup():
-    try:
-        channel_info = await bot.get_chat(config.CHANNEL_ID)
-        bot_user = await bot.get_me()
-
-        runtime_config = RuntimeConfig(
-            channel_name=channel_info.full_name,
-            bot_username=bot_user.username,
-            bot_url=f"https://t.me/{bot_user.username}",
-        )
-
-        dp.workflow_data["config"] = config.model_copy(update={"runtime_config": runtime_config})
-
-        logger.info("Runtime config loaded")
-    except Exception as e:
-        logger.error("Failed to load runtime config: %s", e)
-
-async def on_shutdown():
-    await db.engine.dispose()
-
-
 async def main():
-    await check_redis(redis)
+    redis = Redis(
+        host=raw_config.REDIS_HOST,
+        port=raw_config.REDIS_PORT,
+        password=raw_config.REDIS_PASSWORD,
+        db=raw_config.REDIS_DB,
+    )
 
-    dp.startup.register(on_startup)
-    dp.shutdown.register(on_shutdown)
+    db = DatabaseManager(raw_config)
 
-    register_middlewares(dp, db)
-    register_routers(dp, config)
+    bot = Bot(
+        token=raw_config.TG_TOKEN.get_secret_value(),
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        session=AiohttpSession(proxy=raw_config.PROXY),
+    )
+
+    dp = Dispatcher(storage=RedisStorage(redis=redis))
+
+    config = raw_config.model_copy(update={"redis": redis})
+    await register_all(
+        bot=bot,
+        dp=dp,
+        db=db,
+        config=config,
+    )
 
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
 
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await bot.session.close()
+        await redis.aclose()
+        await db.engine.dispose()
 
 if __name__ == "__main__":
     try:
