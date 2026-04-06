@@ -94,6 +94,7 @@ async def ban_user_state(
     
     await state.clear()
 
+    return_kb = ReplyKeyboard.admin_menu()
     try:
         command = IDCommand(target_id=message.text)
         target_id = command.target_id
@@ -110,18 +111,24 @@ async def ban_user_state(
         payload = MessagePayload(
             i18n_key="command_syntax_error",
             i18n_kwargs={"hint": html.code("Validation Error.")},
+            reply_markup=return_kb,
         )
         return await notifier.notify_user(user_dto, payload)
     except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
+        payload = MessagePayload(i18n_key="error_user_immune", reply_markup=return_kb)
         return await notifier.notify_user(user_dto, payload)
     except SQLModelNotFoundError:
         i18n_kwargs = {"user_id": target_id}
-        payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs)
+        payload = MessagePayload(
+            i18n_key="user_not_found",
+            i18n_kwargs=i18n_kwargs,
+            reply_markup=return_kb
+        )
         return await notifier.notify_user(user_dto, payload)
     
     payload = MessagePayload(
         i18n_key="answer_admin_role_changed",
         i18n_kwargs=target_dto.model_dump(),
+        reply_markup=return_kb,
     )
     await notifier.notify_user(user_dto, payload)
