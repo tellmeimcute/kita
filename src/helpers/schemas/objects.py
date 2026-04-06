@@ -1,4 +1,3 @@
-from database.dto import MediaDTO, UserDTO
 from .base import BaseData
 
 

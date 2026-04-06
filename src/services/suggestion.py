@@ -1,13 +1,18 @@
 from logging import getLogger
-from pydantic import BaseModel
 from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import Config
 from database.dao import MediaDAO, SuggestionDAO
-from database.dto import SUGGESTION_DTOS, MediaDTO, SuggestionBaseDTO, SuggestionFullDTO, UserDTO
+from database.redis.userstats import UserStatsRedis
+from database.dto import (
+    SUGGESTION_DTOS,
+    MediaDTO,
+    SuggestionBaseDTO,
+    SuggestionFullDTO,
+    UserDTO
+)
 from database.models import Media, Suggestion
-
 from helpers.schemas.objects import UserStats
 from helpers.exceptions import SQLModelNotFoundError
 
@@ -21,11 +26,14 @@ class SuggestionService:
     __slots__ = (
         "session",
         'config',
+        "redis",
     )
 
     def __init__(self, session: AsyncSession, config: Config):
         self.session = session
         self.config = config
+
+        self.redis = config.redis
 
     def _parse_media_info(self, message: Message) -> tuple[str, str] | None:
         if message.video:
@@ -44,36 +52,17 @@ class SuggestionService:
             return origin.chat.full_name
         return None
 
-    async def set_cache(self, prefix: str, user_id: int, dataobj: BaseModel):
-        key = f"{prefix}:{user_id}"
-        data = dataobj.model_dump_json()
-        await self.config.redis.set(
-            name=key,
-            value=data,
-            ex=60,
-        )
-
-    async def get_cache(self, prefix: str, user_id: int, dataobj: type[BaseModel]):
-        key = f"{prefix}:{user_id}"
-        raw = await self.config.redis.get(key)
-        if not raw:
-            return None
-        try:
-            return dataobj.model_validate_json(raw)
-        except Exception as e:
-            logger.error("Fail to get %s from cache: %s", key, e, exc_info=True)
-            await self.config.redis.delete(key)
-            return None
-
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        stats_row = await self.get_cache("user_stats", user_dto.user_id, UserStats)
+        key = f"user_stats:{user_dto.user_id}"
+
+        stats_row = await UserStatsRedis.get(self.redis, key)
         if stats_row:
             return stats_row
         
         stats_row = await self.dao.get_stats_by_user_id(self.session, user_dto.user_id)
         user_stats = UserStats.model_validate(stats_row)
 
-        await self.set_cache("user_stats", user_dto.user_id, user_stats)
+        stats_row = await UserStatsRedis.set(self.redis, key, user_stats)
         return user_stats
 
     async def get(self, suggestion_id: int, solo=False):
