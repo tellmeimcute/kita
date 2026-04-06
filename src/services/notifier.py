@@ -1,7 +1,6 @@
 import asyncio
 from abc import ABC, abstractmethod
 from logging import Logger, getLogger
-from typing import Callable, Optional
 from itertools import batched
 
 from aiogram import Bot
@@ -18,31 +17,74 @@ logger: Logger = getLogger("kita.notifier_service")
 
 
 class MessageSender(ABC):
-    def __init__(self, bot: Bot, payload: MessagePayload, translator: Translator | None = None):
+    def __init__(
+        self,
+        bot: Bot,
+        target_id: int,
+        payload: MessagePayload,
+        silent: bool = True,
+        translator: Translator | None = None
+    ):
         self.bot = bot
+        self.target_id = target_id
+        self.silent = silent
         self.payload = payload
 
         self.translator = translator
 
     @abstractmethod
-    async def send(self, target_id: int, silent: bool = True) -> Message | list[Message]:
+    async def send(self) -> Message | list[Message]:
         ...
 
+    @property
+    def name(cls):
+        return cls.__class__.__qualname__
+
 class MediaGroupSender(MessageSender):
-    async def send(self, target_id: int, silent: bool = True) -> list[Message]:
-        return await self.bot.send_media_group(target_id, self.payload.content, disable_notification=silent)
+    async def send(self) -> list[Message]:
+        return await self.bot.send_media_group(self.target_id, self.payload.content, disable_notification=self.silent)
 
 class TextSender(MessageSender):
-    async def send(self, target_id: int, silent: bool = True) -> Message:
+    async def send(self) -> Message:
         if not self.translator:
             raise ValueError("Translator is required for TextSender")
         
         content = self.translator.get_i18n_text(self.payload.i18n_key, self.payload.i18n_kwargs)
         return await self.bot.send_message(
-            chat_id=target_id,
+            chat_id=self.target_id,
             text=content,
             reply_markup=self.payload.reply_markup,
-            disable_notification=silent
+            disable_notification=self.silent,
+        )
+
+class MessageTransfer(MessageSender):
+    def __init__(
+        self,
+        bot: Bot,
+        target_id: int,
+        from_chat_id: int,
+        message_ids: list[int],
+    ):
+        self.bot = bot
+        self.target_id = target_id
+
+        self.from_chat_id = from_chat_id
+        self.message_ids = message_ids
+
+class CopyTransfer(MessageTransfer):
+    async def send(self):
+        return await self.bot.copy_messages(
+            chat_id=self.target_id,
+            from_chat_id=self.from_chat_id,
+            message_ids=self.message_ids,
+        )
+    
+class ForwardTransfer(MessageTransfer):
+    async def send(self):
+        return await self.bot.forward_messages(
+            chat_id=self.target_id,
+            from_chat_id=self.from_chat_id,
+            message_ids=self.message_ids,
         )
 
 class NotifierService:
@@ -68,45 +110,19 @@ class NotifierService:
 
         self.translator = translator
 
-    def _get_send_strategy(self, payload: MessagePayload):
+    def send_strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
         if payload.i18n_key:
-            return TextSender(self.bot, payload, self.translator)
+            return TextSender(self.bot, target_id, payload, silent, self.translator)
         if payload.content:
-            return MediaGroupSender(self.bot, payload, self.translator)
+            return MediaGroupSender(self.bot, target_id, payload, silent, self.translator)
 
         raise ValueError("Unsupported payload format")
 
-    async def _deliver_messages(
-        self,
-        method: Callable,
-        message_ids: list[int],
-        message_source: int,
-        user_dto: Optional[UserDTO] = None,
-        channel_id: Optional[int] = None,
-    ):
-        """method should be bot.forward_messages or bot.copy_messages"""
-        if (user_dto is None) == (channel_id is None):
-            raise ValueError("only one UserDTO or channel_id should be provided")
-        
-        target = channel_id if channel_id else user_dto.user_id
-
+    async def send(self, strategy: MessageSender):
         try:
-            return await method(chat_id=target, from_chat_id=message_source, message_ids=message_ids)
+            return await strategy.send()
         except (TelegramForbiddenError, TelegramBadRequest) as e:
-            logger.error("Failed to forward/copy message to target %s: %s", target, e)
-
-    async def send(
-        self,
-        target_id: int,
-        payload: MessagePayload,
-        silent: bool = True,
-    ):
-        strategy = self._get_send_strategy(payload)
-
-        try:
-            return await strategy.send(target_id, silent)
-        except (TelegramForbiddenError, TelegramBadRequest) as e:
-            logger.warning("Failed send to target %s: %s", target_id, e)
+            logger.warning("Failed to execute strategy %s to target %s: %s", strategy.name, strategy.target_id, e)
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
         if user_dto.is_bot_blocked:
@@ -114,7 +130,8 @@ class NotifierService:
                 "User %s (%s) has blocked the bot. Skip.", user_dto.username, user_dto.user_id
             )
         
-        return await self.send(user_dto.user_id, payload)
+        strategy = self.send_strategy_factory(user_dto.user_id, payload)
+        return await self.send(strategy)
 
     async def notify_many(self, users_dto: list[UserDTO], payload: MessagePayload):
         for chunk in batched(users_dto, self.chunk_size):
@@ -123,12 +140,22 @@ class NotifierService:
             await asyncio.sleep(self.chunk_delay)
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
-        method = self.bot.forward_messages
-        return await self._deliver_messages(method, messages, source, user_dto=user_dto)
+        strategy = ForwardTransfer(
+            bot=self.bot,
+            target_id=user_dto.user_id,
+            from_chat_id=source,
+            message_ids=messages,
+        )
+        return await self.send(strategy)
 
     async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int):
-        method = self.bot.copy_messages
-        return await self._deliver_messages(method, messages, source, user_dto=user_dto)
+        strategy = CopyTransfer(
+            bot=self.bot,
+            target_id=user_dto.user_id,
+            from_chat_id=source,
+            message_ids=messages,
+        )
+        return await self.send(strategy)
 
     async def edit_message(self, message: Message, text: str):
         await self.bot.edit_message_text(

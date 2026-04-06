@@ -76,7 +76,8 @@ class SuggestionViewer:
     async def post_channel(self, suggestion_dto: SuggestionFullDTO):
         i18n_key = "channel_post_message"
         payload = self.utils.payload_factory(suggestion_dto, i18n_key)
-        return await self.notifier.send(self.config.CHANNEL_ID, payload)
+        strategy = self.notifier.send_strategy_factory(self.config.CHANNEL_ID, payload)
+        return await self.notifier.send(strategy)
 
     async def render_empty_queue(self):
         user_dto = self.data.user_dto
