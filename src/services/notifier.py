@@ -5,7 +5,7 @@ from typing import Callable, Optional
 from itertools import batched
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramForbiddenError
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message
 from aiogram.utils.i18n import gettext as _
 
@@ -105,8 +105,8 @@ class NotifierService:
 
         try:
             return await strategy.send(target_id, silent)
-        except TelegramForbiddenError:
-            logger.warning("Forbidden send to target %s", target_id)
+        except (TelegramForbiddenError, TelegramBadRequest) as e:
+            logger.warning("Failed send to target %s. Reason: %s", target_id, e)
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
         if user_dto.is_bot_blocked:
