@@ -23,18 +23,14 @@ cd kita
 ```
 
 Создайте .env файл в корне на основе .env.example
-```
-TG_TOKEN=bot_secret_token
-DB_URL=db_url
-ADMIN_ID=your_telegram_id
-CHANNEL_ID=-100xxxxxxxxxx
-```
 
 Установите зависимости и скомпилируйте перевод.
 ```shell
 uv sync
 uv run pybabel compile -d locales -D messages
 ```
+
+Запустите postgres и redis отдельно!
 
 Можно запускать бота.
 ```
