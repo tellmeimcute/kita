@@ -1,91 +1,26 @@
 import asyncio
-from abc import ABC, abstractmethod
 from logging import Logger, getLogger
 from itertools import batched
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message
-from aiogram.utils.i18n import gettext as _
 
 from database.dto import UserDTO
 from helpers.schemas.message_payload import MessagePayload
 from helpers.i18n_translator import Translator
 
+from services.senders import (
+    MessageSender,
+    MessageTransfer,
+    TextSender,
+    MediaGroupSender,
+    CopyTransfer,
+    ForwardTransfer,
+)
 
 logger: Logger = getLogger("kita.notifier_service")
 
-
-class MessageSender(ABC):
-    def __init__(
-        self,
-        bot: Bot,
-        target_id: int,
-        payload: MessagePayload,
-        silent: bool = True,
-        translator: Translator | None = None
-    ):
-        self.bot = bot
-        self.target_id = target_id
-        self.silent = silent
-        self.payload = payload
-
-        self.translator = translator
-
-    @abstractmethod
-    async def send(self) -> Message | list[Message]:
-        ...
-
-    @property
-    def name(cls):
-        return cls.__class__.__qualname__
-
-class MediaGroupSender(MessageSender):
-    async def send(self) -> list[Message]:
-        return await self.bot.send_media_group(self.target_id, self.payload.content, disable_notification=self.silent)
-
-class TextSender(MessageSender):
-    async def send(self) -> Message:
-        if not self.translator:
-            raise ValueError("Translator is required for TextSender")
-        
-        content = self.translator.get_i18n_text(self.payload.i18n_key, self.payload.i18n_kwargs)
-        return await self.bot.send_message(
-            chat_id=self.target_id,
-            text=content,
-            reply_markup=self.payload.reply_markup,
-            disable_notification=self.silent,
-        )
-
-class MessageTransfer(MessageSender):
-    def __init__(
-        self,
-        bot: Bot,
-        target_id: int,
-        from_chat_id: int,
-        message_ids: list[int],
-    ):
-        self.bot = bot
-        self.target_id = target_id
-
-        self.from_chat_id = from_chat_id
-        self.message_ids = message_ids
-
-class CopyTransfer(MessageTransfer):
-    async def send(self):
-        return await self.bot.copy_messages(
-            chat_id=self.target_id,
-            from_chat_id=self.from_chat_id,
-            message_ids=self.message_ids,
-        )
-    
-class ForwardTransfer(MessageTransfer):
-    async def send(self):
-        return await self.bot.forward_messages(
-            chat_id=self.target_id,
-            from_chat_id=self.from_chat_id,
-            message_ids=self.message_ids,
-        )
 
 class NotifierService:
     
@@ -118,7 +53,7 @@ class NotifierService:
 
         raise ValueError("Unsupported payload format")
 
-    async def send(self, strategy: MessageSender):
+    async def send(self, strategy: MessageSender | MessageTransfer):
         try:
             return await strategy.send()
         except (TelegramForbiddenError, TelegramBadRequest) as e:
