@@ -1,4 +1,8 @@
+
+
+from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict, Union
+from dishka import AsyncContainer
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
@@ -7,12 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import Config
 from services.user import UserService
 from helpers.exceptions import SQLModelNotFoundError
+from helpers.consts import DISKA_CONTAINER_KEY
 
+logger = getLogger("kita.middleware")
 
 class UserMiddleware(BaseMiddleware):
-    """
-    ВЫДАЕТ UserDTO, UserService В ХЕНДЛЕРЫ
-    """
 
     async def __call__(
         self,
@@ -21,13 +24,15 @@ class UserMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         session: AsyncSession = data.get("session")
-        config: Config = data.get("config")
 
-        if not session or not config or not event.from_user:
-            return await handler(event, data)
+        if not session or not event.from_user:
+            logger.warning("No user in event. Stop")
+            return
         
+        container: AsyncContainer = data.get(DISKA_CONTAINER_KEY)
+        user_service: UserService = await container.get(UserService)
+
         user_tg = event.from_user
-        user_service: UserService = UserService(session, config)
 
         async with session.begin():
             try:

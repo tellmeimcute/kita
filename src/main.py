@@ -2,53 +2,52 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
-from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
 
-from config import config as raw_config
+from dishka import make_async_container
+from dishka.integrations.aiogram import AiogramProvider, setup_dishka
+
+from di.config import ConfigProvider
+from di.database import DatabaseProvider, RedisProvider
+from di.providers import ServicesProvider, UtilsProvider
+from di.bot import BotProvider
+
 from database import DatabaseManager
 from startup import register_all
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("kita.main")
 
 async def main():
-    redis = Redis(
-        host=raw_config.REDIS_HOST,
-        port=raw_config.REDIS_PORT,
-        password=raw_config.REDIS_PASSWORD,
-        db=raw_config.REDIS_DB,
+
+    container = make_async_container(
+        ConfigProvider(),
+        UtilsProvider(),
+        BotProvider(),
+        DatabaseProvider(),
+        RedisProvider(),
+        ServicesProvider(),
+        AiogramProvider(),
     )
 
-    db = DatabaseManager(raw_config)
+    redis = await container.get(Redis)
+    db = await container.get(DatabaseManager)
+    bot = await container.get(Bot)
+    dp = await container.get(Dispatcher)
 
-    bot = Bot(
-        token=raw_config.TG_TOKEN.get_secret_value(),
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-        session=AiohttpSession(proxy=raw_config.PROXY),
+    setup_dishka(
+        container=container,
+        router=dp,
+        auto_inject=True,
     )
 
-    dp = Dispatcher(storage=RedisStorage(redis=redis))
-
-    config = raw_config.model_copy(update={"redis": redis})
-    await register_all(
-        bot=bot,
-        dp=dp,
-        db=db,
-        config=config,
-    )
-
+    await register_all(container, dp)
     await bot.delete_webhook(drop_pending_updates=True)
 
     try:
         await dp.start_polling(bot)
     finally:
-        await bot.session.close()
-        await redis.aclose()
-        await db.engine.dispose()
+        await container.close()
 
 if __name__ == "__main__":
     try:

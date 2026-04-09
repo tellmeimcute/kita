@@ -2,13 +2,14 @@ import asyncio
 from logging import getLogger
 from typing import List
 
+from dishka import FromDishka
+
 from aiogram import Router, html
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import Config
 from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
 from routers.state import SendSuggestionState
@@ -29,7 +30,7 @@ async def suggest_post(
     message: Message,
     user_dto: UserDTO,
     state: FSMContext,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
 ):
     await state.set_state(SendSuggestionState.waiting_for_post)
 
@@ -43,13 +44,12 @@ async def process_suggestion(
     state: FSMContext,
     session: AsyncSession,
     user_dto: UserDTO,
-    notifier: NotifierService,
     user_service: UserService,
-    config: Config,
+    notifier: FromDishka[NotifierService],
+    suggestion_service: FromDishka[SuggestionService],
+    suggestion_utils: FromDishka[SuggestionUtils],
     album: List[Message] | None = None,
 ):
-    suggestion_service = SuggestionService(session, config)
-
     if not album:
         album = (message,)
 
@@ -68,8 +68,6 @@ async def process_suggestion(
 
     await state.clear()
 
-    suggestion_utils = SuggestionUtils(config, notifier.translator)
-
     i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
     i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
@@ -79,13 +77,10 @@ async def process_suggestion(
 @router.message(I18nTextFilter("command_user_stats"))
 async def statistic(
     message: Message,
-    session: AsyncSession,
     user_dto: UserDTO,
-    notifier: NotifierService,
-    config: Config,
+    notifier: FromDishka[NotifierService],
+    suggestion_service: FromDishka[SuggestionService],
 ):
-    suggestion_service = SuggestionService(session, config)
-    
     stats = await suggestion_service.get_user_stats(user_dto)
     payload = MessagePayload(i18n_key="user_stats", i18n_kwargs=stats.model_dump())
     await notifier.notify_user(user_dto, payload=payload)

@@ -4,7 +4,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from config import Config
+from dishka import FromDishka
+
+from config import Config, RuntimeConfig
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
@@ -22,7 +24,7 @@ router = Router()
 async def get_admin_menu(
     message: Message,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
 ):
     payload = MessagePayload(i18n_key="success", reply_markup=ReplyKeyboard.admin_menu())
     await notifier.notify_user(user_dto, payload)
@@ -33,10 +35,9 @@ async def post_channel_banner(
     message: Message,
     user_dto: UserDTO,
     config: Config,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
+    runtime_config: FromDishka[RuntimeConfig]
 ):
-    runtime_config = config.runtime_config
-
     builder = InlineKeyboardBuilder()
     builder.button(text="Предложка", url=runtime_config.bot_url)
 
@@ -53,7 +54,7 @@ async def change_user_role(
     message: Message,
     user_dto: UserDTO,
     session: AsyncSession,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     command: ChangeRoleCommand,
     user_service: UserService,
 ):
@@ -103,7 +104,7 @@ async def global_stats(
     message: Message,
     user_dto: UserDTO,
     session: AsyncSession,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
 ):
     suggestions_count = await SuggestionDAO.count(session)
     media_count = await MediaDAO.count(session)

@@ -1,6 +1,8 @@
 
 from logging import getLogger
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import Redis
 
 from config import Config
 from database.dao import UserAlchemyDAO
@@ -20,23 +22,23 @@ class UserService:
 
     __slots__ = (
         "session",
-        'config',
+        "admin_id",
         "redis",
         "redis_key",
     )
 
-    def __init__(self, session: AsyncSession, config: Config):
+    def __init__(self, session: AsyncSession, config: Config, redis: Redis):
         self.session = session
-        self.config = config
-        self.redis = config.redis
+        self.admin_id = config.ADMIN_ID
+        self.redis = redis
 
         self.redis_key = lambda x: f"user:{x}"
 
     def is_immune(self, user_id: int):
-        return user_id == self.config.ADMIN_ID
+        return user_id == self.admin_id
 
     async def create(self, user_data: UserData):
-        role = UserRole.ADMIN if user_data.id == self.config.ADMIN_ID else UserRole.USER
+        role = UserRole.ADMIN if user_data.id == self.admin_id else UserRole.USER
 
         prep_user_dto = UserDTO(
             user_id=user_data.id,

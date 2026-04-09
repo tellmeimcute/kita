@@ -2,6 +2,8 @@ import asyncio
 from itertools import batched
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from dishka import FromDishka
+
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, MessageOriginChannel
@@ -50,7 +52,7 @@ async def mass_message_start(
     message: Message,
     user_dto: UserDTO,
     session: AsyncSession,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     user_service: UserService,
     state: FSMContext,
 ):
@@ -75,7 +77,7 @@ async def mass_message_start(
 async def mass_message_get_message(
     message: Message,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     state: FSMContext,
     media_group_id: int | None = None,
     album: list[Message] | None = None,
@@ -117,7 +119,7 @@ async def mass_message_get_message(
 async def mass_message_confirm(
     message: Message,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     state: FSMContext,
 ):
     state_data = await state.get_data()

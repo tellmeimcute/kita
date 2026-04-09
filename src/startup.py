@@ -1,12 +1,13 @@
 import logging
 
+from redis.asyncio import Redis
+
 from aiogram import Bot, Dispatcher, Router
 from aiogram.utils.i18n import I18n
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
+from dishka import AsyncContainer
 
 from config import Config, RuntimeConfig
-from database import DatabaseManager
-from helpers.i18n_translator import Translator
 from middlewares import (
     BanCheckMiddleware,
     MediaGroupMiddleware,
@@ -22,7 +23,6 @@ from routers import (
     user_start_router,
     user_suggestion_router,
 )
-from services.notifier import NotifierService
 
 logger = logging.getLogger("kita.startup")
 
@@ -36,10 +36,10 @@ async def get_runtime_config(bot: Bot, raw_config: Config):
         bot_url=f"https://t.me/{bot_user.username}",
     )
 
-    return raw_config.model_copy(update={"runtime_config": runtime_config})
+    return runtime_config
 
-def register_middlewares(dp: Dispatcher, db: DatabaseManager):
-    session_middleware = SessionMiddleware(db.session_maker)
+def register_middlewares(dp: Dispatcher):
+    session_middleware = SessionMiddleware()
     user_middleware = UserMiddleware()
     bancheck_middleware = BanCheckMiddleware()
 
@@ -54,8 +54,8 @@ def register_middlewares(dp: Dispatcher, db: DatabaseManager):
     logger.info("Middlewares successfully registered ")
 
 
-def register_routers(dp: Dispatcher, config: Config):
-    media_group_middleware = MediaGroupMiddleware(redis_client=config.redis)
+def register_routers(dp: Dispatcher, redis: Redis):
+    media_group_middleware = MediaGroupMiddleware(redis_client=redis)
 
     user_suggestion_router.message.middleware(media_group_middleware)
     admin_mass_message_router.message.middleware(media_group_middleware)
@@ -83,23 +83,12 @@ def register_routers(dp: Dispatcher, config: Config):
     logger.info("Routers successfully registered")
 
 async def register_all(
-    bot: Bot,
+    container: AsyncContainer,
     dp: Dispatcher,
-    db: DatabaseManager,
-    config: Config,
 ):
-    translator = Translator()
-    notifier = NotifierService(bot=bot, translator=translator)
-    config = await get_runtime_config(bot, config)
+    redis = await container.get(Redis)
 
-    dp.workflow_data.update(
-        {
-            "config": config,
-            "notifier": notifier,
-        }
-    )
-
-    register_middlewares(dp, db)
-    register_routers(dp, config)
+    register_middlewares(dp)
+    register_routers(dp, redis)
 
     logger.info("Bot fully init")

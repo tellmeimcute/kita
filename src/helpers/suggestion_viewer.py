@@ -3,7 +3,7 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 
-from config import Config
+from config import Config, RuntimeConfig
 from database.dto import SUGGESTION_DTOS, SuggestionFullDTO
 from helpers.suggestion_utils import SuggestionUtils
 from routers.keyboards import ReplyKeyboard
@@ -24,12 +24,14 @@ class SuggestionViewer:
         suggestion_service: SuggestionService,
         notifier: NotifierService,
         config: Config,
+        runtime_config: RuntimeConfig,
     ):
         self.data = data
         self.session = session
         self.suggestion_service = suggestion_service
         self.notifier = notifier
         self.config = config
+        self.runtime_config = runtime_config
 
         self.utils = SuggestionUtils.from_viewer(self)
 
@@ -41,10 +43,11 @@ class SuggestionViewer:
         suggestion_service: SuggestionService,
         notifier: NotifierService,
         config: Config,
+        runtime_config: RuntimeConfig,
     ):
         data = await state.get_data()
         viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
-        return self(viewer_data, session, suggestion_service, notifier, config)
+        return self(viewer_data, session, suggestion_service, notifier, config, runtime_config)
 
     async def dump_into_state(self, state: FSMContext, data: SuggestionViewerData):
         await state.set_data({"viewer_data": data.model_dump()})

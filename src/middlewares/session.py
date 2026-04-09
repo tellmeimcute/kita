@@ -1,28 +1,34 @@
+
+from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict, Union
+from dishka import AsyncContainer
 
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from helpers.consts import DISKA_CONTAINER_KEY
+from config import Config
+
+logger = getLogger("kita.middleware")
 
 class SessionMiddleware(BaseMiddleware):
-    """
-    ВЫДАЕТ AsyncSession В ХЕНДЛЕРЫ
-    """
-
-    __slots__ = (
-        "session_maker",
-    )
-
-    def __init__(self, session_maker: async_sessionmaker[AsyncSession]) -> None:
-        self.session_maker = session_maker
-
+    
     async def __call__(
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        async with self.session_maker() as session:
-            data.update(session=session)
-            return await handler(event, data)
+        container: AsyncContainer = data.get(DISKA_CONTAINER_KEY)
+
+        if container is None:
+            logger.error("Container is None. Stop")
+            return
+
+        session = await container.get(AsyncSession)
+        config = await container.get(Config)
+
+        data.update(session=session, config=config)
+
+        return await handler(event, data)

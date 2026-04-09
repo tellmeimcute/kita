@@ -3,7 +3,8 @@ from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import Config
+from dishka import FromDishka
+from config import RuntimeConfig
 from database.dto import UserDTO
 from routers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
@@ -17,10 +18,9 @@ router = Router(name="start_handlers")
 async def start(
     message: Message,
     user_dto: UserDTO,
-    config: Config,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
+    runtime_config: FromDishka[RuntimeConfig],
 ):
-    runtime_config = config.runtime_config
     i18n_kwargs = {"channel_name": html.bold(runtime_config.channel_name)}
 
     payload = MessagePayload(
@@ -36,7 +36,7 @@ async def cmd_cancel_state(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
 ):
     current_state = await state.get_state()
     if current_state:

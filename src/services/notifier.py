@@ -35,13 +35,11 @@ class NotifierService:
         self,
         bot: Bot,
         translator: Translator,
-        chunk_delay: float = 5.0,
-        chunk_size: int = 5,
     ):
         self.bot: Bot = bot
 
-        self.chunk_delay = chunk_delay
-        self.chunk_size = chunk_size
+        self.chunk_delay = 5.0
+        self.chunk_size = 5
 
         self.translator = translator
 

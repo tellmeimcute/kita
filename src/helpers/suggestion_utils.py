@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from config import Config
+from config import RuntimeConfig
 from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
 from helpers.i18n_translator import Translator
 from helpers.enums import RenderType
@@ -14,13 +14,13 @@ if TYPE_CHECKING:
     from helpers.suggestion_viewer import SuggestionViewer
 
 class SuggestionUtils:
-    def __init__(self, config: Config, translator: Translator):
-        self.config = config
+    def __init__(self, runtime_config: RuntimeConfig, translator: Translator):
+        self.runtime_config = runtime_config
         self.translator = translator
 
     @classmethod
     def from_viewer(cls, viewer: "SuggestionViewer"):
-        return cls(viewer.config, viewer.notifier.translator)
+        return cls(viewer.runtime_config, viewer.notifier.translator)
 
     def get_verdict(self, suggestion_dto: SUGGESTION_DTOS):
         i18n_key = "none_suggestion"
@@ -53,7 +53,7 @@ class SuggestionUtils:
             author_string=author_string,
             caption=caption,
             verdict=verdict,
-            bot_url=self.config.runtime_config.bot_url,
+            bot_url=self.runtime_config.bot_url,
         )
 
         return i18n_kwargs

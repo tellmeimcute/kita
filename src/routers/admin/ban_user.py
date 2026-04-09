@@ -5,6 +5,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from pydantic import ValidationError
 
+from dishka import FromDishka
+
 from database.dto import UserDTO
 from database.roles import UserRole
 from routers.keyboards import ReplyKeyboard
@@ -26,7 +28,7 @@ async def ban_user_id_handler(
     user_dto: UserDTO,
     session: AsyncSession,
     command: IDCommand,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     user_service: UserService,
     action: BanAdminAction,
 ):
@@ -68,7 +70,7 @@ async def ban_user_state_start(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     action: BanAdminAction,
 ):
     payload = MessagePayload(i18n_key="state_wait_for_id", reply_markup=ReplyKeyboard.cancel())
@@ -85,7 +87,7 @@ async def ban_user_state(
     state: FSMContext,
     session: AsyncSession,
     user_dto: UserDTO,
-    notifier: NotifierService,
+    notifier: FromDishka[NotifierService],
     user_service: UserService,
 ):
     data = await state.get_data()

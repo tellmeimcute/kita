@@ -1,6 +1,7 @@
 from logging import getLogger
 from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
+from redis.asyncio import Redis
 
 from config import Config
 from database.dao import MediaDAO, SuggestionDAO
@@ -29,11 +30,9 @@ class SuggestionService:
         "redis",
     )
 
-    def __init__(self, session: AsyncSession, config: Config):
+    def __init__(self, session: AsyncSession, redis: Redis):
         self.session = session
-        self.config = config
-
-        self.redis = config.redis
+        self.redis = redis
 
     def _parse_media_info(self, message: Message) -> tuple[str, str] | None:
         if message.video:
