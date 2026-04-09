@@ -55,13 +55,12 @@ async def process_suggestion(
 
     async with session.begin():
         suggestion_dto = await suggestion_service.create(user_dto, album)
-
         if not suggestion_dto.caption and not suggestion_dto.media:
             await session.rollback()
             await notifier.notify_user(user_dto, MessagePayload(i18n_key="error_media_suggestion"))
             return
-        
-        admins = await user_service.get_admins()
+
+    admins = await user_service.get_admins()
 
     payload = MessagePayload(i18n_key="on_moderation", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload)

@@ -3,8 +3,9 @@ from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
-from config import Config
-from database.dao import MediaDAO, SuggestionDAO
+
+from database.models import Suggestion, Media
+from database.dao import SuggestionDAO
 from database.redis.userstats import UserStatsRedis
 from database.dto import (
     SUGGESTION_DTOS,
@@ -106,18 +107,19 @@ class SuggestionService:
             "Update database info for suggestion %s. New data: %s", suggestion_dto.id, changed_data
         )
 
-    async def create_media(self, message: Message, suggestion: Suggestion):
+    def create_media(self, message: Message, suggestion: Suggestion):
         media_info = self._parse_media_info(message)
         if not media_info:
             return
 
         media_type, media_id = media_info
-        media = await MediaDAO.create_from_data(
-            self.session,
+
+        media = Media(
             filetype=media_type,
             telegram_file_id=media_id,
             suggestion=suggestion,
         )
+
         return media
 
     async def create(self, author_dto: UserDTO, album: list[Message]) -> SuggestionFullDTO:
@@ -127,21 +129,27 @@ class SuggestionService:
         caption = first_msg.caption or first_msg.text
         forwarded_from = self._parse_origin_info(first_msg)
 
-        medias: list[Media] = []
-
-        suggestion_orm = await self.dao.create_from_data(
-            self.session,
+        suggestion_orm = Suggestion(
             author_id=author_dto.user_id,
             media_group_id=media_group_id,
             caption=caption,
             forwarded_from=forwarded_from,
         )
-        for msg in album:
-            media_orm = await self.create_media(msg, suggestion_orm)
-            if media_orm:
-                medias.append(media_orm)
 
-        media_dtos = MediaDTO.from_model_list(medias)
+        media_list = []
+
+        for msg in album:
+            media_orm = self.create_media(msg, suggestion_orm)
+            if media_orm:
+                media_list.append(media_orm)
+
+        to_add = [suggestion_orm] + media_list
+
+        self.session.add_all(to_add)
+        await self.session.flush(to_add)
+        await self.session.commit()
+
+        media_dtos = MediaDTO.from_model_list(media_list)
         suggestion_base_dto = SuggestionBaseDTO.model_validate(suggestion_orm)
 
         suggestion_dto = SuggestionFullDTO(

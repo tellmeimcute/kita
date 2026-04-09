@@ -25,6 +25,7 @@ class SuggestionViewer:
         notifier: NotifierService,
         config: Config,
         runtime_config: RuntimeConfig,
+        suggestion_utils: SuggestionUtils,
     ):
         self.data = data
         self.session = session
@@ -33,21 +34,7 @@ class SuggestionViewer:
         self.config = config
         self.runtime_config = runtime_config
 
-        self.utils = SuggestionUtils.from_viewer(self)
-
-    @classmethod
-    async def from_state(
-        self,
-        state: FSMContext,
-        session: AsyncSession,
-        suggestion_service: SuggestionService,
-        notifier: NotifierService,
-        config: Config,
-        runtime_config: RuntimeConfig,
-    ):
-        data = await state.get_data()
-        viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
-        return self(viewer_data, session, suggestion_service, notifier, config, runtime_config)
+        self.utils = suggestion_utils
 
     async def dump_into_state(self, state: FSMContext, data: SuggestionViewerData):
         await state.set_data({"viewer_data": data.model_dump()})

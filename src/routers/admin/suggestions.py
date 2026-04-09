@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dishka import FromDishka
 
-from config import Config, RuntimeConfig
+from di.providers import viewer_factory_t
+
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
 from routers.state import SuggestionViewerState
@@ -35,9 +36,8 @@ async def solo_suggestion(
     user_dto: UserDTO,
     notifier: FromDishka[NotifierService],
     suggestion_service: FromDishka[SuggestionService],
+    viewer_factory: FromDishka[viewer_factory_t],
     state: FSMContext,
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig],
     command: IDCommand,
 ):
     try:
@@ -51,14 +51,7 @@ async def solo_suggestion(
     await state.set_state(SuggestionViewerState.in_solo_view)
 
     viewer_data = SuggestionViewerData(user_dto=user_dto, suggestion_dto=suggestion_dto)
-    viewer = SuggestionViewer(
-        viewer_data,
-        session,
-        suggestion_service,
-        notifier,
-        config,
-        runtime_config,
-    )
+    viewer = viewer_factory(viewer_data)
 
     await viewer.render_suggestion()
     await viewer.dump_into_state(state, viewer.data)
@@ -71,25 +64,11 @@ async def solo_suggestion_verdict(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    notifier: FromDishka[NotifierService],
     suggestion_service: FromDishka[SuggestionService],
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig],
+    viewer: FromDishka[SuggestionViewer],
     verdict: bool,
 ):
-
-    data = await state.get_data()
-    viewer_data = SuggestionViewerData.model_validate(data.get("viewer_data"))
-    suggestion_dto: SuggestionFullDTO = viewer_data.suggestion_dto
-
-    viewer = SuggestionViewer(
-        viewer_data,
-        session,
-        suggestion_service,
-        notifier,
-        config,
-        runtime_config,
-    )
+    suggestion_dto: SuggestionFullDTO = viewer.data.suggestion_dto
 
     suggestion_dto.accepted = verdict
     async with session.begin():
@@ -106,18 +85,14 @@ async def solo_suggestion_verdict(
 @router.message(I18nTextFilter("command_enter_viewer"))
 async def enter_suggestion_viewer(
     message: Message,
-    session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: FromDishka[NotifierService],
-    suggestion_service: FromDishka[SuggestionService],
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig],
+    viewer_factory: FromDishka[viewer_factory_t],
 ):
     await state.set_state(SuggestionViewerState.in_viewer)
 
     viewer_data = SuggestionViewerData(user_dto=user_dto)
-    viewer = SuggestionViewer(viewer_data, session, suggestion_service, notifier, config, runtime_config)
+    viewer = viewer_factory(viewer_data)
 
     if await viewer.to_next_suggestion(state):
         await viewer.render_start_review()
@@ -132,13 +107,10 @@ async def viewer_apply_verdict(
     message: Message,
     session: AsyncSession,
     state: FSMContext,
-    notifier: FromDishka[NotifierService],
     suggestion_service: FromDishka[SuggestionService],
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig],
+    viewer: FromDishka[SuggestionViewer],
     verdict: bool,
 ):
-    viewer = await SuggestionViewer.from_state(state, session, suggestion_service, notifier, config, runtime_config)
     suggestion_dto = await viewer.get_updated_dto()
     
     if suggestion_dto.accepted is not None:
@@ -168,12 +140,8 @@ async def ban_suggestion_author(
     user_dto: UserDTO,
     user_service: UserService,
     notifier: FromDishka[NotifierService],
-    suggestion_service: FromDishka[SuggestionService],
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig],
+    viewer: FromDishka[SuggestionViewer],
 ):
-    viewer = await SuggestionViewer.from_state(state, session, suggestion_service, notifier, config, runtime_config)
-
     try:
         if viewer.data.suggestion_dto.author_id == user_dto.user_id:
             raise UserImmuneError()
