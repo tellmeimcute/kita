@@ -1,5 +1,5 @@
 import asyncio
-from logging import Logger, getLogger
+from logging import getLogger
 from itertools import batched
 
 from aiogram import Bot
@@ -19,7 +19,7 @@ from services.senders import (
     ForwardTransfer,
 )
 
-logger: Logger = getLogger("kita.notifier_service")
+logger = getLogger("kita.notifier_service")
 
 
 class NotifierService:
