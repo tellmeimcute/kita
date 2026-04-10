@@ -22,7 +22,6 @@ from helpers.schemas import IDCommand
 from helpers.schemas.data import SuggestionViewerData
 
 from helpers.suggestion_viewer import SuggestionViewer
-from helpers.exceptions import UserImmuneError, SQLModelNotFoundError
 from services import NotifierService, SuggestionService, UserService
 
 router = Router(name="admin_suggestions")
@@ -33,18 +32,12 @@ logger = getLogger("kita.admin_suggestions")
 async def solo_suggestion(
     message: Message,
     user_dto: UserDTO,
-    notifier: FromDishka[NotifierService],
     suggestion_service: FromDishka[SuggestionService],
     viewer_factory: FromDishka[viewer_factory_t],
     state: FSMContext,
     command: IDCommand,
 ):
-    try:
-        suggestion_dto = await suggestion_service.get(command.target_id)
-    except (SQLModelNotFoundError, ValidationError):
-        i18n_kwargs = {"suggestion_id": command.target_id}
-        payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)
-        return await notifier.notify_user(user_dto, payload=payload)
+    suggestion_dto = await suggestion_service.get(command.target_id)
 
     await state.set_state(SuggestionViewerState.in_solo_view)
 
@@ -141,31 +134,25 @@ async def ban_suggestion_author(
     viewer: FromDishka[SuggestionViewer],
 ):
     try:
-        if viewer.data.suggestion_dto.author_id == user_dto.user_id:
-            raise UserImmuneError()
+        target_id = viewer.data.suggestion_dto.author_id
+        target_role = UserRole.BANNED
+
         async with session.begin():
-            target_dto = await user_service.get(viewer.data.suggestion_dto.author_id)
-            await user_service.set_role(target_dto, UserRole.BANNED)
-            await user_service.decline_suggestion(target_dto)
+            target_dto = await user_service.moderate_user(
+                target_id, target_role, caller=user_dto
+            )
+
+        payload = MessagePayload(
+            i18n_key="answer_admin_role_changed",
+            i18n_kwargs=target_dto.model_dump(),
+        )
+        await notifier.notify_user(user_dto, payload)
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
             i18n_kwargs={"hint": html.code("Validation Error.")},
         )
         return await notifier.notify_user(user_dto, payload)
-    except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
-        return await notifier.notify_user(user_dto, payload)
-    except SQLModelNotFoundError:
-        i18n_kwargs = {"user_id": viewer.data.suggestion_dto.author_id}
-        payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs)
-        return await notifier.notify_user(user_dto, payload)
-
-    payload = MessagePayload(
-        i18n_key="answer_admin_role_changed",
-        i18n_kwargs=target_dto.model_dump(),
-    )
-    await notifier.notify_user(user_dto, payload)
 
     current_state = await state.get_state()
     if current_state != "SuggestionViewerState:in_solo_view":

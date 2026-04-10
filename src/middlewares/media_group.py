@@ -36,8 +36,8 @@ class MediaGroupMiddleware(BaseMiddleware):
         "date",
     }
 
-    def __init__(self, redis_client: Redis, latency: float = 0.3) -> None:
-        self.redis = redis_client
+    def __init__(self, redis: Redis, latency: float = 0.3) -> None:
+        self.redis = redis
         self.latency = latency
         self.prefix = "media_group:"
 

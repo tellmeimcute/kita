@@ -9,7 +9,7 @@ from helpers.suggestion_utils import SuggestionUtils
 from routers.keyboards import ReplyKeyboard
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import SuggestionViewerData
-from helpers.exceptions import SQLModelNotFoundError
+from helpers.exceptions import SQLSuggestionNotFoundError
 
 from services import NotifierService, SuggestionService
 
@@ -111,7 +111,7 @@ class SuggestionViewer:
                 async with self.session.begin():
                     active_list = await self.suggestion_service.get_active()
                 self.data = self.data.model_copy(update={"suggestion_dtos": active_list})
-        except SQLModelNotFoundError:
+        except SQLSuggestionNotFoundError:
             return
 
         new_active = self.data.suggestion_dtos.pop(0)

@@ -1,13 +1,11 @@
 import logging
 
-from redis.asyncio import Redis
-
 from aiogram import Bot, Dispatcher, Router
-from aiogram.utils.i18n import I18n
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 from dishka import AsyncContainer
 
 from config import Config, RuntimeConfig
+from helpers.consts import T_ME
 from middlewares import (
     BanCheckMiddleware,
     MediaGroupMiddleware,
@@ -15,6 +13,7 @@ from middlewares import (
     UserMiddleware,
     AdminMiddleware
 )
+
 from routers import (
     admin_ban_user_router,
     admin_general_router,
@@ -23,6 +22,8 @@ from routers import (
     user_start_router,
     user_suggestion_router,
 )
+
+from routers.errors import router as errors_router
 
 logger = logging.getLogger("kita.startup")
 
@@ -33,18 +34,18 @@ async def get_runtime_config(bot: Bot, raw_config: Config):
     runtime_config = RuntimeConfig(
         channel_name=channel_info.full_name,
         bot_username=bot_user.username,
-        bot_url=f"https://t.me/{bot_user.username}",
+        bot_url=f"{T_ME}{bot_user.username}",
     )
 
     return runtime_config
 
-def register_middlewares(dp: Dispatcher):
-    session_middleware = SessionMiddleware()
-    user_middleware = UserMiddleware()
-    bancheck_middleware = BanCheckMiddleware()
+async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
+    session_middleware = await container.get(SessionMiddleware)
+    user_middleware = await container.get(UserMiddleware)
+    bancheck_middleware = await container.get(BanCheckMiddleware)
 
-    i18n = I18n(path="locales", default_locale="ru", domain="messages")
-    i18n_middleware = ConstI18nMiddleware(locale="ru", i18n=i18n)
+    i18n_middleware = await container.get(ConstI18nMiddleware)
+    i18n_middleware.setup(dp)
 
     dp.message.middleware(session_middleware)
     dp.message.middleware(user_middleware)
@@ -54,8 +55,8 @@ def register_middlewares(dp: Dispatcher):
     logger.info("Middlewares successfully registered ")
 
 
-def register_routers(dp: Dispatcher, redis: Redis):
-    media_group_middleware = MediaGroupMiddleware(redis_client=redis)
+async def register_routers(container: AsyncContainer, dp: Dispatcher):
+    media_group_middleware = await container.get(MediaGroupMiddleware)
 
     user_suggestion_router.message.middleware(media_group_middleware)
     admin_mass_message_router.message.middleware(media_group_middleware)
@@ -75,10 +76,15 @@ def register_routers(dp: Dispatcher, redis: Redis):
         admin_ban_user_router,
         admin_mass_message_router,
     )
-    admin_middleware = AdminMiddleware()
+
+    admin_middleware = await container.get(AdminMiddleware)
     admin_routers.message.middleware(admin_middleware)
 
-    dp.include_routers(user_routers, admin_routers)
+    dp.include_routers(
+        errors_router,
+        user_routers,
+        admin_routers,
+    )
 
     logger.info("Routers successfully registered")
 
@@ -86,9 +92,6 @@ async def register_all(
     container: AsyncContainer,
     dp: Dispatcher,
 ):
-    redis = await container.get(Redis)
-
-    register_middlewares(dp)
-    register_routers(dp, redis)
-
+    await register_middlewares(container, dp)
+    await register_routers(container, dp)
     logger.info("Bot fully init")

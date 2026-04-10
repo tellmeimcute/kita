@@ -13,7 +13,6 @@ from routers.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand
-from helpers.exceptions import UserImmuneError, SQLModelNotFoundError
 
 from services import NotifierService, UserService
 
@@ -59,30 +58,16 @@ async def change_user_role(
     user_service: UserService,
 ):
     try:
-        target_new_kb = ReplyKeyboard.main_by_role(command.target_role)
-
-        if command.target_id == user_dto.user_id:
-            raise UserImmuneError()
-         
         async with session.begin():
-            target_dto = await user_service.get(command.target_id)
-            await user_service.set_role(target_dto, command.target_role)
-            if target_dto.is_banned:
-                await user_service.decline_suggestion(target_dto)
-
+            target_dto = await user_service.moderate_user(
+                command.target_id, command.target_role, caller=user_dto
+            )
     except (ValueError, ValidationError):
         payload = MessagePayload(
             i18n_key="command_syntax_error",
             i18n_kwargs={"hint": html.code("Validation Error.")},
         )
         return await notifier.notify_user(user_dto, payload)
-    except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
-        await notifier.notify_user(user_dto, payload)
-    except SQLModelNotFoundError:
-        i18n_kwargs = {"user_id": command.target_id}
-        payload = MessagePayload(i18n_key="user_not_found", i18n_kwargs=i18n_kwargs)
-        await notifier.notify_user(user_dto, payload)
 
     payload = MessagePayload(
         i18n_key="answer_admin_role_changed",
@@ -91,6 +76,7 @@ async def change_user_role(
     await notifier.notify_user(user_dto, payload)
 
     i18n_kwargs = {"role": command.target_role}
+    target_new_kb = ReplyKeyboard.main_by_role(command.target_role)
     payload = MessagePayload(
         i18n_key="notify_user_role_changed",
         i18n_kwargs=i18n_kwargs,

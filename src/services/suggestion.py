@@ -1,8 +1,8 @@
+
 from logging import getLogger
 from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
-
 
 from database.models import Suggestion, Media
 from database.dao import SuggestionDAO
@@ -12,11 +12,11 @@ from database.dto import (
     MediaDTO,
     SuggestionBaseDTO,
     SuggestionFullDTO,
-    UserDTO
+    UserDTO,
 )
 from database.models import Media, Suggestion
 from helpers.schemas.objects import UserStats
-from helpers.exceptions import SQLModelNotFoundError
+from helpers.exceptions import SQLSuggestionNotFoundError
 
 
 logger = getLogger("kita.suggestion_service")
@@ -73,7 +73,7 @@ class SuggestionService:
         )
 
         if not suggestion_orm:
-            raise SQLModelNotFoundError()
+            raise SQLSuggestionNotFoundError(target_id=suggestion_id)
 
         suggestion_dto = dto_obj.model_validate(suggestion_orm)
         return suggestion_dto
@@ -82,7 +82,7 @@ class SuggestionService:
         active_orm = await self.dao.get_active(self.session)
 
         if not active_orm:
-            raise SQLModelNotFoundError()
+            raise SQLSuggestionNotFoundError()
 
         active_dtos = SuggestionFullDTO.from_model_list(active_orm)
         return active_dtos

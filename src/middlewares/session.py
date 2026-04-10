@@ -7,7 +7,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from helpers.consts import DISKA_CONTAINER_KEY
+from helpers.consts import DISHKA_CONTAINER_KEY
 from config import Config
 
 logger = getLogger("kita.middleware")
@@ -20,7 +20,7 @@ class SessionMiddleware(BaseMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        container: AsyncContainer = data.get(DISKA_CONTAINER_KEY)
+        container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
 
         if container is None:
             logger.error("Container is None. Stop")

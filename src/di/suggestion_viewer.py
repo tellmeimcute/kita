@@ -8,12 +8,9 @@ from aiogram.fsm.context import FSMContext
 from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 from helpers.suggestion_utils import SuggestionUtils
-
 from helpers.schemas import SuggestionViewerData
 from helpers.suggestion_viewer import SuggestionViewer
-
 from config import Config, RuntimeConfig
-
 
 type viewer_factory_t = Callable[[SuggestionViewerData], SuggestionViewer]
 

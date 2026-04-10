@@ -1,5 +1,6 @@
 
 
 
+T_ME: str = "https://t.me/"
 
-DISKA_CONTAINER_KEY: str = "dishka_container"
+DISHKA_CONTAINER_KEY: str = "dishka_container"

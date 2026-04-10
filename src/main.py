@@ -11,6 +11,7 @@ from di.config import ConfigProvider
 from di.database import DatabaseProvider, RedisProvider
 from di.providers import ServicesProvider, UtilsProvider, FSMProvider
 from di.suggestion_viewer import SuggestionViewerProvider
+from di.middleware import MiddlewareProvider
 from di.bot import BotProvider
 
 from database import DatabaseManager
@@ -30,6 +31,7 @@ async def main():
         ServicesProvider(),
         FSMProvider(),
         SuggestionViewerProvider(),
+        MiddlewareProvider(),
         AiogramProvider(),
     )
 

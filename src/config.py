@@ -1,7 +1,6 @@
 from pydantic import BaseModel, SecretStr, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from redis.asyncio import Redis
 
 class RuntimeConfig(BaseModel):
     channel_name: str
@@ -26,10 +25,7 @@ class Config(BaseSettings):
     POSTGRES_PASSWORD: str
 
     PROXY: str | None = None
-
-    runtime_config: RuntimeConfig | None = None
-    redis: Redis | None = None
-
+    
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False, extra="ignore"
     )

@@ -12,7 +12,7 @@ from database.roles import UserRole
 from database.redis.user import UserRedis
 
 from helpers.schemas.objects import UserData
-from helpers.exceptions import UserImmuneError, SQLModelNotFoundError
+from helpers.exceptions import UserImmuneError, SQLUserNotFoundError
 
 logger = getLogger("kita.user_service")
 
@@ -69,7 +69,7 @@ class UserService:
 
         user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
         if not user_alchemy:
-            raise SQLModelNotFoundError()
+            raise SQLUserNotFoundError(target_id=user_id)
 
         user_dto = UserDTO.model_validate(user_alchemy)
 
@@ -105,11 +105,8 @@ class UserService:
         active = await self.dao.get_admins(self.session)
         return UserDTO.from_model_list(active)
 
-    async def set_role(self, user_dto: UserDTO, role: UserRole):
-        if self.is_immune(user_dto.user_id):
-            raise UserImmuneError()
-
-        user_dto.role = role
+    async def set_role(self, user_dto: UserDTO, target_role: UserRole):
+        user_dto.role = target_role
         result = await self.dao.update_by_id(
             self.session, user_dto.user_id, user_dto.prepare_changed_data()
         )
@@ -120,4 +117,14 @@ class UserService:
     async def decline_suggestion(self, user_dto: UserDTO):
         await self.dao.decline_all_suggestions(self.session, user_dto.user_id)
 
+    async def moderate_user(self, target_id: int, target_role: UserRole, caller: UserDTO):
+        if self.is_immune(target_id) or caller.user_id == target_id:
+            raise UserImmuneError()
         
+        target_dto = await self.get(target_id)
+        await self.set_role(target_dto, target_role)
+
+        if target_role == UserRole.BANNED:
+            await self.decline_suggestion(target_dto)
+
+        return target_dto

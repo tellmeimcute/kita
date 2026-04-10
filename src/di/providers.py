@@ -1,7 +1,9 @@
 
 from dishka import Provider, Scope, provide
 from dishka.integrations.aiogram import AiogramMiddlewareData
+
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.i18n import I18n
 
 from services.user import UserService
 from services.suggestion import SuggestionService
@@ -19,6 +21,10 @@ class ServicesProvider(Provider):
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
     suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
+
+    @provide(scope=Scope.APP)
+    def i18n(self) -> I18n:
+        return I18n(path="locales", default_locale="ru", domain="messages")
 
 class FSMProvider(Provider):
     @provide(scope=Scope.REQUEST)
