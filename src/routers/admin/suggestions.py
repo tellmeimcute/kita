@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dishka import FromDishka
 
-from di.providers import viewer_factory_t
+from di.suggestion_viewer import viewer_factory_t
 
 from database.dto import SuggestionFullDTO, UserDTO
 from database.roles import UserRole
@@ -32,7 +32,6 @@ logger = getLogger("kita.admin_suggestions")
 @router.message(TextArgsFilter("command_open_solo_view", IDCommand))
 async def solo_suggestion(
     message: Message,
-    session: AsyncSession,
     user_dto: UserDTO,
     notifier: FromDishka[NotifierService],
     suggestion_service: FromDishka[SuggestionService],
@@ -41,8 +40,7 @@ async def solo_suggestion(
     command: IDCommand,
 ):
     try:
-        async with session.begin():
-            suggestion_dto = await suggestion_service.get(command.target_id)
+        suggestion_dto = await suggestion_service.get(command.target_id)
     except (SQLModelNotFoundError, ValidationError):
         i18n_kwargs = {"suggestion_id": command.target_id}
         payload = MessagePayload(i18n_key="error_suggestion_not_found", i18n_kwargs=i18n_kwargs)

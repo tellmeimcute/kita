@@ -9,7 +9,8 @@ from dishka.integrations.aiogram import AiogramProvider, setup_dishka
 
 from di.config import ConfigProvider
 from di.database import DatabaseProvider, RedisProvider
-from di.providers import ServicesProvider, UtilsProvider, SuggestionViewerProvider, FSMProvider
+from di.providers import ServicesProvider, UtilsProvider, FSMProvider
+from di.suggestion_viewer import SuggestionViewerProvider
 from di.bot import BotProvider
 
 from database import DatabaseManager
