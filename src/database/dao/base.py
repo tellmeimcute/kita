@@ -31,7 +31,7 @@ class BaseDao(Generic[T]):
         return stmt
 
     @classmethod
-    def parse_options(self, options: Sequence[Any] | Any):
+    def parse_options(cls, options: Sequence[Any] | Any):
         if options is None:
             opt_seq = ()
         elif isinstance(options, Sequence) and not isinstance(options, str):
