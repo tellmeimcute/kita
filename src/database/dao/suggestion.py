@@ -41,15 +41,22 @@ class SuggestionDAO(BaseDao[Suggestion]):
         )
 
     @classmethod
-    async def get_active(cls, session: AsyncSession, limit: int = 10, offset: int = 0) -> list[Suggestion] | None:
+    async def get_active(
+        cls,
+        session: AsyncSession,
+        limit: int = 10,
+        offset: int = 0,
+        order_by=None,
+    ) -> list[Suggestion] | None:
+        order_by = order_by or Suggestion.id.asc()
         return await cls.get(
             session=session,
             filters=Suggestion.accepted.is_(None),
             options=(Suggestion.media, Suggestion.author),
+            order_by=order_by,
             limit=limit,
             offset=offset,
         )
-
 
     @classmethod
     async def get_one_or_none_by_id(

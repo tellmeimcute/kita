@@ -78,15 +78,6 @@ class SuggestionService:
         suggestion_dto = dto_obj.model_validate(suggestion_orm)
         return suggestion_dto
 
-    async def get_one_active(self) -> SuggestionFullDTO | None:
-        active_orm = await self.dao.get_one_active(self.session)
-
-        if not active_orm:
-            raise SQLModelNotFoundError()
-
-        active_dto = SuggestionFullDTO.model_validate(active_orm)
-        return active_dto
-    
     async def get_active(self) -> list[SuggestionFullDTO] | None:
         active_orm = await self.dao.get_active(self.session)
 
