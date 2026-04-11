@@ -4,6 +4,8 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
+from aiogram.types import User as AiogramUser
+
 from core.config import Config
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
@@ -11,7 +13,6 @@ from database.models import UserAlchemy
 from database.roles import UserRole
 from database.redis.user import UserRedis
 
-from helpers.schemas.objects import UserData
 from core.exceptions import UserImmuneError, SQLUserNotFoundError
 
 logger = getLogger("kita.user_service")
@@ -37,13 +38,14 @@ class UserService:
     def is_immune(self, user_id: int):
         return user_id == self.admin_id
 
-    async def create(self, user_data: UserData):
+    async def create(self, user_data: AiogramUser):
         role = UserRole.ADMIN if user_data.id == self.admin_id else UserRole.USER
 
         prep_user_dto = UserDTO(
             user_id=user_data.id,
             username=user_data.username,
             name=user_data.full_name,
+            language_code=user_data.language_code,
             role=role,
             is_bot_blocked=False,
         )

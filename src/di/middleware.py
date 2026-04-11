@@ -1,6 +1,5 @@
 
 from aiogram.utils.i18n import I18n
-from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 from dishka import Provider, Scope, provide
 from redis.asyncio import Redis
 
@@ -9,7 +8,8 @@ from middlewares import (
     BanCheckMiddleware,
     MediaGroupMiddleware,
     SessionMiddleware,
-    UserMiddleware
+    UserMiddleware,
+    KitaI18nMiddleware,
 )
 
 class MiddlewareProvider(Provider):
@@ -19,8 +19,8 @@ class MiddlewareProvider(Provider):
     admin_middleware = provide(AdminMiddleware, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
-    async def i18n_middleware(self, i18n: I18n) -> ConstI18nMiddleware:
-        return ConstI18nMiddleware(locale="ru", i18n=i18n)
+    async def kita_i18n_middleware(self, i18n: I18n) -> KitaI18nMiddleware:
+        return KitaI18nMiddleware(i18n=i18n)
 
     @provide(scope=Scope.APP)
     async def media_group_middleware(self, redis: Redis) -> MediaGroupMiddleware:

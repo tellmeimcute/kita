@@ -4,7 +4,6 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict, Union
 from dishka import AsyncContainer
 
-from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,9 +11,11 @@ from services.user import UserService
 from core.exceptions import SQLUserNotFoundError
 from helpers.consts import DISHKA_CONTAINER_KEY
 
+from .base import KitaMiddleware
+
 logger = getLogger("kita.middleware")
 
-class UserMiddleware(BaseMiddleware):
+class UserMiddleware(KitaMiddleware):
 
     async def __call__(
         self,

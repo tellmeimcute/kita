@@ -9,7 +9,8 @@ from middlewares import (
     MediaGroupMiddleware,
     SessionMiddleware,
     UserMiddleware,
-    AdminMiddleware
+    AdminMiddleware,
+    KitaI18nMiddleware,
 )
 
 from routers import (
@@ -31,11 +32,11 @@ async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     user_middleware = await container.get(UserMiddleware)
     bancheck_middleware = await container.get(BanCheckMiddleware)
 
-    dp.message.middleware(session_middleware)
-    dp.message.middleware(user_middleware)
-    dp.message.middleware(bancheck_middleware)
+    session_middleware.setup(dp)
+    user_middleware.setup(dp)
+    bancheck_middleware.setup(dp)
 
-    i18n_middleware = await container.get(ConstI18nMiddleware)
+    i18n_middleware = await container.get(KitaI18nMiddleware)
     i18n_middleware.setup(dp)
     
     logger.info("Middlewares successfully registered ")
@@ -44,8 +45,8 @@ async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
 async def register_routers(container: AsyncContainer, dp: Dispatcher):
     media_group_middleware = await container.get(MediaGroupMiddleware)
 
-    user_suggestion_router.message.middleware(media_group_middleware)
-    admin_mass_message_router.message.middleware(media_group_middleware)
+    media_group_middleware.setup(user_suggestion_router)
+    media_group_middleware.setup(admin_mass_message_router)
 
     # Order is important!!
 
@@ -64,7 +65,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     )
 
     admin_middleware = await container.get(AdminMiddleware)
-    admin_routers.message.middleware(admin_middleware)
+    admin_middleware.setup(admin_routers)
 
     dp.include_routers(
         errors_router,

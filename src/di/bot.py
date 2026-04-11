@@ -33,6 +33,6 @@ class BotProvider(Provider):
     @provide(scope=Scope.APP)
     def dp(self, redis: Redis) -> Dispatcher:
         logger.info("Initializing Dispatcher instance")
-        dp = Dispatcher(storage=RedisStorage(redis=redis))
+        dp = Dispatcher(storage=RedisStorage(redis=redis), name="dispatcher")
         return dp
     

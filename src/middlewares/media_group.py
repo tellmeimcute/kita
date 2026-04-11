@@ -1,20 +1,19 @@
 import json
 import asyncio
+from typing import ClassVar
 
 from logging import getLogger
-from aiogram import BaseMiddleware
 from aiogram.types import Message
 from redis.asyncio import Redis
 
+from .base import KitaMiddleware
 
 logger = getLogger(name="kita.media_group_middleware")
 
-class MediaGroupMiddleware(BaseMiddleware):
-    """
-    Помещает в album все обьекты media group
-    Дополнительно шлет media_group_id
-    """
-    
+class MediaGroupMiddleware(KitaMiddleware):
+
+    __event__types__: ClassVar[set[str]] = {"message"}
+
     __slots__ = (
         "redis",
         'latency',

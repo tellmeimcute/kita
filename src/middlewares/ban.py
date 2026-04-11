@@ -1,20 +1,15 @@
 from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict, Union
 
-from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.dto import UserDTO
+from .base import KitaMiddleware
 
 logger = getLogger("kita.ban_middleware")
 
 
-class BanCheckMiddleware(BaseMiddleware):
-    """
-    Не пропускает если пользователь в бане.
-    data["user_dto"] уже должен существовать.
-    Должен стоять после UserMiddleware (для дебилов)
-    """
+class BanCheckMiddleware(KitaMiddleware):
 
     async def __call__(
         self,

@@ -1,17 +1,11 @@
 from typing import Any, Awaitable, Callable, Dict, Union
 
-from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.dto import UserDTO
+from .base import KitaMiddleware
 
-
-class AdminMiddleware(BaseMiddleware):
-    """
-    Пропускает дальше только если пользователь админ.
-    data["user_dto"] уже должен существовать.
-    Должен стоять после UserMiddleware (для дебилов)
-    """
+class AdminMiddleware(KitaMiddleware):
 
     async def __call__(
         self,
