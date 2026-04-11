@@ -81,9 +81,7 @@ class UserService:
 
         return user_dto
 
-    async def update_from_data(self, user_dto: UserDTO, user_data: UserData):
-        user_dto.update_from_data(user_data)
-        changed_data = user_dto.prepare_changed_data()
+    async def update_from_data(self, user_dto: UserDTO, changed_data: dict):
         if not changed_data:
             return
 

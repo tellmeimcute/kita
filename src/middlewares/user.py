@@ -36,7 +36,9 @@ class UserMiddleware(BaseMiddleware):
         async with session.begin():
             try:
                 user_dto = await user_service.get(user_tg.id)
-                await user_service.update_from_data(user_dto, user_tg)
+                user_dto.update_from_data(user_tg)
+                if changed_data := user_dto.prepare_changed_data():
+                    await user_service.update_from_data(user_dto, changed_data)
             except SQLUserNotFoundError:
                 user_dto = await user_service.create(user_tg)
 
