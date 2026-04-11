@@ -1,7 +1,6 @@
 import logging
 
 from aiogram import Dispatcher, Router
-from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 from dishka import AsyncContainer
 
 from middlewares import (

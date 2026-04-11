@@ -2,8 +2,9 @@
 from logging import getLogger
 from typing import Any, Awaitable, Callable, ClassVar
 from aiogram import Router
-from aiogram.types import TelegramObject
+from aiogram.types import TelegramObject, User as AiogramUser
 from aiogram.utils.i18n import I18n
+
 from database.dto import UserDTO
 
 from .base import KitaMiddleware
@@ -28,6 +29,11 @@ class KitaI18nMiddleware(KitaMiddleware):
         user_dto: UserDTO = data.get("user_dto")
         if user_dto:
             return user_dto.language_code
+        
+        aiogram_user: AiogramUser = data.get("event_from_user")
+        if aiogram_user:
+            return aiogram_user.language_code
+        
         return self.i18n.default_locale
 
     async def __call__(
