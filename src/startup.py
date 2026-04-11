@@ -1,11 +1,9 @@
 import logging
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Dispatcher, Router
 from aiogram.utils.i18n.middleware import ConstI18nMiddleware
 from dishka import AsyncContainer
 
-from config import Config, RuntimeConfig
-from helpers.consts import T_ME
 from middlewares import (
     BanCheckMiddleware,
     MediaGroupMiddleware,
@@ -27,31 +25,19 @@ from routers.errors import router as errors_router
 
 logger = logging.getLogger("kita.startup")
 
-async def get_runtime_config(bot: Bot, raw_config: Config):
-    channel_info = await bot.get_chat(raw_config.CHANNEL_ID)
-    bot_user = await bot.get_me()
-
-    runtime_config = RuntimeConfig(
-        channel_name=channel_info.full_name,
-        bot_username=bot_user.username,
-        bot_url=f"{T_ME}{bot_user.username}",
-    )
-
-    return runtime_config
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     session_middleware = await container.get(SessionMiddleware)
     user_middleware = await container.get(UserMiddleware)
     bancheck_middleware = await container.get(BanCheckMiddleware)
 
-    i18n_middleware = await container.get(ConstI18nMiddleware)
-    i18n_middleware.setup(dp)
-
     dp.message.middleware(session_middleware)
     dp.message.middleware(user_middleware)
     dp.message.middleware(bancheck_middleware)
-    dp.message.outer_middleware(i18n_middleware)
 
+    i18n_middleware = await container.get(ConstI18nMiddleware)
+    i18n_middleware.setup(dp)
+    
     logger.info("Middlewares successfully registered ")
 
 

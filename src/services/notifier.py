@@ -8,9 +8,9 @@ from aiogram.types import Message
 
 from database.dto import UserDTO
 from helpers.schemas.message_payload import MessagePayload
-from helpers.i18n_translator import Translator
+from core.i18n_translator import Translator
 
-from services.senders import (
+from ui.senders import (
     MessageSender,
     MessageTransfer,
     TextSender,

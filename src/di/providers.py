@@ -9,7 +9,7 @@ from services.user import UserService
 from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 
-from helpers.i18n_translator import Translator
+from core.i18n_translator import Translator
 from helpers.suggestion_utils import SuggestionUtils
 
 
@@ -30,3 +30,4 @@ class FSMProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def fsm_context(self, middleware_data: AiogramMiddlewareData) -> FSMContext:
         return middleware_data["state"]
+    

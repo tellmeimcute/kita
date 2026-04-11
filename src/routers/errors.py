@@ -1,12 +1,19 @@
 
-from aiogram import Router, F
+from pydantic import ValidationError
+
+from aiogram import Router, F, html
 from aiogram.types import Message, ErrorEvent
 from aiogram.filters.exception import ExceptionTypeFilter
 
 from dishka import FromDishka
 
 from helpers.schemas.message_payload import MessagePayload
-from helpers.exceptions import SQLUserNotFoundError, UserImmuneError, SQLSuggestionNotFoundError
+from core.exceptions import (
+    SQLUserNotFoundError,
+    SQLSuggestionNotFoundError,
+    UserImmuneError,
+    KitaValidationError,
+)
 from services import NotifierService
 
 router = Router(name="errors")
@@ -68,6 +75,26 @@ async def suggestion_not_found(
         i18n_key="error_suggestion_not_found",
         i18n_kwargs=i18n_kwargs,
         reply_markup=e.return_kb,
+    )
+
+    strategy = notifier.send_strategy_factory(caller_id, payload)
+    await notifier.send(strategy)
+
+
+@router.error(ExceptionTypeFilter(KitaValidationError, ValidationError), F.update.message.as_("message"))
+async def validation_error(
+    event: ErrorEvent,
+    message: Message,
+    notifier: FromDishka[NotifierService],
+):
+    caller_id = message.from_user.id
+    e: KitaValidationError | ValidationError = event.exception
+    is_kita_exc = isinstance(e, KitaValidationError)
+
+    payload = MessagePayload(
+        i18n_key="command_syntax_error",
+        i18n_kwargs={"hint": html.code("Validation Error.")},
+        reply_markup=e.return_kb if is_kita_exc else None,
     )
 
     strategy = notifier.send_strategy_factory(caller_id, payload)

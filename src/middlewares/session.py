@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from helpers.consts import DISHKA_CONTAINER_KEY
-from config import Config
+from core.config import Config
 
 logger = getLogger("kita.middleware")
 

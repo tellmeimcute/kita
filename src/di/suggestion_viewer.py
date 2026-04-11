@@ -1,20 +1,22 @@
 
-from typing import Callable
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dishka import Provider, Scope, provide
 from aiogram.fsm.context import FSMContext
 
 from services.suggestion import SuggestionService
-from services.notifier import NotifierService
-from helpers.suggestion_utils import SuggestionUtils
-from helpers.schemas import SuggestionViewerData
-from helpers.suggestion_viewer import SuggestionViewer
-from config import Config, RuntimeConfig
+from services.suggestion_moderation import SuggestionModerationService
 
-type viewer_factory_t = Callable[[SuggestionViewerData], SuggestionViewer]
+from helpers.schemas import SuggestionViewerData
+from helpers.suggestion_queue import SuggestionQueueManager
+
+from ui.suggestion_renderer import SuggestionRenderer
+
 
 class SuggestionViewerProvider(Provider):
+    suggestion_moderation = provide(SuggestionModerationService, scope=Scope.APP)
+    suggestion_renderer = provide(SuggestionRenderer, scope=Scope.APP)
+
     @provide(scope=Scope.REQUEST)
     async def viewer_data(self, fsm: FSMContext) -> SuggestionViewerData:
         data = await fsm.get_data()
@@ -26,25 +28,16 @@ class SuggestionViewerProvider(Provider):
         return viewer_data
     
     @provide(scope=Scope.REQUEST)
-    def viewer_factory(
+    async def suggestion_queue(
         self,
         session: AsyncSession,
         suggestion_service: SuggestionService,
-        notifier: NotifierService,
-        config: Config,
-        runtime_config: RuntimeConfig,
-        suggestion_utils: SuggestionUtils,
-    ) -> viewer_factory_t:
-        def _factory(data: SuggestionViewerData) -> SuggestionViewer:
-            return SuggestionViewer(
-                data,
-                session,
-                suggestion_service,
-                notifier,
-                config,
-                runtime_config,
-                suggestion_utils,
-            )
-        return _factory
-
-    suggestion_viewer = provide(SuggestionViewer, scope=Scope.REQUEST)
+        state: FSMContext,
+        viewer_data: SuggestionViewerData,
+    ) -> SuggestionQueueManager:
+        return SuggestionQueueManager(
+            session=session,
+            suggestion_service=suggestion_service,
+            state=state,
+            data=viewer_data,
+        )

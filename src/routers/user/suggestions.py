@@ -11,7 +11,7 @@ from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.dto import UserDTO
-from routers.keyboards import ReplyKeyboard
+from ui.keyboards import ReplyKeyboard
 from routers.state import SendSuggestionState
 from helpers.suggestion_utils import SuggestionUtils
 from helpers.filters import I18nTextFilter

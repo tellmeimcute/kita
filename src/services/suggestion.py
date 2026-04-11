@@ -16,7 +16,7 @@ from database.dto import (
 )
 from database.models import Media, Suggestion
 from helpers.schemas.objects import UserStats
-from helpers.exceptions import SQLSuggestionNotFoundError
+from core.exceptions import SQLSuggestionNotFoundError
 
 
 logger = getLogger("kita.suggestion_service")

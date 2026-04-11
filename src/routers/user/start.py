@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from dishka import FromDishka
-from config import RuntimeConfig
+from core.config import RuntimeConfig
 from database.dto import UserDTO
-from routers.keyboards import ReplyKeyboard
+from ui.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter
 from helpers.schemas.message_payload import MessagePayload
 from services.notifier import NotifierService

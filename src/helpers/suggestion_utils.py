@@ -1,26 +1,18 @@
 
-from typing import TYPE_CHECKING
-
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from config import RuntimeConfig
+from core.config import RuntimeConfig
 from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
-from helpers.i18n_translator import Translator
-from helpers.enums import RenderType
+from core.i18n_translator import Translator
+from core.enums import RenderType
 from helpers.schemas.message_payload import MessagePayload
 
-if TYPE_CHECKING:
-    from helpers.suggestion_viewer import SuggestionViewer
 
 class SuggestionUtils:
     def __init__(self, runtime_config: RuntimeConfig, translator: Translator):
         self.runtime_config = runtime_config
         self.translator = translator
-
-    @classmethod
-    def from_viewer(cls, viewer: "SuggestionViewer"):
-        return cls(viewer.runtime_config, viewer.notifier.translator)
 
     def get_verdict(self, suggestion_dto: SUGGESTION_DTOS):
         i18n_key = "none_suggestion"

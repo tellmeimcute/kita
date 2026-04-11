@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.user import UserService
-from helpers.exceptions import SQLUserNotFoundError
+from core.exceptions import SQLUserNotFoundError
 from helpers.consts import DISHKA_CONTAINER_KEY
 
 logger = getLogger("kita.middleware")

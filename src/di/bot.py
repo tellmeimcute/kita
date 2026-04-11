@@ -10,7 +10,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
-from config import Config
+from core.config import Config
 
 logger = getLogger("kita.providers")
 

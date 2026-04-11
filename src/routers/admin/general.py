@@ -1,15 +1,14 @@
-from aiogram import Router, html
+from aiogram import Router
 from aiogram.types import Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dishka import FromDishka
 
-from config import Config, RuntimeConfig
+from core.config import Config, RuntimeConfig
 from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
 from database.dto import UserDTO
-from routers.keyboards import ReplyKeyboard
+from ui.keyboards import ReplyKeyboard
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import ChangeRoleCommand
@@ -57,17 +56,10 @@ async def change_user_role(
     command: ChangeRoleCommand,
     user_service: UserService,
 ):
-    try:
-        async with session.begin():
-            target_dto = await user_service.moderate_user(
-                command.target_id, command.target_role, caller=user_dto
-            )
-    except (ValueError, ValidationError):
-        payload = MessagePayload(
-            i18n_key="command_syntax_error",
-            i18n_kwargs={"hint": html.code("Validation Error.")},
+    async with session.begin():
+        target_dto = await user_service.moderate_user(
+            command.target_id, command.target_role, caller=user_dto
         )
-        return await notifier.notify_user(user_dto, payload)
 
     payload = MessagePayload(
         i18n_key="answer_admin_role_changed",

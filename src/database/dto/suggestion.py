@@ -1,7 +1,7 @@
 
 
 from pydantic import computed_field
-from helpers.enums import RenderType
+from core.enums import RenderType
 
 from .base import TrackableDto
 from .media import MediaDTO

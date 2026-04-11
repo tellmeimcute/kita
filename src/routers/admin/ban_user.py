@@ -9,13 +9,13 @@ from dishka import FromDishka
 
 from database.dto import UserDTO
 from database.roles import UserRole
-from routers.keyboards import ReplyKeyboard
+from ui.keyboards import ReplyKeyboard
 from routers.state import CommandBanState
-from helpers.enums import BanAdminAction
+from core.enums import BanAdminAction
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import IDCommand
-from helpers.exceptions import KitaException
+from core.exceptions import KitaException, KitaValidationError
 from services import NotifierService, UserService
 
 router = Router()
@@ -33,24 +33,19 @@ async def ban_user_id_handler(
     action: BanAdminAction,
 ):
     target_role = UserRole.BANNED if action == BanAdminAction.BAN else UserRole.USER
-    try:
-        async with session.begin():
-            target_dto = await user_service.moderate_user(
-                command.target_id, target_role, caller=user_dto
-            )
 
-        payload = MessagePayload(
-            i18n_key="answer_admin_role_changed",
-            i18n_kwargs=target_dto.model_dump(),
+    async with session.begin():
+        target_dto = await user_service.moderate_user(
+            command.target_id, target_role, caller=user_dto
         )
 
-        await notifier.notify_user(user_dto, payload)
-    except (ValueError, ValidationError):
-        payload = MessagePayload(
-            i18n_key="command_syntax_error",
-            i18n_kwargs={"hint": html.code("Validation Error.")},
-        )
-        return await notifier.notify_user(user_dto, payload)
+    payload = MessagePayload(
+        i18n_key="answer_admin_role_changed",
+        i18n_kwargs=target_dto.model_dump(),
+    )
+
+    await notifier.notify_user(user_dto, payload)
+
 
 @router.message(I18nTextFilter("command_ban_filter", action=BanAdminAction.BAN))
 @router.message(I18nTextFilter("command_unban_filter", action=BanAdminAction.UNBAN))
@@ -100,13 +95,9 @@ async def ban_user_state(
         )
 
         await notifier.notify_user(user_dto, payload)
-    except (ValueError, ValidationError):
-        payload = MessagePayload(
-            i18n_key="command_syntax_error",
-            i18n_kwargs={"hint": html.code("Validation Error.")},
-            reply_markup=return_kb,
-        )
-        return await notifier.notify_user(user_dto, payload)
+    except ValidationError as e:
+        exc = KitaValidationError(pydantic_exc=e, return_kb=return_kb)
+        raise exc
     except KitaException as e:
         e.return_kb = return_kb
         raise e

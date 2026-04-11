@@ -24,7 +24,7 @@ if config.config_file_name is not None:
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
-from config import config as project_config
+from core.config import config as project_config
 from database.models.abstract_model import AbstractModel
 
 target_metadata = AbstractModel.metadata

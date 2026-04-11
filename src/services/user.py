@@ -4,7 +4,7 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
-from config import Config
+from core.config import Config
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
 from database.models import UserAlchemy
@@ -12,7 +12,7 @@ from database.roles import UserRole
 from database.redis.user import UserRedis
 
 from helpers.schemas.objects import UserData
-from helpers.exceptions import UserImmuneError, SQLUserNotFoundError
+from core.exceptions import UserImmuneError, SQLUserNotFoundError
 
 logger = getLogger("kita.user_service")
 
