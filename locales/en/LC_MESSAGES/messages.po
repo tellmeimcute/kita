@@ -1,0 +1,230 @@
+# English translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-14 12:44+1000\n"
+"PO-Revision-Date: 2026-04-12 01:11+1000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+msgid "bool_suggestion_true"
+msgstr "🟢 Accepted"
+
+msgid "bool_suggestion_false"
+msgstr "🔴 Declined"
+
+msgid "none_suggestion"
+msgstr "⌚ Under moderation"
+
+msgid "start_msg"
+msgstr ""
+"Welcome to the suggestion bot of the channel {channel_name}!\n"
+"\n"
+"To suggest a post, use the keyboard."
+
+msgid "state_reset"
+msgstr "State has been reset."
+
+msgid "error_media_suggestion"
+msgstr "Send text/images/video/gif."
+
+msgid "on_moderation"
+msgstr "Sent for moderation."
+
+msgid "user_stats"
+msgstr ""
+"You have suggested posts: {total}\n"
+"\n"
+"✅ Accepted: {accepted}\n"
+"❌ Declined: {declined}"
+
+msgid "notify_admin_new_suggestion"
+msgstr ""
+"🛑 New suggestion! ID {id}\n"
+"Author @{author[username]} ({author[user_id]})\n"
+"\n"
+"To view it, enter the command {command}"
+
+msgid "error_user_immune"
+msgstr "This user is immune to this command."
+
+msgid "answer_admin_role_changed"
+msgstr "User @{username} ({user_id}) has had their role changed to {role}."
+
+msgid "role_not_exist"
+msgstr "Role {role} does not exist."
+
+msgid "user_not_found"
+msgstr "User with id {user_id} not found."
+
+msgid "notify_user_role_changed"
+msgstr "🤡 You have been assigned the role {role}!"
+
+msgid "error_suggestion_not_found"
+msgstr "Suggestion with ID {suggestion_id} not found 😢"
+
+msgid "admin_get_suggestion_caption"
+msgstr ""
+"Suggestion ID {id}\n"
+"Author @{author[username]} ({author[user_id]})\n"
+"Source <code><b>{forwarded_from}</b></code>\n"
+"Status: <b>{verdict}</b>\n"
+"\n"
+"{admin_caption}"
+
+msgid "admin_suggestion_original_caption"
+msgstr ""
+"Original caption:\n"
+"{caption}"
+
+msgid "no_active_suggestions"
+msgstr "No active suggestion 😢"
+
+msgid "suggestion_left"
+msgstr "Posts in queue: {left}"
+
+msgid "suggestion_wait_media"
+msgstr ""
+"Send images/video/gif in a single post.\n"
+"\n"
+"You can cancel using the keyboard or the /cancel command."
+
+msgid "start_review_suggestions"
+msgstr "Starting review of suggestions..."
+
+msgid "command_syntax_error"
+msgstr ""
+"Check that the command was entered correctly.\n"
+"{hint}"
+
+msgid "suggestion_verdict_exists"
+msgstr "Suggestion with ID {id} already has a verdict: {verdict}."
+
+msgid "verdict_rewrite"
+msgstr "Status changed."
+
+msgid "command_ban_filter"
+msgstr "Ban"
+
+msgid "command_unban_filter"
+msgstr "Unban"
+
+msgid "command_get_admin_menu"
+msgstr "Admin panel"
+
+msgid "state_wait_for_id"
+msgstr "Waiting for ID"
+
+msgid "viewer_accept"
+msgstr "Accept"
+
+msgid "viewer_decline"
+msgstr "Decline"
+
+msgid "confirm"
+msgstr "Confirm"
+
+msgid "decline"
+msgstr "Decline"
+
+msgid "viewer_accept_no_caption"
+msgstr "Post without caption"
+
+msgid "command_enter_viewer"
+msgstr "View suggestions"
+
+msgid "command_open_solo_view"
+msgstr "suggestions"
+
+msgid "command_cancel"
+msgstr "Cancel"
+
+msgid "command_suggest_post"
+msgstr "Suggest post"
+
+msgid "command_admin_stats"
+msgstr "Admin stats"
+
+msgid "command_user_stats"
+msgstr "Statistics"
+
+msgid "command_post_banner"
+msgstr "Post banner"
+
+msgid "channel_banner_sent"
+msgstr "Banner sent to the channel."
+
+msgid "channel_banner"
+msgstr "Suggestions -->"
+
+msgid "command_change_role"
+msgstr "change role"
+
+msgid "send_verdict"
+msgstr "Post or decline? Or maybe ban 😏"
+
+msgid "channel_post_message"
+msgstr ""
+"{caption}\n"
+"\n"
+"👤 <code><b>{author_string}</b></code>"
+
+msgid "error_empty_suggestion"
+msgstr "Cannot publish an empty message."
+
+msgid "notify_author_suggestion_status"
+msgstr ""
+"Your suggestion with ID: {id}\n"
+"<b>{verdict}</b>"
+
+msgid "command_mass_message"
+msgstr "Mass message"
+
+msgid "mass_message_confirm"
+msgstr ""
+"Confirm sending this message to <b>{users_count} users.</b>\n"
+"Estimated execution time: <b>{estimated_time} seconds</b>"
+
+msgid "mass_message_wait_for_text"
+msgstr "Send the message text"
+
+msgid "mass_message_started"
+msgstr "Broadcast started..."
+
+msgid "in_process"
+msgstr "⌚ In progress"
+
+msgid "completed"
+msgstr "🟢 Completed"
+
+msgid "mass_message_status"
+msgstr ""
+"Users selected for broadcast: <b>{users_count}</b>\n"
+"Overall progress: <b>{progress}</b>\n"
+"Successfully delivered: <b>{success}</b>\n"
+"Failed to deliver: <b>{failure}</b>\n"
+"{status}"
+
+msgid "author_plus_origin"
+msgstr "{author_name} (source {forwarded_from})"
+
+msgid "global_stats"
+msgstr ""
+"👤 Total users: {users_total}\n"
+"🤡 Banned users: {banned}\n"
+"😎 Number of admins: {admins}\n"
+"\n"
+"📄 Total posts suggested: {suggestions}\n"
+"🎨 Total media files: {medias}\n"
+
