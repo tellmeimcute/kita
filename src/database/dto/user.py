@@ -4,7 +4,7 @@ from database.roles import UserRole
 from .base import TrackableDto
 
 if TYPE_CHECKING:
-    from helpers.schemas.objects import UserData
+    from aiogram.types import User as AiogramUser
 
 
 
@@ -13,10 +13,11 @@ class UserDTO(TrackableDto):
     username: str | None
     role: UserRole
     name: str
+    language_code: str
 
     is_bot_blocked: bool | None
 
-    def update_from_data(self, user_data: "UserData"):
+    def update_from_data(self, user_data: "AiogramUser"):
         new_data = {
             "name": user_data.full_name,
             "username": user_data.username,

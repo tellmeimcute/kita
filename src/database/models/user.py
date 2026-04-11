@@ -18,6 +18,7 @@ class UserAlchemy(AbstractModel, TimestampMixin):
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False)
     username: Mapped[str | None] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(nullable=False)
+    language_code: Mapped[str] = mapped_column(default="ru", server_default="ru", nullable=True)
 
     is_bot_blocked: Mapped[bool] = mapped_column(default=False, nullable=True)
 

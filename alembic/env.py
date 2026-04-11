@@ -24,11 +24,12 @@ if config.config_file_name is not None:
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
-from core.config import config as project_config
+from core.config import Config
 from database.models.abstract_model import AbstractModel
 
+project_config = Config()
 target_metadata = AbstractModel.metadata
-config.set_main_option("sqlalchemy.url", project_config.DB_URL)
+config.set_main_option("sqlalchemy.url", project_config.database.db_url)
 
 
 # other values from the config, defined by the needs of env.py,
