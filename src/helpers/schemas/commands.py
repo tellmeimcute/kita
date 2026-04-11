@@ -11,8 +11,7 @@ class StrCommand(BaseModel):
     string: str
 
 
-class ChangeRoleCommand(BaseModel):
-    target_id: int
+class ChangeRoleCommand(IDCommand):
     target_role: UserRole
 
     @field_validator("target_role", mode="before")
