@@ -1,6 +1,6 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from aiogram import Router, F, html
+from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from pydantic import ValidationError
@@ -11,11 +11,12 @@ from database.dto import UserDTO
 from database.roles import UserRole
 from ui.keyboards import ReplyKeyboard
 from routers.state import CommandBanState
-from core.enums import BanAdminAction
 from helpers.filters import I18nTextFilter, TextArgsFilter
 from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas import IDCommand
-from core.exceptions import KitaException, KitaValidationError
+from core.enums import BanAdminAction
+from core.exceptions import KitaValidationError
+from core.exceptions.base import KitaException
 from services import NotifierService, UserService
 
 router = Router()
