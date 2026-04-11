@@ -82,6 +82,10 @@ msgstr ""
 "Источник <code><b>{forwarded_from}</b></code>\n"
 "Статус: <b>{verdict}</b>\n"
 "\n"
+"{admin_caption}"
+
+msgid "admin_suggestion_original_caption"
+msgstr ""
 "Оригинальная подпись:\n"
 "{caption}"
 

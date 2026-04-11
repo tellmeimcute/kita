@@ -65,6 +65,9 @@ msgstr ""
 msgid "admin_get_suggestion_caption"
 msgstr ""
 
+msgid "admin_suggestion_original_caption"
+msgstr ""
+
 msgid "no_active_suggestions"
 msgstr ""
 
