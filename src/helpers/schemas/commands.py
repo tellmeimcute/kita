@@ -1,10 +1,10 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from database.roles import UserRole
 
 
 class IDCommand(BaseModel):
-    target_id: int
+    target_id: int = Field(ge=-9_223_372_036_854_775_808, le=9_223_372_036_854_775_807)
 
 
 class StrCommand(BaseModel):
