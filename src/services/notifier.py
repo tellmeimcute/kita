@@ -5,6 +5,7 @@ from itertools import batched
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.utils.i18n import I18n
 
 from database.dto import UserDTO
 from helpers.schemas.message_payload import MessagePayload
@@ -29,12 +30,14 @@ class NotifierService:
         "chunk_delay",
         "chunk_size",
         "translator",
+        "i18n",
     )
 
     def __init__(
         self,
         bot: Bot,
         translator: Translator,
+        i18n: I18n,
     ):
         self.bot: Bot = bot
 
@@ -42,6 +45,7 @@ class NotifierService:
         self.chunk_size = 5
 
         self.translator = translator
+        self.i18n = i18n
 
     def send_strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
         if payload.i18n_key:
@@ -63,8 +67,9 @@ class NotifierService:
                 "User %s (%s) has blocked the bot. Skip.", user_dto.username, user_dto.user_id
             )
         
-        strategy = self.send_strategy_factory(user_dto.user_id, payload)
-        return await self.send(strategy)
+        with self.i18n.use_locale(user_dto.language_code):
+            strategy = self.send_strategy_factory(user_dto.user_id, payload)
+            return await self.send(strategy)
 
     async def notify_many(self, users_dto: list[UserDTO], payload: MessagePayload):
         for chunk in batched(users_dto, self.chunk_size):
