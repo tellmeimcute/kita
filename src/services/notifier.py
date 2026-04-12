@@ -4,7 +4,7 @@ from itertools import batched
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup
 
 from database.dto import UserDTO
 from helpers.schemas.message_payload import MessagePayload
@@ -90,7 +90,15 @@ class NotifierService:
         )
         return await self.send(strategy)
 
-    async def edit_message(self, message: Message, text: str):
+    async def edit_message_text(
+        self,
+        message: Message,
+        text: str,
+        reply_markup: InlineKeyboardMarkup | None = None,
+    ):
         await self.bot.edit_message_text(
-            text=text, chat_id=message.chat.id, message_id=message.message_id
+            text=text,
+            chat_id=message.chat.id,
+            message_id=message.message_id,
+            reply_markup=reply_markup,
         )

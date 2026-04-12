@@ -43,7 +43,7 @@ async def mass_message_task(
                 i18n_key="completed" if data.status else "in_process"
             )
             new_status = notifier.translator.get_i18n_text("mass_message_status", i18n_kwargs)
-            await notifier.edit_message(status_message, new_status)
+            await notifier.edit_message_text(status_message, new_status)
     
         await asyncio.sleep(notifier.chunk_delay)
 
