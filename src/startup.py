@@ -19,6 +19,7 @@ from routers import (
     admin_suggestion_router,
     user_start_router,
     user_suggestion_router,
+    user_locale_rouer,
 )
 
 from routers.errors import router as errors_router
@@ -53,6 +54,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     user_routers.include_routers(
         user_start_router,
         user_suggestion_router,
+        user_locale_rouer,
     )
 
     admin_routers = Router()

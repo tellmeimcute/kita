@@ -184,3 +184,21 @@ msgstr ""
 
 msgid "global_stats"
 msgstr ""
+
+msgid "command_get_settings_menu"
+msgstr ""
+
+msgid "settings_menu_btn"
+msgstr ""
+
+msgid "settings_menu"
+msgstr ""
+
+msgid "locale_menu_btn"
+msgstr ""
+
+msgid "locale_menu"
+msgstr ""
+
+msgid "locale_changed_msg"
+msgstr ""

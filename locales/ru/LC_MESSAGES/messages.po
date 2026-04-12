@@ -229,3 +229,21 @@ msgstr ""
 "📄 Всего постов предложено: {suggestions}\n"
 "🎨 Всего медиа файлов: {medias}\n"
 
+msgid "command_get_settings_menu"
+msgstr "Настройки"
+
+msgid "settings_menu_btn"
+msgstr "⚙ Настройки"
+
+msgid "settings_menu"
+msgstr "⚙ Здесь можно изменить настройки"
+
+msgid "locale_menu_btn"
+msgstr "🌐 Изменить язык"
+
+msgid "locale_menu"
+msgstr "Выберите язык"
+
+msgid "locale_changed_msg"
+msgstr "Язык изменен!"
+

@@ -7,4 +7,5 @@ from .admin import (
 from .user import (
     user_start_router,
     user_suggestion_router,
+    user_locale_rouer,
 )

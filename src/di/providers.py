@@ -12,6 +12,7 @@ from services.notifier import NotifierService
 from core.i18n_translator import Translator
 from helpers.suggestion_utils import SuggestionUtils
 
+from ui.settings_menu import SettingsMenuRenderer
 
 class ServicesProvider(Provider):
     user_service = provide(UserService, scope=Scope.REQUEST)
@@ -21,6 +22,7 @@ class ServicesProvider(Provider):
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
     suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
+    settings_menu = provide(SettingsMenuRenderer, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     def i18n(self) -> I18n:

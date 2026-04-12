@@ -228,3 +228,21 @@ msgstr ""
 "📄 Total posts suggested: {suggestions}\n"
 "🎨 Total media files: {medias}\n"
 
+msgid "command_get_settings_menu"
+msgstr "Settings"
+
+msgid "settings_menu_btn"
+msgstr "⚙ Settings Menu"
+
+msgid "settings_menu"
+msgstr "⚙ Here you can change your settings"
+
+msgid "locale_menu_btn"
+msgstr "🌐 Locale Menu"
+
+msgid "locale_menu"
+msgstr "Choose language"
+
+msgid "locale_changed_msg"
+msgstr "Your locale changed!"
+

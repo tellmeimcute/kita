@@ -38,6 +38,7 @@ class ReplyKeyboard:
                 KeyboardButton(text=_("command_suggest_post")),
                 KeyboardButton(text=_("command_user_stats")),
             ],
+            [KeyboardButton(text=_("command_get_settings_menu"))],
         )
 
     @classmethod
@@ -47,6 +48,7 @@ class ReplyKeyboard:
                 KeyboardButton(text=_("command_suggest_post")),
                 KeyboardButton(text=_("command_user_stats")),
             ],
+            [KeyboardButton(text=_("command_get_settings_menu"))],
             [KeyboardButton(text=_("command_enter_viewer"))],
             [KeyboardButton(text=_("command_get_admin_menu"))],
         )
