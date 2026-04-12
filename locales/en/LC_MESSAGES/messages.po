@@ -145,7 +145,7 @@ msgid "command_enter_viewer"
 msgstr "View suggestions"
 
 msgid "command_open_solo_view"
-msgstr "suggestions"
+msgstr "suggestion"
 
 msgid "command_cancel"
 msgstr "Cancel"
