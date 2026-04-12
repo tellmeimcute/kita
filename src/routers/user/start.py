@@ -11,7 +11,7 @@ from helpers.filters import I18nTextFilter
 from helpers.schemas.message_payload import MessagePayload
 from services.notifier import NotifierService
 
-router = Router(name="start_handlers")
+router = Router(name="start")
 
 
 @router.message(CommandStart())

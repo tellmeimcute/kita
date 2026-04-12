@@ -50,14 +50,14 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
 
     # Order is important!!
 
-    user_routers = Router()
+    user_routers = Router(name="user_root")
     user_routers.include_routers(
         user_start_router,
         user_suggestion_router,
         user_locale_rouer,
     )
 
-    admin_routers = Router()
+    admin_routers = Router(name="admin_root")
     admin_routers.include_routers(
         admin_suggestion_router,
         admin_general_router,

@@ -16,7 +16,7 @@ from helpers.schemas.message_payload import MessagePayload
 from helpers.schemas.data import MassMessageData
 from services import NotifierService, UserService
 
-router = Router()
+router = Router(name="admin_mass_message")
 
 
 async def mass_message_task(

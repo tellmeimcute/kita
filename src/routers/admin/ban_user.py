@@ -19,7 +19,7 @@ from core.exceptions import KitaValidationError
 from core.exceptions.base import KitaException
 from services import NotifierService, UserService
 
-router = Router()
+router = Router(name="admin_ban")
 
 
 @router.message(TextArgsFilter("command_ban_filter", IDCommand, action=BanAdminAction.BAN))

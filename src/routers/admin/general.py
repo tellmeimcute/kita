@@ -15,7 +15,7 @@ from helpers.schemas import ChangeRoleCommand
 
 from services import NotifierService, UserService
 
-router = Router()
+router = Router(name="admin_general")
 
 
 @router.message(I18nTextFilter("command_get_admin_menu"))

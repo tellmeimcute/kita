@@ -22,7 +22,7 @@ from services.user import UserService
 
 
 logger = getLogger("kita.user_suggestions")
-router = Router(name="suggestions_user")
+router = Router(name="user_suggestions")
 
 
 @router.message(I18nTextFilter("command_suggest_post"))
