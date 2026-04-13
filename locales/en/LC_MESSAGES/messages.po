@@ -130,7 +130,7 @@ msgid "viewer_accept"
 msgstr "Accept"
 
 msgid "viewer_decline"
-msgstr "Decline"
+msgstr "Reject"
 
 msgid "confirm"
 msgstr "Confirm"
