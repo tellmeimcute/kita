@@ -157,7 +157,6 @@ async def ban_suggestion_author(
     payload = MessagePayload(
         i18n_key="answer_admin_role_changed",
         i18n_kwargs=target_dto.model_dump(),
-        reply_markup=ReplyKeyboard.main(user_dto),
     )
     await notifier.notify_user(user_dto, payload)
 
