@@ -2,19 +2,17 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from redis.asyncio import Redis
-
 from dishka import make_async_container
 from dishka.integrations.aiogram import AiogramProvider, setup_dishka
 
 from di.config import ConfigProvider
-from di.database import DatabaseProvider, RedisProvider
+from di.database import DatabaseProvider
 from di.providers import ServicesProvider, UtilsProvider, FSMProvider
+from di.redis import RedisProvider
 from di.suggestion_viewer import SuggestionViewerProvider
 from di.middleware import MiddlewareProvider
 from di.bot import BotProvider
 
-from database import DatabaseManager
 from startup import register_all
 
 logging.basicConfig(level=logging.DEBUG)
@@ -35,8 +33,6 @@ async def main():
         AiogramProvider(),
     )
 
-    redis = await container.get(Redis)
-    db = await container.get(DatabaseManager)
     bot = await container.get(Bot)
     dp = await container.get(Dispatcher)
 
