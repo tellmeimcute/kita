@@ -60,13 +60,12 @@ async def process_suggestion(
             await notifier.notify_user(user_dto, MessagePayload(i18n_key="error_media_suggestion"))
             return
 
-    admins = await user_service.get_admins()
-
     payload = MessagePayload(i18n_key="on_moderation", reply_markup=ReplyKeyboard.main(user_dto))
     await notifier.notify_user(user_dto, payload)
 
     await state.clear()
 
+    admins = await user_service.get_admins()
     i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
     i18n_kwargs.update(command=html.code(f"{_('command_open_solo_view')} {suggestion_dto.id}"))
     payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)

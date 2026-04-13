@@ -72,7 +72,7 @@ class NotifierService:
         return await self.send(strategy)
 
     async def notify_user_i18n(self, user_dto: UserDTO, payload: MessagePayload):
-        """use user_dto.language_code locale"""
+        """use locale from user_dto.language_code"""
         with self.i18n.use_locale(user_dto.language_code):
             await self.notify_user(user_dto, payload)
 

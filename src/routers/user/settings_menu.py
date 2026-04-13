@@ -55,6 +55,9 @@ async def change_locale(
     notifier: FromDishka[NotifierService],
     renderer: FromDishka[SettingsMenuRenderer],
 ):
+    if user_dto.language_code == callback_data.locale:
+        return await query.answer(f"Your locale already {callback_data.locale}!")
+
     await query.answer(f"Your new locale is {callback_data.locale}!")
 
     user_dto.language_code = callback_data.locale
