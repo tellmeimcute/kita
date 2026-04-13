@@ -1,12 +1,17 @@
 
 from logging import getLogger
 from typing import Any, Awaitable, Callable, ClassVar
+from dishka import AsyncContainer
+
 from aiogram import Router
 from aiogram.types import TelegramObject, User as AiogramUser
 from aiogram.utils.i18n import I18n
 
-from database.dto import UserDTO
+from core.exceptions import SQLUserNotFoundError
 
+from database.dto import UserDTO
+from services.user import UserService
+from helpers.consts import DISHKA_CONTAINER_KEY
 from .base import KitaMiddleware
 
 logger = getLogger("kita.middleware")
@@ -25,14 +30,28 @@ class KitaI18nMiddleware(KitaMiddleware):
         self.i18n_key = i18n_key
         self.middleware_key = middleware_key
 
-    async def get_locale(self, event: TelegramObject, data: dict[str, Any]):
+    async def get_user_dto(self, data: dict[str, Any]):
         user_dto: UserDTO = data.get("user_dto")
         if user_dto:
-            return user_dto.language_code
+            return user_dto
         
+        container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
+        user_service: UserService = await container.get(UserService)
+
         aiogram_user: AiogramUser = data.get("event_from_user")
-        if aiogram_user:
-            return aiogram_user.language_code
+
+        try:
+            return await user_service.get(aiogram_user.id)
+        except SQLUserNotFoundError:
+            return None
+
+    async def get_locale(self, event: TelegramObject, data: dict[str, Any]):
+        user_dto: UserDTO | None = await self.get_user_dto(data)
+        if not user_dto:
+            return self.i18n.default_locale
+
+        if user_dto.language_code in self.i18n.available_locales:
+            return user_dto.language_code
         
         return self.i18n.default_locale
 
@@ -42,15 +61,14 @@ class KitaI18nMiddleware(KitaMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        user_locale = await self.get_locale(event=event, data=data)
-        current_locale = user_locale if user_locale in self.i18n.available_locales else self.i18n.default_locale
+        current_locale = await self.get_locale(event=event, data=data)
 
         if self.i18n_key:
             data[self.i18n_key] = self.i18n
         if self.middleware_key:
             data[self.middleware_key] = self
 
-        logger.debug("Context use locale %s, user_locale %s", current_locale, user_locale)
+        logger.debug("Context use locale %s", current_locale)
         with self.i18n.context(), self.i18n.use_locale(current_locale):
             return await handler(event, data)
         
