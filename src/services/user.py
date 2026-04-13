@@ -4,8 +4,6 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
-from aiogram.types import User as AiogramUser
-
 from core.config import Config
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
@@ -38,18 +36,7 @@ class UserService:
     def is_immune(self, user_id: int):
         return user_id == self.admin_id
 
-    async def create(self, user_data: AiogramUser):
-        role = UserRole.ADMIN if user_data.id == self.admin_id else UserRole.USER
-
-        prep_user_dto = UserDTO(
-            user_id=user_data.id,
-            username=user_data.username,
-            name=user_data.full_name,
-            language_code=user_data.language_code,
-            role=role,
-            is_bot_blocked=False,
-        )
-
+    async def create(self, prep_user_dto: UserDTO):
         prep_user_alchemy = UserAlchemy(**prep_user_dto.model_dump())
 
         user_alchemy = await self.dao.create(self.session, prep_user_alchemy)
@@ -61,7 +48,8 @@ class UserService:
             data=user_dto,
         )
 
-        logger.info("Created new user %s", user_data.id)
+        logger.info("Created new user %s", user_dto.user_id)
+        logger.debug("New user data: %s", user_dto)
         return user_dto
 
     async def get(self, user_id: int) -> UserDTO:
