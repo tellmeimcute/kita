@@ -5,7 +5,7 @@ from aiogram import Bot
 from dishka import Provider, Scope, provide
 from core.config import Config, RuntimeConfig
 
-from helpers.consts import T_ME
+from core.consts import T_ME
 
 logger = getLogger("kita.providers")
 

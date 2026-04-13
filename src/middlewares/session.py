@@ -6,7 +6,7 @@ from dishka import AsyncContainer
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from helpers.consts import DISHKA_CONTAINER_KEY
+from core.consts import DISHKA_CONTAINER_KEY
 from core.config import Config
 
 from .base import KitaMiddleware

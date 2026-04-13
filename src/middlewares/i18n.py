@@ -11,7 +11,7 @@ from core.exceptions import SQLUserNotFoundError
 
 from database.dto import UserDTO
 from services.user import UserService
-from helpers.consts import DISHKA_CONTAINER_KEY
+from core.consts import DISHKA_CONTAINER_KEY
 from .base import KitaMiddleware
 
 logger = getLogger("kita.middleware")

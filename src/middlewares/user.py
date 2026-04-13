@@ -12,7 +12,7 @@ from core.exceptions import SQLUserNotFoundError
 from database.dto import UserDTO
 from database.roles import UserRole
 from services.user import UserService
-from helpers.consts import DISHKA_CONTAINER_KEY
+from core.consts import DISHKA_CONTAINER_KEY
 
 from core.config import Config
 
