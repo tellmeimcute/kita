@@ -62,18 +62,23 @@ class NotifierService:
             logger.warning("Failed to execute strategy %s to target %s: %s", strategy.name, strategy.target_id, e)
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
+        """use locale from i18n middleware"""
         if user_dto.is_bot_blocked:
             return logger.info(
                 "User %s (%s) has blocked the bot. Skip.", user_dto.username, user_dto.user_id
             )
         
+        strategy = self.send_strategy_factory(user_dto.user_id, payload)
+        return await self.send(strategy)
+
+    async def notify_user_i18n(self, user_dto: UserDTO, payload: MessagePayload):
+        """use user_dto.language_code locale"""
         with self.i18n.use_locale(user_dto.language_code):
-            strategy = self.send_strategy_factory(user_dto.user_id, payload)
-            return await self.send(strategy)
+            await self.notify_user(user_dto, payload)
 
     async def notify_many(self, users_dto: list[UserDTO], payload: MessagePayload):
         for chunk in batched(users_dto, self.chunk_size):
-            tasks = [self.notify_user(user_dto, payload) for user_dto in chunk]
+            tasks = [self.notify_user_i18n(user_dto, payload) for user_dto in chunk]
             await asyncio.gather(*tasks)
             await asyncio.sleep(self.chunk_delay)
 

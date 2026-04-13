@@ -74,7 +74,7 @@ async def change_user_role(
         i18n_kwargs=i18n_kwargs,
         reply_markup=target_new_kb,
     )
-    await notifier.notify_user(target_dto, payload)
+    await notifier.notify_user_i18n(target_dto, payload)
 
 
 @router.message(I18nTextFilter("command_admin_stats"))

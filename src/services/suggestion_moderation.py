@@ -25,5 +25,5 @@ class SuggestionModerationService:
 
         asyncio.gather(
             self.notifier.send(strategy),
-            self.notifier.notify_user(suggestion_dto.author, author_payload)
+            self.notifier.notify_user_i18n(suggestion_dto.author, author_payload)
         )
