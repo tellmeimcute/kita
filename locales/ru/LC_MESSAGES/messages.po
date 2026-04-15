@@ -30,15 +30,17 @@ msgstr "⌚ На модерации"
 
 msgid "start_msg"
 msgstr ""
-"Добро пожаловать в предложку канала {channel_name}!\n"
-"\n"
-"Чтобы предложить пост используйте клавиатуру."
+"Добро пожаловать в предложку канала {channel_name}!"
 
 msgid "state_reset"
 msgstr "Состояние сброшено."
 
 msgid "error_media_suggestion"
-msgstr "Отправь текст/картинки/видео/gif."
+msgstr ""
+"То что ты отправил не принимается как предложка!\n"
+"Принимаются только текст/картинки/видео/gif\n"
+"\n"
+"Попробуй снова! Ну или вернись в главное меню 😭"
 
 msgid "on_moderation"
 msgstr "Отправлено на модерацию."
@@ -97,9 +99,11 @@ msgstr "Постов в очереди {left}"
 
 msgid "suggestion_wait_media"
 msgstr ""
-"Отправьте картинки/видео/gif одним постом.\n"
+"Отправьте до 10 медиа(картинки/видео/gif) и подпись.\n"
+"Или можно просто написать 🤔\n"
+"Ну или просто репостнуть сюда что нибудь из любого другого канала.\n"
 "\n"
-"Отменить действие можно в клавиатуре или командой /cancel"
+"Чтобы отменить действие - вернитесь в главное меню."
 
 msgid "start_review_suggestions"
 msgstr "Начинаем просмотр предложки..."
@@ -115,10 +119,10 @@ msgstr "Предложке с ID {id} уже вынесен вердикт: {ver
 msgid "verdict_rewrite"
 msgstr "Статус изменен."
 
-msgid "command_ban_filter"
+msgid "ban_btn"
 msgstr "Забанить"
 
-msgid "command_unban_filter"
+msgid "unban_btn"
 msgstr "Разбанить"
 
 msgid "command_get_admin_menu"
@@ -142,7 +146,7 @@ msgstr "Отклонить"
 msgid "viewer_accept_no_caption"
 msgstr "Запостить без подписи"
 
-msgid "command_enter_viewer"
+msgid "enter_viewer_btn"
 msgstr "Смотреть предложку"
 
 msgid "command_open_solo_view"
@@ -151,16 +155,16 @@ msgstr "предложка"
 msgid "command_cancel"
 msgstr "Отмена"
 
-msgid "command_suggest_post"
+msgid "make_suggestion_btn"
 msgstr "Предложить пост"
 
-msgid "command_admin_stats"
+msgid "app_stats_btn"
 msgstr "Админ стата"
 
-msgid "command_user_stats"
-msgstr "Статистика"
+msgid "statistic_btn"
+msgstr "📄 Статистика"
 
-msgid "command_post_banner"
+msgid "post_banner_btn"
 msgstr "Запостить баннер"
 
 msgid "channel_banner_sent"
@@ -189,8 +193,8 @@ msgstr ""
 "Ваша предложка с ID: {id}\n"
 "<b>{verdict}</b>"
 
-msgid "command_mass_message"
-msgstr "Рассылка"
+msgid "broadcast_btn"
+msgstr "🚀 Рассылка"
 
 msgid "mass_message_confirm"
 msgstr ""
@@ -198,7 +202,11 @@ msgstr ""
 "Расчетное время выполнения <b>{estimated_time} секунд</b>"
 
 msgid "mass_message_wait_for_text"
-msgstr "Отправьте текст сообщения"
+msgstr ""
+"Отправьте сообщение."
+"\n\n"
+"Принимается любое сообщение.\n"
+"Также можно отправить сообщение с канала, как репост."
 
 msgid "mass_message_started"
 msgstr "Рассылка запущена..."
@@ -235,15 +243,48 @@ msgstr "Настройки"
 msgid "settings_menu_btn"
 msgstr "⚙ Настройки"
 
-msgid "settings_menu"
+msgid "settings_menu_text"
 msgstr "⚙ Здесь можно изменить настройки"
 
-msgid "locale_menu_btn"
+msgid "locale_settings_btn"
 msgstr "🌐 Изменить язык"
 
-msgid "locale_menu"
+msgid "locale_menu_text"
 msgstr "Выберите язык"
 
 msgid "locale_changed_msg"
 msgstr "Язык изменен!"
+
+msgid "menu_btn"
+msgstr "⬅ В главное меню"
+
+msgid "admin_menu_text"
+msgstr "АДМИН МЕНЮ!"
+
+msgid "admin_menu_btn"
+msgstr "🤡 Админ меню"
+
+msgid "back_admin_menu_btn"
+msgstr "⬅ В админ меню"
+
+msgid "user_moderation_btn"
+msgstr "Модерация пользователя"
+
+msgid "close_btn"
+msgstr "❌ Закрыть"
+
+msgid "command_open_menu"
+msgstr "Меню"
+
+msgid "admin_moderation_user_profile"
+msgstr ""
+"Пользователь {target_dto[username]}\n"
+"ID {target_dto[user_id]}\n"
+"Роль {target_dto[role]}"
+
+msgid "locale_ru_string"
+msgstr "🇷🇺 Русский"
+
+msgid "locale_en_string"
+msgstr "🇬🇧 English"
 

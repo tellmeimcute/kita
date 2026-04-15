@@ -29,9 +29,7 @@ msgstr "⌚ Under moderation"
 
 msgid "start_msg"
 msgstr ""
-"Welcome to the suggestion bot of the channel {channel_name}!\n"
-"\n"
-"To suggest a post, use the keyboard."
+"Welcome to the suggestions bot of the channel {channel_name}!"
 
 msgid "state_reset"
 msgstr "State has been reset."
@@ -114,10 +112,10 @@ msgstr "Suggestion with ID {id} already has a verdict: {verdict}."
 msgid "verdict_rewrite"
 msgstr "Status changed."
 
-msgid "command_ban_filter"
+msgid "ban_btn"
 msgstr "Ban"
 
-msgid "command_unban_filter"
+msgid "unban_btn"
 msgstr "Unban"
 
 msgid "command_get_admin_menu"
@@ -141,7 +139,7 @@ msgstr "Decline"
 msgid "viewer_accept_no_caption"
 msgstr "Post without caption"
 
-msgid "command_enter_viewer"
+msgid "enter_viewer_btn"
 msgstr "View suggestions"
 
 msgid "command_open_solo_view"
@@ -150,16 +148,16 @@ msgstr "suggestion"
 msgid "command_cancel"
 msgstr "Cancel"
 
-msgid "command_suggest_post"
+msgid "make_suggestion_btn"
 msgstr "Suggest post"
 
-msgid "command_admin_stats"
+msgid "app_stats_btn"
 msgstr "Admin stats"
 
-msgid "command_user_stats"
-msgstr "Statistics"
+msgid "statistic_btn"
+msgstr "📄 Statistics"
 
-msgid "command_post_banner"
+msgid "post_banner_btn"
 msgstr "Post banner"
 
 msgid "channel_banner_sent"
@@ -188,8 +186,8 @@ msgstr ""
 "Your suggestion with ID: {id}\n"
 "<b>{verdict}</b>"
 
-msgid "command_mass_message"
-msgstr "Mass message"
+msgid "broadcast_btn"
+msgstr "Broadcast"
 
 msgid "mass_message_confirm"
 msgstr ""
@@ -197,7 +195,11 @@ msgstr ""
 "Estimated execution time: <b>{estimated_time} seconds</b>"
 
 msgid "mass_message_wait_for_text"
-msgstr "Send the message text"
+msgstr ""
+"Send a message."
+"\n\n"
+"Any message is accepted.\n"
+"You can also send a message from the channel as a repost."
 
 msgid "mass_message_started"
 msgstr "Broadcast started..."
@@ -232,17 +234,50 @@ msgid "command_get_settings_menu"
 msgstr "Settings"
 
 msgid "settings_menu_btn"
-msgstr "⚙ Settings Menu"
+msgstr "⚙ Settings"
 
-msgid "settings_menu"
+msgid "settings_menu_text"
 msgstr "⚙ Here you can change your settings"
 
-msgid "locale_menu_btn"
-msgstr "🌐 Locale Menu"
+msgid "locale_settings_btn"
+msgstr "🌐 Change locale"
 
-msgid "locale_menu"
+msgid "locale_menu_text"
 msgstr "Choose language"
 
 msgid "locale_changed_msg"
 msgstr "Your locale changed!"
+
+msgid "menu_btn"
+msgstr "⬅ To main menu"
+
+msgid "admin_menu_text"
+msgstr "admin menu!"
+
+msgid "admin_menu_btn"
+msgstr "🤡 Admin menu"
+
+msgid "back_admin_menu_btn"
+msgstr "⬅ To admin menu"
+
+msgid "user_moderation_btn"
+msgstr "User Moderation"
+
+msgid "close_btn"
+msgstr "❌ Close"
+
+msgid "command_open_menu"
+msgstr "Menu"
+
+msgid "admin_moderation_user_profile"
+msgstr ""
+"User {target_dto[username]}\n"
+"ID {target_dto[user_id]}\n"
+"Role {target_dto[role]}"
+
+msgid "locale_ru_string"
+msgstr "🇷🇺 Русский"
+
+msgid "locale_en_string"
+msgstr "🇬🇧 English"
 

@@ -34,7 +34,7 @@ class SuggestionQueueManager:
         self.data.suggestion_dto.accepted = updated_dto.accepted
         return self.data.suggestion_dto
 
-    async def pop_next(self) -> SuggestionFullDTO | None:
+    async def pop_next(self, dump_into_state=True) -> SuggestionFullDTO | None:
         try:
             if not self.data.suggestion_dtos:
                 async with self.session.begin():
@@ -47,6 +47,8 @@ class SuggestionQueueManager:
 
         new_active = self.data.suggestion_dtos.pop(0)
         self.data.suggestion_dto = new_active
-        await self.dump_into_state()
+
+        if dump_into_state:
+            await self.dump_into_state()
         
         return new_active

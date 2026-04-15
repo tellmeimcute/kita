@@ -4,8 +4,10 @@ from logging import getLogger
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from sqlalchemy.ext.asyncio import AsyncSession
 
+from aiogram_dialog import DialogManager, StartMode, ShowMode
+
+from sqlalchemy.ext.asyncio import AsyncSession
 from dishka import FromDishka
 
 from database.dto import SuggestionFullDTO, UserDTO
@@ -21,9 +23,8 @@ from services import NotifierService, SuggestionService, UserService
 
 from services.suggestion_moderation import SuggestionModerationService
 from helpers.suggestion_queue import SuggestionQueueManager
-from ui.keyboards import ReplyKeyboard
 from ui.suggestion_renderer import SuggestionRenderer
-
+from ui.state_groups import AdminMenuSG
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")
@@ -109,6 +110,7 @@ async def viewer_apply_verdict(
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation: FromDishka[SuggestionModerationService],
+    dialog_manager: DialogManager,
     verdict: bool,
 ):
     suggestion_dto = await queue_manager.get_updated_dto()
@@ -129,10 +131,14 @@ async def viewer_apply_verdict(
         await state.clear()
         await renderer.empty_queue(user_dto)
 
+        await dialog_manager.start(
+            AdminMenuSG.main,
+            mode=StartMode.RESET_STACK,
+            show_mode=ShowMode.DELETE_AND_SEND,
+        )
+
 
 VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
-
-
 @router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
 @router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(

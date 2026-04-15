@@ -89,10 +89,10 @@ msgstr ""
 msgid "verdict_rewrite"
 msgstr ""
 
-msgid "command_ban_filter"
+msgid "ban_btn"
 msgstr ""
 
-msgid "command_unban_filter"
+msgid "unban_btn"
 msgstr ""
 
 msgid "command_get_admin_menu"
@@ -116,7 +116,7 @@ msgstr ""
 msgid "viewer_accept_no_caption"
 msgstr ""
 
-msgid "command_enter_viewer"
+msgid "enter_viewer_btn"
 msgstr ""
 
 msgid "command_open_solo_view"
@@ -125,16 +125,16 @@ msgstr ""
 msgid "command_cancel"
 msgstr ""
 
-msgid "command_suggest_post"
+msgid "make_suggestion_btn"
 msgstr ""
 
-msgid "command_admin_stats"
+msgid "app_stats_btn"
 msgstr ""
 
-msgid "command_user_stats"
+msgid "statistic_btn"
 msgstr ""
 
-msgid "command_post_banner"
+msgid "post_banner_btn"
 msgstr ""
 
 msgid "channel_banner_sent"
@@ -158,7 +158,7 @@ msgstr ""
 msgid "notify_author_suggestion_status"
 msgstr ""
 
-msgid "command_mass_message"
+msgid "broadcast_btn"
 msgstr ""
 
 msgid "mass_message_confirm"
@@ -191,14 +191,44 @@ msgstr ""
 msgid "settings_menu_btn"
 msgstr ""
 
-msgid "settings_menu"
+msgid "settings_menu_text"
 msgstr ""
 
-msgid "locale_menu_btn"
+msgid "locale_settings_btn"
 msgstr ""
 
-msgid "locale_menu"
+msgid "locale_menu_text"
 msgstr ""
 
 msgid "locale_changed_msg"
+msgstr ""
+
+msgid "menu_btn"
+msgstr ""
+
+msgid "admin_menu_text"
+msgstr ""
+
+msgid "admin_menu_btn"
+msgstr ""
+
+msgid "back_admin_menu_btn"
+msgstr ""
+
+msgid "user_moderation_btn"
+msgstr ""
+
+msgid "close_btn"
+msgstr ""
+
+msgid "command_open_menu"
+msgstr ""
+
+msgid "admin_moderation_user_profile"
+msgstr ""
+
+msgid "locale_ru_string"
+msgstr ""
+
+msgid "locale_en_string"
 msgstr ""

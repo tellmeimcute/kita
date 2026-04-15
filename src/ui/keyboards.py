@@ -27,7 +27,7 @@ class ReplyKeyboard:
     def viewer_admin_action(cls):
         return cls.build(
             [KeyboardButton(text=_("viewer_accept")), KeyboardButton(text=_("viewer_decline"))],
-            [KeyboardButton(text=_("command_ban_filter"))],
+            [KeyboardButton(text=_("ban_btn"))],
             [KeyboardButton(text=_("command_cancel"))],
         )
 
@@ -36,9 +36,8 @@ class ReplyKeyboard:
         return cls.build(
             [
                 KeyboardButton(text=_("command_suggest_post")),
-                KeyboardButton(text=_("command_user_stats")),
+                KeyboardButton(text=_("command_open_menu")),
             ],
-            [KeyboardButton(text=_("command_get_settings_menu"))],
         )
 
     @classmethod
@@ -46,9 +45,8 @@ class ReplyKeyboard:
         return cls.build(
             [
                 KeyboardButton(text=_("command_suggest_post")),
-                KeyboardButton(text=_("command_user_stats")),
+                KeyboardButton(text=_("command_open_menu")),
             ],
-            [KeyboardButton(text=_("command_get_settings_menu"))],
             [KeyboardButton(text=_("command_enter_viewer"))],
             [KeyboardButton(text=_("command_get_admin_menu"))],
         )
@@ -58,24 +56,3 @@ class ReplyKeyboard:
         if user_dto.is_admin:
             return cls.admin_main()
         return cls.user_main()
-
-    @classmethod
-    def main_by_role(cls, role: UserRole):
-        if role == UserRole.ADMIN:
-            return cls.admin_main()
-        return cls.user_main()
-
-    @classmethod
-    def admin_menu(cls):
-        return cls.build(
-            [
-                KeyboardButton(text=_("command_post_banner")),
-                KeyboardButton(text=_("command_admin_stats")),
-                KeyboardButton(text=_("command_mass_message")),
-            ],
-            [
-                KeyboardButton(text=_("command_ban_filter")),
-                KeyboardButton(text=_("command_unban_filter")),
-            ],
-            [KeyboardButton(text=_("command_cancel"))],
-        )

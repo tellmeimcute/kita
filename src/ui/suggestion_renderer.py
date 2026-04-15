@@ -1,4 +1,5 @@
 
+from aiogram.types import ReplyKeyboardRemove
 
 from ui.keyboards import ReplyKeyboard
 from database.dto import SuggestionFullDTO, UserDTO
@@ -43,7 +44,7 @@ class SuggestionRenderer:
     async def empty_queue(self, user_dto: UserDTO):
         user_dto = user_dto
         payload = MessagePayload(
-            i18n_key="no_active_suggestions", reply_markup=ReplyKeyboard.main(user_dto)
+            i18n_key="no_active_suggestions", reply_markup=ReplyKeyboardRemove()
         )
         return await self.notifier.notify_user(user_dto, payload)
 

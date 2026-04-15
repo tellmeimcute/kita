@@ -13,6 +13,8 @@ from di.suggestion_viewer import SuggestionViewerProvider
 from di.middleware import MiddlewareProvider
 from di.bot import BotProvider
 
+from core.config import RuntimeConfig
+
 from startup import register_all
 
 logging.basicConfig(level=logging.DEBUG)
@@ -35,6 +37,8 @@ async def main():
 
     bot = await container.get(Bot)
     dp = await container.get(Dispatcher)
+
+    await container.get(RuntimeConfig)
 
     setup_dishka(
         container=container,

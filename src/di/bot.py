@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
@@ -33,6 +34,7 @@ class BotProvider(Provider):
     @provide(scope=Scope.APP)
     def dp(self, redis: Redis) -> Dispatcher:
         logger.info("Initializing Dispatcher instance")
-        dp = Dispatcher(storage=RedisStorage(redis=redis), name="dispatcher")
+        storate = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+        dp = Dispatcher(storage=storate, name="dispatcher")
         return dp
     
