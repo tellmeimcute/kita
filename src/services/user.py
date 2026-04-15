@@ -95,12 +95,8 @@ class UserService:
 
     async def set_role(self, user_dto: UserDTO, target_role: UserRole):
         user_dto.role = target_role
-        result = await self.dao.update_by_id(
-            self.session, user_dto.user_id, user_dto.prepare_changed_data()
-        )
-
-        await UserRedis.delete(self.redis, self.redis_key(user_dto.user_id))
-        return result
+        changed_data = user_dto.prepare_changed_data()
+        await self.update_from_data(user_dto, changed_data)
 
     async def decline_suggestion(self, user_dto: UserDTO):
         await self.dao.decline_all_suggestions(self.session, user_dto.user_id)
