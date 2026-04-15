@@ -16,3 +16,5 @@ class MessagePayload(BaseData):
     content: Optional[AnyContent] = None
 
     auto_delete_after: Optional[int] = 10
+
+    suggestion_id: int | None = None

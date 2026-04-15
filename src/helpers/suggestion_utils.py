@@ -1,11 +1,14 @@
 
+from aiogram import html
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from core.config import RuntimeConfig
-from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
 from core.i18n_translator import Translator
 from core.enums import RenderType
+from core.exceptions import UnsupportedPayload
+
+from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
 from helpers.schemas.message_payload import MessagePayload
 
 
@@ -47,12 +50,16 @@ class SuggestionUtils:
         caption = suggestion_dto.caption if suggestion_dto.caption else ""
         admin_caption = self.admin_original_caption(caption) if suggestion_dto.caption else ""
 
+        command = self.translator.get_translated_text("command_open_solo_view")
+        command = f"{command} {suggestion_dto.id}"
+
         i18n_kwargs = suggestion_dto.model_dump()
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
             author_string=author_string,
             caption=caption,
             admin_caption=admin_caption,
+            command=html.code(command),
             verdict=verdict,
             bot_url=self.runtime_config.bot_url,
         )
@@ -86,12 +93,17 @@ class SuggestionUtils:
         payload = None
 
         if render_type == RenderType.MESSAGE:
-            payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs, reply_markup=kb)
+            payload = MessagePayload(
+                i18n_key=i18n_key,
+                i18n_kwargs=i18n_kwargs,
+                suggestion_id=suggestion_dto.id,
+                reply_markup=kb,
+            )
         elif render_type == RenderType.MEDIAGROUP:
             content = self.build_mediagroup_content(suggestion_dto, i18n_key=i18n_key)
-            payload = MessagePayload(content=content)
+            payload = MessagePayload(content=content, suggestion_id=suggestion_dto.id)
 
         if not payload:
-            raise ValueError("Unsupported render_type")
+            raise UnsupportedPayload()
 
         return payload

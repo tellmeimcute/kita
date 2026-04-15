@@ -1,5 +1,6 @@
-
+from logging import getLogger
 from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aiogram import Router, F, html
 from aiogram.types import Message, ErrorEvent
@@ -13,10 +14,13 @@ from core.exceptions import (
     SQLSuggestionNotFoundError,
     UserImmuneError,
     KitaValidationError,
+    UnsupportedPayload,
 )
-from services import NotifierService
+from services import NotifierService, SuggestionService
 
 router = Router(name="errors")
+
+logger = getLogger(name="kita.errors")
 
 @router.error(ExceptionTypeFilter(SQLUserNotFoundError), F.update.message.as_("message"))
 async def user_not_found(
@@ -66,7 +70,7 @@ async def suggestion_not_found(
 ):
     caller_id = message.from_user.id
     e: SQLSuggestionNotFoundError = event.exception
-    
+
     i18n_kwargs = {"suggestion_id": e.target_id}
     if e.i18n_kwargs:
         i18n_kwargs.update(e.i18n_kwargs)
@@ -89,12 +93,42 @@ async def validation_error(
 ):
     caller_id = message.from_user.id
     e: KitaValidationError | ValidationError = event.exception
+    
+    logger.error(e, exc_info=True)
     is_kita_exc = isinstance(e, KitaValidationError)
 
     payload = MessagePayload(
         i18n_key="command_syntax_error",
         i18n_kwargs={"hint": html.code("Validation Error.")},
         reply_markup=e.return_kb if is_kita_exc else None,
+    )
+
+    strategy = notifier.send_strategy_factory(caller_id, payload)
+    await notifier.send(strategy)
+
+
+@router.error(ExceptionTypeFilter(UnsupportedPayload), F.update.message.as_("message"))
+async def payload_error(
+    event: ErrorEvent,
+    message: Message,
+    session: FromDishka[AsyncSession],
+    notifier: FromDishka[NotifierService],
+    suggestion_service: FromDishka[SuggestionService],
+):
+    caller_id = message.from_user.id
+    e: UnsupportedPayload = event.exception
+
+    logger.error(e, exc_info=True)
+
+    if e.payload.suggestion_id:
+        async with session.begin():
+            await suggestion_service.dao.update_by_id(
+                session, e.payload.suggestion_id, {"accepted": False}
+            )
+
+    payload = MessagePayload(
+        i18n_key="command_syntax_error",
+        i18n_kwargs={"hint": html.code("Unsupported Payload")},
     )
 
     strategy = notifier.send_strategy_factory(caller_id, payload)

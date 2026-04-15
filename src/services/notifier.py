@@ -7,9 +7,11 @@ from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message, InlineKeyboardMarkup
 from aiogram.utils.i18n import I18n
 
+from core.exceptions import UnsupportedPayload
+from core.i18n_translator import Translator
+
 from database.dto import UserDTO
 from helpers.schemas.message_payload import MessagePayload
-from core.i18n_translator import Translator
 
 from ui.senders import (
     MessageSender,
@@ -53,7 +55,7 @@ class NotifierService:
         if payload.content:
             return MediaGroupSender(self.bot, target_id, payload, silent, self.translator)
 
-        raise ValueError("Unsupported payload format")
+        raise UnsupportedPayload(payload=payload)
 
     async def send(self, strategy: MessageSender | MessageTransfer):
         try:

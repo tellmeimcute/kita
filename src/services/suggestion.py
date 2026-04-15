@@ -16,7 +16,7 @@ from database.dto import (
 )
 from database.models import Media, Suggestion
 from helpers.schemas.objects import UserStats
-from core.exceptions import SQLSuggestionNotFoundError
+from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
 
 
 logger = getLogger("kita.suggestion_service")
@@ -135,6 +135,9 @@ class SuggestionService:
                 media_list.append(media_orm)
 
         to_add = [suggestion_orm] + media_list
+
+        if not suggestion_orm.caption and not media_list:
+            raise UnsupportedPayload()
 
         self.session.add_all(to_add)
         await self.session.flush(to_add)
