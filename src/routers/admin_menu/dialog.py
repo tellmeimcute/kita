@@ -46,7 +46,6 @@ user_select_window = Window(
 
 user_moderation_window = Window(
     I18nText("admin_moderation_user_profile"),
-    #I18nText("choose_moderation_option"),
     Button(
         I18nText("ban_btn"),
         id="ban",
