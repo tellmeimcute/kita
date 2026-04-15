@@ -50,13 +50,7 @@ msgstr ""
 msgid "answer_admin_role_changed"
 msgstr ""
 
-msgid "role_not_exist"
-msgstr ""
-
 msgid "user_not_found"
-msgstr ""
-
-msgid "notify_user_role_changed"
 msgstr ""
 
 msgid "error_suggestion_not_found"
@@ -69,9 +63,6 @@ msgid "admin_suggestion_original_caption"
 msgstr ""
 
 msgid "no_active_suggestions"
-msgstr ""
-
-msgid "suggestion_left"
 msgstr ""
 
 msgid "suggestion_wait_media"
@@ -95,10 +86,7 @@ msgstr ""
 msgid "unban_btn"
 msgstr ""
 
-msgid "command_get_admin_menu"
-msgstr ""
-
-msgid "state_wait_for_id"
+msgid "wait_user_id_text"
 msgstr ""
 
 msgid "viewer_accept"
@@ -111,9 +99,6 @@ msgid "confirm"
 msgstr ""
 
 msgid "decline"
-msgstr ""
-
-msgid "viewer_accept_no_caption"
 msgstr ""
 
 msgid "enter_viewer_btn"
@@ -143,16 +128,10 @@ msgstr ""
 msgid "channel_banner"
 msgstr ""
 
-msgid "command_change_role"
-msgstr ""
-
-msgid "send_verdict"
+msgid "wait_verdict_text"
 msgstr ""
 
 msgid "channel_post_message"
-msgstr ""
-
-msgid "error_empty_suggestion"
 msgstr ""
 
 msgid "notify_author_suggestion_status"
@@ -164,10 +143,7 @@ msgstr ""
 msgid "mass_message_confirm"
 msgstr ""
 
-msgid "mass_message_wait_for_text"
-msgstr ""
-
-msgid "mass_message_started"
+msgid "broadcast_wait_message_text"
 msgstr ""
 
 msgid "in_process"
@@ -176,16 +152,13 @@ msgstr ""
 msgid "completed"
 msgstr ""
 
-msgid "mass_message_status"
+msgid "broadcast_status_text"
 msgstr ""
 
 msgid "author_plus_origin"
 msgstr ""
 
 msgid "global_stats"
-msgstr ""
-
-msgid "command_get_settings_menu"
 msgstr ""
 
 msgid "settings_menu_btn"
@@ -219,6 +192,12 @@ msgid "user_moderation_btn"
 msgstr ""
 
 msgid "close_btn"
+msgstr ""
+
+msgid "demote_user_btn"
+msgstr ""
+
+msgid "promote_admin_btn"
 msgstr ""
 
 msgid "command_open_menu"

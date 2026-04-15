@@ -138,7 +138,7 @@ async def viewer_apply_verdict(
         )
 
 
-VIEWER_BAN_FILTER = I18nTextFilter("command_ban_filter")
+VIEWER_BAN_FILTER = I18nTextFilter("ban_btn")
 @router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
 @router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(

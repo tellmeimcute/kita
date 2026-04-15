@@ -166,7 +166,7 @@ async def broadcast_task(
             i18n_kwargs["status"] = notifier.translator.get_translated_text(
                 i18n_key="completed" if data.status else "in_process"
             )
-            new_status = notifier.translator.get_i18n_text("mass_message_status", i18n_kwargs)
+            new_status = notifier.translator.get_i18n_text("broadcast_status_text", i18n_kwargs)
             await notifier.edit_message_text(status_message, new_status)
     
         await asyncio.sleep(notifier.chunk_delay)
@@ -187,7 +187,7 @@ async def execute_broadcast(
     i18n_kwargs["status"] = notifier.translator.get_translated_text(
         i18n_key="completed" if broadcast_data.status else "in_process"
     )
-    payload = MessagePayload(i18n_key="mass_message_status", i18n_kwargs=i18n_kwargs)
+    payload = MessagePayload(i18n_key="broadcast_status_text", i18n_kwargs=i18n_kwargs)
     status_message = await notifier.notify_user(user_dto, payload)
     asyncio.create_task(broadcast_task(notifier, broadcast_data, status_message))
 

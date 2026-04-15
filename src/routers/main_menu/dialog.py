@@ -24,11 +24,12 @@ from .handlers import (
 )
 
 back_or_suggest_again = Row(
-    SwitchTo(I18nText("menu_btn"), id="menu", state=UserMenuSG.main),
+    SwitchTo(I18nText("menu_btn"), id="menu", state=UserMenuSG.main, style=Style("danger")),
     SwitchTo(
         I18nText("make_suggestion_btn"),
         id="make_suggestion",
         state=UserMenuSG.make_suggestion,
+        style=Style("primary"),
     ),
 )
 

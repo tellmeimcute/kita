@@ -1,10 +1,8 @@
-from .commands import ChangeRoleCommand, IDCommand, StrCommand
+from .commands import IDCommand
 from .data import MassMessageData, SuggestionViewerData
 
 __all__ = (
     "SuggestionViewerData",
     "MassMessageData",
     "IDCommand",
-    "ChangeRoleCommand",
-    "StrCommand",
 )

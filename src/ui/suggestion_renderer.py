@@ -19,7 +19,7 @@ class SuggestionRenderer:
 
     async def wait_verdict(self, user_dto: UserDTO):
         payload = MessagePayload(
-            i18n_key="send_verdict", reply_markup=ReplyKeyboard.viewer_admin_action()
+            i18n_key="wait_verdict_text", reply_markup=ReplyKeyboard.viewer_admin_action()
         )
         await self.notifier.notify_user(user_dto, payload)
 
@@ -31,7 +31,7 @@ class SuggestionRenderer:
 
     async def verdict_rewrite(self, user_dto: UserDTO):
         payload = MessagePayload(
-            i18n_key="verdict_rewrite", reply_markup=ReplyKeyboard.main(user_dto)
+            i18n_key="verdict_rewrite", reply_markup=ReplyKeyboardRemove()
         )
         await self.notifier.notify_user(user_dto, payload)
 

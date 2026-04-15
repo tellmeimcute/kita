@@ -28,24 +28,29 @@ msgid "none_suggestion"
 msgstr "⌚ Under moderation"
 
 msgid "start_msg"
-msgstr ""
-"Welcome to the suggestions bot of the channel {channel_name}!"
+msgstr "Welcome to the suggestions bot of the channel {channel_name}!"
 
 msgid "state_reset"
 msgstr "State has been reset."
 
 msgid "error_media_suggestion"
-msgstr "Send text/images/video/gif."
+msgstr ""
+"What you sent isn't accepted as a suggestion!\n"
+"Only text/images/videos/gifs are accepted.\n"
+"\n"
+"Try again! Or return to the main menu 😭"
 
 msgid "on_moderation"
 msgstr "Sent for moderation."
 
 msgid "user_stats"
 msgstr ""
-"You have suggested posts: {total}\n"
+"<b>📊 Your statistics: </b>\n"
 "\n"
-"✅ Accepted: {accepted}\n"
-"❌ Declined: {declined}"
+"<b>Total suggestions:</b> {total}\n"
+"\n"
+"✅ Accepted: <b>{accepted}</b>\n"
+"⛔ Declined: <b>{declined}</b>"
 
 msgid "notify_admin_new_suggestion"
 msgstr ""
@@ -60,14 +65,8 @@ msgstr "This user is immune to this command."
 msgid "answer_admin_role_changed"
 msgstr "User @{username} ({user_id}) has had their role changed to {role}."
 
-msgid "role_not_exist"
-msgstr "Role {role} does not exist."
-
 msgid "user_not_found"
 msgstr "User with id {user_id} not found."
-
-msgid "notify_user_role_changed"
-msgstr "🤡 You have been assigned the role {role}!"
 
 msgid "error_suggestion_not_found"
 msgstr "Suggestion with ID {suggestion_id} not found 😢"
@@ -89,14 +88,12 @@ msgstr ""
 msgid "no_active_suggestions"
 msgstr "No active suggestion 😢"
 
-msgid "suggestion_left"
-msgstr "Posts in queue: {left}"
-
 msgid "suggestion_wait_media"
 msgstr ""
-"Send images/video/gif in a single post.\n"
+"Send up to 10 media (pictures/videos/gifs) and a caption.\n"
+"Or just repost something from any other channel here.\n"
 "\n"
-"You can cancel using the keyboard or the /cancel command."
+"To cancel, return to the main menu."
 
 msgid "start_review_suggestions"
 msgstr "Starting review of suggestions..."
@@ -118,10 +115,7 @@ msgstr "Ban"
 msgid "unban_btn"
 msgstr "Unban"
 
-msgid "command_get_admin_menu"
-msgstr "Admin panel"
-
-msgid "state_wait_for_id"
+msgid "wait_user_id_text"
 msgstr "Waiting for ID"
 
 msgid "viewer_accept"
@@ -136,9 +130,6 @@ msgstr "Confirm"
 msgid "decline"
 msgstr "Decline"
 
-msgid "viewer_accept_no_caption"
-msgstr "Post without caption"
-
 msgid "enter_viewer_btn"
 msgstr "View suggestions"
 
@@ -149,13 +140,13 @@ msgid "command_cancel"
 msgstr "Cancel"
 
 msgid "make_suggestion_btn"
-msgstr "Suggest post"
+msgstr "Make suggestion"
 
 msgid "app_stats_btn"
 msgstr "Admin stats"
 
 msgid "statistic_btn"
-msgstr "📄 Statistics"
+msgstr "📄 My statistics"
 
 msgid "post_banner_btn"
 msgstr "Post banner"
@@ -166,10 +157,7 @@ msgstr "Banner sent to the channel."
 msgid "channel_banner"
 msgstr "Suggestions -->"
 
-msgid "command_change_role"
-msgstr "change role"
-
-msgid "send_verdict"
+msgid "wait_verdict_text"
 msgstr "Post or decline? Or maybe ban 😏"
 
 msgid "channel_post_message"
@@ -178,31 +166,25 @@ msgstr ""
 "\n"
 "👤 <code><b>{author_string}</b></code>"
 
-msgid "error_empty_suggestion"
-msgstr "Cannot publish an empty message."
-
 msgid "notify_author_suggestion_status"
 msgstr ""
 "Your suggestion with ID: {id}\n"
 "<b>{verdict}</b>"
 
 msgid "broadcast_btn"
-msgstr "Broadcast"
+msgstr "🚀 Broadcast"
 
 msgid "mass_message_confirm"
 msgstr ""
 "Confirm sending this message to <b>{users_count} users.</b>\n"
 "Estimated execution time: <b>{estimated_time} seconds</b>"
 
-msgid "mass_message_wait_for_text"
+msgid "broadcast_wait_message_text"
 msgstr ""
-"Send a message."
-"\n\n"
+"Send a message.\n"
+"\n"
 "Any message is accepted.\n"
-"You can also send a message from the channel as a repost."
-
-msgid "mass_message_started"
-msgstr "Broadcast started..."
+"You can also repost a message from channel."
 
 msgid "in_process"
 msgstr "⌚ In progress"
@@ -210,7 +192,7 @@ msgstr "⌚ In progress"
 msgid "completed"
 msgstr "🟢 Completed"
 
-msgid "mass_message_status"
+msgid "broadcast_status_text"
 msgstr ""
 "Users selected for broadcast: <b>{users_count}</b>\n"
 "Overall progress: <b>{progress}</b>\n"
@@ -219,7 +201,7 @@ msgstr ""
 "{status}"
 
 msgid "author_plus_origin"
-msgstr "{author_name} (source {forwarded_from})"
+msgstr "{author_name} (source: {forwarded_from})"
 
 msgid "global_stats"
 msgstr ""
@@ -230,14 +212,11 @@ msgstr ""
 "📄 Total posts suggested: {suggestions}\n"
 "🎨 Total media files: {medias}\n"
 
-msgid "command_get_settings_menu"
-msgstr "Settings"
-
 msgid "settings_menu_btn"
 msgstr "⚙ Settings"
 
 msgid "settings_menu_text"
-msgstr "⚙ Here you can change your settings"
+msgstr "⚙ <b>SETTINGS</b>"
 
 msgid "locale_settings_btn"
 msgstr "🌐 Change locale"
@@ -252,7 +231,7 @@ msgid "menu_btn"
 msgstr "⬅ To main menu"
 
 msgid "admin_menu_text"
-msgstr "admin menu!"
+msgstr "🛠️ <b>ADMIN MENU</b>"
 
 msgid "admin_menu_btn"
 msgstr "🤡 Admin menu"
@@ -265,6 +244,12 @@ msgstr "User Moderation"
 
 msgid "close_btn"
 msgstr "❌ Close"
+
+msgid "demote_user_btn"
+msgstr "Demote to user"
+
+msgid "promote_admin_btn"
+msgstr "Promote to admin"
 
 msgid "command_open_menu"
 msgstr "Menu"

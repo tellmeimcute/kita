@@ -38,7 +38,7 @@ main_window = Window(
 )
 
 user_select_window = Window(
-    I18nText("state_wait_for_id"),
+    I18nText("wait_user_id_text"),
     MessageInput(select_user),
     SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, show_mode=ShowMode.AUTO),
     state=AdminMenuSG.user_select,
@@ -46,7 +46,7 @@ user_select_window = Window(
 
 user_moderation_window = Window(
     I18nText("admin_moderation_user_profile"),
-    I18nText("choose_moderation_option"),
+    #I18nText("choose_moderation_option"),
     Button(
         I18nText("ban_btn"),
         id="ban",
@@ -85,7 +85,7 @@ bot_stats_window = Window(
 )
 
 wait_broadcast_window = Window(
-    I18nText("mass_message_wait_for_text"),
+    I18nText("broadcast_wait_message_text"),
     MessageInput(prepare_broadcast),
     SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main),
     state=AdminMenuSG.wait_broadcast_content,
