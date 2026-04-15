@@ -1,20 +1,15 @@
-from typing import Any, Optional
-
+from typing import Any
 from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.utils.media_group import MediaType
 from .base import BaseData
 
 AnyKeyboard = ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove
-AnyContent = str | list[MediaType]
-
 
 class MessagePayload(BaseData):
-    i18n_key: Optional[str] = None
+    i18n_key: str | None = None
     i18n_kwargs: dict[str, Any] = {}
 
-    reply_markup: Optional[AnyKeyboard] = None
-    content: Optional[AnyContent] = None
-
-    auto_delete_after: Optional[int] = 10
+    reply_markup: AnyKeyboard | None = None
+    mediagroup: list[MediaType] | None = None
 
     suggestion_id: int | None = None

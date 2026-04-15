@@ -101,7 +101,7 @@ class SuggestionUtils:
             )
         elif render_type == RenderType.MEDIAGROUP:
             content = self.build_mediagroup_content(suggestion_dto, i18n_key=i18n_key)
-            payload = MessagePayload(content=content, suggestion_id=suggestion_dto.id)
+            payload = MessagePayload(mediagroup=content, suggestion_id=suggestion_dto.id)
 
         if not payload:
             raise UnsupportedPayload()

@@ -52,7 +52,7 @@ class NotifierService:
     def send_strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
         if payload.i18n_key:
             return TextSender(self.bot, target_id, payload, silent, self.translator)
-        if payload.content:
+        if payload.mediagroup:
             return MediaGroupSender(self.bot, target_id, payload, silent, self.translator)
 
         raise UnsupportedPayload(payload=payload)

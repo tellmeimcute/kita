@@ -24,7 +24,7 @@ class MessageSender(BaseSender):
 
 class MediaGroupSender(MessageSender):
     async def send(self) -> list[Message]:
-        return await self.bot.send_media_group(self.target_id, self.payload.content, disable_notification=self.silent)
+        return await self.bot.send_media_group(self.target_id, self.payload.mediagroup, disable_notification=self.silent)
 
 class TextSender(MessageSender):
     async def send(self) -> Message:
