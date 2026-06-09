@@ -1,7 +1,7 @@
 
 
 
-from helpers.schemas.message_payload import MessagePayload
+from core.schemas.message_payload import MessagePayload
 from .i18n_base import KitaException
 
 

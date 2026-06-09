@@ -10,7 +10,7 @@ from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 
 from core.i18n_translator import Translator
-from helpers.suggestion_utils import SuggestionUtils
+from core.suggestion_utils import SuggestionUtils
 
 
 class ServicesProvider(Provider):

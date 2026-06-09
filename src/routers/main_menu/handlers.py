@@ -16,15 +16,14 @@ from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput
 
 from core.exceptions import UnsupportedPayload
-from helpers.suggestion_utils import SuggestionUtils
+from core.suggestion_utils import SuggestionUtils
+from core.schemas.message_payload import MessagePayload
+from core.filters import I18nTextFilter
 
 from database.dto import UserDTO
 from services.user import UserService
 from services.notifier import NotifierService
 from services.suggestion import SuggestionService
-
-from helpers.schemas.message_payload import MessagePayload
-from helpers.filters import I18nTextFilter
 
 from ui.state_groups import UserMenuSG
 

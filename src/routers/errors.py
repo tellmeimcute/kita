@@ -8,7 +8,7 @@ from aiogram.filters.exception import ExceptionTypeFilter
 
 from dishka import FromDishka
 
-from helpers.schemas.message_payload import MessagePayload
+from core.schemas.message_payload import MessagePayload
 from core.exceptions import (
     SQLUserNotFoundError,
     SQLSuggestionNotFoundError,
@@ -16,6 +16,7 @@ from core.exceptions import (
     KitaValidationError,
     UnsupportedPayload,
 )
+
 from services import NotifierService, SuggestionService
 
 router = Router(name="errors")

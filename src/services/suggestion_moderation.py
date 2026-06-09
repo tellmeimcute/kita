@@ -3,8 +3,8 @@ import asyncio
 
 from core.config import Config
 from database.dto import SuggestionFullDTO
-from helpers.suggestion_utils import SuggestionUtils
-from helpers.schemas.message_payload import MessagePayload
+from core.suggestion_utils import SuggestionUtils
+from core.schemas.message_payload import MessagePayload
 from services import NotifierService
 
 

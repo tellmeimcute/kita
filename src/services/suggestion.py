@@ -4,9 +4,13 @@ from aiogram.types import Message, MessageOriginChannel
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
+from core.schemas.objects import UserStats
+from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
+
 from database.models import Suggestion, Media
 from database.dao import SuggestionDAO
 from database.redis.userstats import UserStatsRedis
+from database.models import Media, Suggestion
 from database.dto import (
     SUGGESTION_DTOS,
     MediaDTO,
@@ -14,9 +18,6 @@ from database.dto import (
     SuggestionFullDTO,
     UserDTO,
 )
-from database.models import Media, Suggestion
-from helpers.schemas.objects import UserStats
-from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
 
 
 logger = getLogger("kita.suggestion_service")

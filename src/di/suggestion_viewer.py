@@ -6,11 +6,11 @@ from dishka.integrations.aiogram import AiogramMiddlewareData
 
 from aiogram.fsm.context import FSMContext
 
+from core.schemas import SuggestionViewerData
+from core.suggestion_queue import SuggestionQueueManager
+
 from services.suggestion import SuggestionService
 from services.suggestion_moderation import SuggestionModerationService
-
-from helpers.schemas import SuggestionViewerData
-from helpers.suggestion_queue import SuggestionQueueManager
 
 from ui.suggestion_renderer import SuggestionRenderer
 

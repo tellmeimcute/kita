@@ -3,10 +3,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 
-from database.dto import SuggestionFullDTO
-from helpers.schemas import SuggestionViewerData
+from core.schemas import SuggestionViewerData
 from core.exceptions import SQLSuggestionNotFoundError
-
+from database.dto import SuggestionFullDTO
 from services import SuggestionService
 
 

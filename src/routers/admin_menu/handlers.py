@@ -16,6 +16,9 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput
 
+from core.schemas import IDCommand
+from core.schemas.data import MassMessageData
+from core.schemas.message_payload import MessagePayload
 from core.exceptions import SQLUserNotFoundError, UserImmuneError
 from core.config import RuntimeConfig, Config
 from core.i18n_translator import Translator
@@ -23,11 +26,6 @@ from core.i18n_translator import Translator
 from database.dto import UserDTO
 from database.roles import UserRole
 from services import NotifierService, UserService
-
-from helpers.schemas import IDCommand
-from helpers.schemas.data import MassMessageData
-from helpers.schemas.message_payload import MessagePayload
-
 
 from ui.state_groups import AdminMenuSG
 

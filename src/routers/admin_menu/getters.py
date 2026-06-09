@@ -6,11 +6,10 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from aiogram_dialog import DialogManager
+
+from core.schemas.data import MassMessageData
 from database.dao import SuggestionDAO, MediaDAO, UserAlchemyDAO
-
 from services.notifier import NotifierService
-from helpers.schemas.data import MassMessageData
-
 
 
 @inject

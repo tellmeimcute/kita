@@ -10,21 +10,23 @@ from aiogram_dialog import DialogManager, StartMode, ShowMode
 from sqlalchemy.ext.asyncio import AsyncSession
 from dishka import FromDishka
 
-from database.dto import SuggestionFullDTO, UserDTO
-from database.roles import UserRole
-from routers.state import SuggestionViewerState
-from helpers.filters import I18nTextFilter, TextArgsFilter
-from helpers.schemas.message_payload import MessagePayload
-
-from helpers.schemas import IDCommand
-from helpers.schemas.data import SuggestionViewerData
+from core.filters import I18nTextFilter, TextArgsFilter
+from core.schemas.message_payload import MessagePayload
+from core.schemas import IDCommand
+from core.schemas.data import SuggestionViewerData
+from core.suggestion_queue import SuggestionQueueManager
 
 from services import NotifierService, SuggestionService, UserService
-
 from services.suggestion_moderation import SuggestionModerationService
-from helpers.suggestion_queue import SuggestionQueueManager
+
+from database.dto import SuggestionFullDTO, UserDTO
+from database.roles import UserRole
+
+from routers.state import SuggestionViewerState
+
 from ui.suggestion_renderer import SuggestionRenderer
 from ui.state_groups import UserMenuSG
+
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")

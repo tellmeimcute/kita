@@ -9,9 +9,9 @@ from aiogram.utils.i18n import I18n
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
+from core.schemas.message_payload import MessagePayload
 
 from database.dto import UserDTO
-from helpers.schemas.message_payload import MessagePayload
 
 from ui.senders import (
     MessageSender,

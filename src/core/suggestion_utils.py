@@ -9,7 +9,7 @@ from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
 
 from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
-from helpers.schemas.message_payload import MessagePayload
+from core.schemas.message_payload import MessagePayload
 
 
 class SuggestionUtils:
