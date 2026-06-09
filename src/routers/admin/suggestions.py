@@ -81,17 +81,13 @@ async def solo_suggestion_verdict(
 @router.message(I18nTextFilter("command_enter_viewer"))
 async def enter_suggestion_viewer(
     message: Message,
-    session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    suggestion_service: FromDishka[SuggestionService],
+    queue_manager: FromDishka[SuggestionQueueManager],
     renderer: FromDishka[SuggestionRenderer],
 ):
     await state.set_state(SuggestionViewerState.in_viewer)
 
-    viewer_data = SuggestionViewerData(user_dto=user_dto)
-    queue_manager = SuggestionQueueManager(session, suggestion_service, state, viewer_data)
-    
     if new_suggestion := await queue_manager.pop_next():
         await renderer.start_review(user_dto)
         return await renderer.suggestion(user_dto, new_suggestion)

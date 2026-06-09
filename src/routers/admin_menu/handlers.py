@@ -23,13 +23,12 @@ from core.i18n_translator import Translator
 
 from database.dto import UserDTO
 from database.roles import UserRole
-from services import NotifierService, SuggestionService, UserService
+from services import NotifierService, UserService
 
 from helpers.schemas import IDCommand
 from helpers.schemas.data import MassMessageData
 from helpers.schemas.message_payload import MessagePayload
 
-from helpers.schemas.data import SuggestionViewerData
 from routers.state import SuggestionViewerState
 from helpers.suggestion_queue import SuggestionQueueManager
 from ui.suggestion_renderer import SuggestionRenderer
@@ -199,16 +198,12 @@ async def enter_suggestion_viewer(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
-    session: FromDishka[AsyncSession],
-    suggestion_service: FromDishka[SuggestionService],
+    queue_manager: FromDishka[SuggestionQueueManager],
     renderer: FromDishka[SuggestionRenderer],
     translator: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     state: FSMContext = manager.middleware_data.get("state")
-
-    viewer_data = SuggestionViewerData(user_dto=user_dto)
-    queue_manager = SuggestionQueueManager(session, suggestion_service, state, viewer_data)
 
     new_suggestion = await queue_manager.pop_next(dump_into_state=False)
     if not new_suggestion:
