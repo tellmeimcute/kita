@@ -24,7 +24,7 @@ from services import NotifierService, SuggestionService, UserService
 from services.suggestion_moderation import SuggestionModerationService
 from helpers.suggestion_queue import SuggestionQueueManager
 from ui.suggestion_renderer import SuggestionRenderer
-from ui.state_groups import AdminMenuSG
+from ui.state_groups import UserMenuSG
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")
@@ -128,7 +128,7 @@ async def viewer_apply_verdict(
         await renderer.empty_queue(user_dto)
 
         await dialog_manager.start(
-            AdminMenuSG.main,
+            UserMenuSG.main,
             mode=StartMode.RESET_STACK,
             show_mode=ShowMode.DELETE_AND_SEND,
         )

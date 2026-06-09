@@ -9,6 +9,8 @@ from ui.widgets.i18n_text import I18nText
 from ui.state_groups import AdminMenuSG, UserMenuSG
 
 from routers.shared_getters import role_condition
+from routers.admin.shared_handlers import enter_suggestion_viewer
+
 from .getters import get_app_stats, get_broadcast_info
 from .handlers import (
     select_user,
@@ -16,12 +18,11 @@ from .handlers import (
     post_banner,
     prepare_broadcast,
     execute_broadcast,
-    enter_suggestion_viewer,
 )
 
 main_window = Window(
     I18nText("admin_menu_text"),
-    Button(I18nText("enter_viewer_btn"), id="suggestion_viewer", on_click=enter_suggestion_viewer),
+    #Button(I18nText("enter_viewer_btn"), id="suggestion_viewer", on_click=enter_suggestion_viewer),
     SwitchTo(I18nText("broadcast_btn"), id="broadcast", state=AdminMenuSG.wait_broadcast_content),
     SwitchTo(I18nText("user_moderation_btn"), id="user_select", state=AdminMenuSG.user_select),
     Row(

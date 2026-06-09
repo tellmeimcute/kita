@@ -1,6 +1,6 @@
 
 from aiogram_dialog import Window, Dialog, StartMode
-from aiogram_dialog.widgets.kbd import SwitchTo, Cancel, Row
+from aiogram_dialog.widgets.kbd import SwitchTo, Cancel, Row, Button
 from aiogram_dialog.widgets.style import Style
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.text import Format
@@ -12,6 +12,7 @@ from ui.widgets.protected_start import ProtectedStart
 from ui.state_groups import UserMenuSG, AdminMenuSG
 
 from routers.shared_getters import is_admin
+from routers.admin.shared_handlers import enter_suggestion_viewer
 
 from .getters import(
     get_runtime_config,
@@ -40,6 +41,13 @@ main_window = Window(
         id="make_suggestion",
         state=UserMenuSG.make_suggestion,
         style=Style("primary"),
+    ),
+    Button(
+        I18nText("enter_viewer_btn"),
+        id="suggestion_viewer",
+        on_click=enter_suggestion_viewer,
+        style=Style("primary"),
+        when=is_admin,
     ),
     SwitchTo(
         I18nText("statistic_btn"),
