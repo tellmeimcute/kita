@@ -118,7 +118,7 @@ msgid "unban_btn"
 msgstr "Разбанить"
 
 msgid "wait_user_id_text"
-msgstr "Пришлите Telegram UserID пользователя."
+msgstr "Пришлите <b>Telegram UserID</b> пользователя."
 
 msgid "viewer_accept"
 msgstr "Принять"
@@ -133,7 +133,7 @@ msgid "decline"
 msgstr "Отклонить"
 
 msgid "enter_viewer_btn"
-msgstr "Смотреть предложку"
+msgstr "📄 Смотреть предложку"
 
 msgid "command_open_solo_view"
 msgstr "предложка"
@@ -145,13 +145,13 @@ msgid "make_suggestion_btn"
 msgstr "Предложить пост"
 
 msgid "app_stats_btn"
-msgstr "Админ стата"
+msgstr "📉 Статистика бота"
 
 msgid "statistic_btn"
 msgstr "📄 Моя статистика"
 
 msgid "post_banner_btn"
-msgstr "Запостить баннер"
+msgstr "🖼 Запостить баннер"
 
 msgid "channel_banner_sent"
 msgstr "Баннер отправлен в канал."
@@ -218,7 +218,7 @@ msgid "settings_menu_btn"
 msgstr "⚙ Настройки"
 
 msgid "settings_menu_text"
-msgstr "⚙ <b>НАСТРОЙКИ</b>"
+msgstr "⚙ <b>Меню настроек.</b>"
 
 msgid "locale_settings_btn"
 msgstr "🌐 Изменить язык"
@@ -233,7 +233,7 @@ msgid "menu_btn"
 msgstr "⬅ В главное меню"
 
 msgid "admin_menu_text"
-msgstr "🛠️ <b>АДМИН МЕНЮ</b>"
+msgstr "😎 <b>АДМИН МЕНЮ</b>"
 
 msgid "admin_menu_btn"
 msgstr "🤡 Админ меню"
@@ -242,25 +242,25 @@ msgid "back_admin_menu_btn"
 msgstr "⬅ В админ меню"
 
 msgid "user_moderation_btn"
-msgstr "Модерация пользователя"
+msgstr "👤 Модерация пользователя"
 
 msgid "close_btn"
 msgstr "❌ Закрыть"
 
 msgid "demote_user_btn"
-msgstr "Понизить до пользователя"
+msgstr "😭 Понизить до пользователя"
 
 msgid "promote_admin_btn"
-msgstr "Повысить до админа"
+msgstr "😎 Повысить до админа"
 
 msgid "command_open_menu"
 msgstr "Меню"
 
 msgid "admin_moderation_user_profile"
 msgstr ""
-"Пользователь {target_dto[username]}\n"
-"ID {target_dto[user_id]}\n"
-"Роль {target_dto[role]}"
+"<b>Пользователь</b> @{target_dto[username]}\n"
+"<b>Роль</b> {target_dto[role]}\n"
+"<b>ID</b> <code>{target_dto[user_id]}</code>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
