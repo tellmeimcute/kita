@@ -75,7 +75,7 @@ msgid "admin_get_suggestion_caption"
 msgstr ""
 "<b>Suggestion</b> ID {id}\n"
 "\n"
-"<b>Author info:</b>\n" 
+"<b>Author info:</b>\n"
 "<b>Name</b> <code>{author[name]}</code>\n"
 "<b>Username</b> @{author[username]}\n"
 "<b>UserID</b> <code>{author[user_id]}</code>\n"
@@ -221,7 +221,8 @@ msgid "settings_menu_btn"
 msgstr "⚙ Settings"
 
 msgid "settings_menu_text"
-msgstr "⚙ <b>Settings menu</b>"
+msgstr "⚙ <b>Settings menu</b>\n\n"
+"If anonymity is enabled, your nickname will not be shown in the channel"
 
 msgid "locale_settings_btn"
 msgstr "🌐 Change locale"
@@ -255,6 +256,9 @@ msgstr "😭 Demote to user"
 
 msgid "promote_admin_btn"
 msgstr "😎 Promote to admin"
+
+msgid "prefer_anon_toggle_btn"
+msgstr "🎭 Anonymous : {user_dto[prefer_anonymous]}"
 
 msgid "command_open_menu"
 msgstr "Menu"

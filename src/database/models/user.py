@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Enum
+from sqlalchemy import BigInteger, Enum, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.roles import UserRole
@@ -19,6 +19,7 @@ class UserAlchemy(AbstractModel, TimestampMixin):
     username: Mapped[str | None] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(nullable=False)
     language_code: Mapped[str] = mapped_column(default="ru", server_default="ru", nullable=True)
+    prefer_anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
     is_bot_blocked: Mapped[bool] = mapped_column(default=False, nullable=True)
 

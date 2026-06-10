@@ -7,13 +7,13 @@ if TYPE_CHECKING:
     from aiogram.types import User as AiogramUser
 
 
-
 class UserDTO(TrackableDto):
     user_id: int
     username: str | None
     role: UserRole
     name: str
     language_code: str
+    prefer_anonymous: bool
 
     is_bot_blocked: bool | None
 

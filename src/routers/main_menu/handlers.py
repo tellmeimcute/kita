@@ -86,6 +86,24 @@ async def on_album_received(
     asyncio.create_task(notifier.notify_many(admins, payload))
 
 
+@inject
+async def prefer_anon_toggle(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    user_service: UserService = manager.middleware_data.get("user_service")
+    session: AsyncSession = manager.middleware_data.get("session")
+
+    user_dto.prefer_anonymous = not user_dto.prefer_anonymous
+    async with session.begin():
+        await user_service.update_from_data(user_dto, user_dto.prepare_changed_data())
+
+    await callback.answer(text="Success")
+    await manager.switch_to(UserMenuSG.settings)
+
+
 @router.message(CommandStart())
 @router.message(I18nTextFilter("command_open_menu"))
 async def start_main_menu(message: Message, state: FSMContext, dialog_manager: DialogManager):
@@ -98,6 +116,7 @@ async def start_main_menu(message: Message, state: FSMContext, dialog_manager: D
         mode=StartMode.RESET_STACK,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
+
 
 @router.message(I18nTextFilter("decline"))
 @router.message(I18nTextFilter("command_cancel"))

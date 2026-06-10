@@ -43,9 +43,13 @@ class SuggestionUtils:
     def get_i18n_kwargs(self, suggestion_dto: SuggestionFullDTO):
         verdict = self.get_verdict(suggestion_dto)
         author_plus_origin = self.get_author_plus_origin(suggestion_dto)
-        author_string = (
-            author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
-        )
+
+        if suggestion_dto.author.prefer_anonymous:
+            author_string = "Anonymous"
+        else:
+            author_string = (
+                author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
+            )
 
         caption = suggestion_dto.caption if suggestion_dto.caption else ""
         admin_caption = self.admin_original_caption(caption) if suggestion_dto.caption else ""

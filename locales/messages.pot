@@ -200,6 +200,9 @@ msgstr ""
 msgid "promote_admin_btn"
 msgstr ""
 
+msgid "prefer_anon_toggle_btn"
+msgstr ""
+
 msgid "command_open_menu"
 msgstr ""
 
