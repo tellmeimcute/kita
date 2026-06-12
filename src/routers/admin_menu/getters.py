@@ -1,15 +1,13 @@
 
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-
-from aiogram_dialog import DialogManager
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.schemas.data import MassMessageData
-from database.dao import SuggestionDAO, MediaDAO, UserAlchemyDAO
-from services.notifier import NotifierService
+from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
+from usecases.broadcast import BroadcastUseCase
 
 
 @inject
@@ -29,16 +27,14 @@ async def get_app_stats(dialog_manager: DialogManager, **kwargs):
 @inject
 async def get_broadcast_info(
     dialog_manager: DialogManager,
-    notifier: FromDishka[NotifierService],
+    broadcast: FromDishka[BroadcastUseCase],
     **kwargs
 ):
     data_raw = dialog_manager.dialog_data.get("broadcast_data")
     broadcast_data = MassMessageData.model_validate(data_raw)
-    
-    estimated_time = (broadcast_data.users_count / notifier.chunk_size) * notifier.chunk_delay
-    i18n_kwargs = {
+
+    estimated_time = broadcast.estimate_time(broadcast_data)
+    return {
         "users_count": broadcast_data.users_count,
         "estimated_time": estimated_time,
     }
-
-    return i18n_kwargs

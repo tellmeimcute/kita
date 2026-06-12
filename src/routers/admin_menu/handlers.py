@@ -1,37 +1,32 @@
 
 
-
 import asyncio
-from itertools import batched
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from dishka import FromDishka
-from dishka.integrations.aiogram_dialog import inject
 
 from aiogram import Router
-from aiogram.types import CallbackQuery, Message, MessageOriginChannel
+from aiogram.types import CallbackQuery, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
 from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Button
+from dishka import FromDishka
+from dishka.integrations.aiogram_dialog import inject
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import Config, RuntimeConfig
+from core.exceptions import SQLUserNotFoundError, UserImmuneError
+from core.i18n_translator import Translator
 from core.schemas import IDCommand
 from core.schemas.data import MassMessageData
 from core.schemas.message_payload import MessagePayload
-from core.exceptions import SQLUserNotFoundError, UserImmuneError
-from core.config import RuntimeConfig, Config
-from core.i18n_translator import Translator
-
 from database.dto import UserDTO
 from database.roles import UserRole
 from services import NotifierService, UserService
+from ui.state_groups import AdminMenuSG
+from usecases.broadcast import BroadcastUseCase
 from usecases.change_role import ChangeRoleUseCase
 
-from ui.state_groups import AdminMenuSG
-
-
 router = Router(name="admin_menu")
+
 
 @inject
 async def select_user(
@@ -53,6 +48,7 @@ async def select_user(
     manager.dialog_data.update({"target_dto": target_dto.model_dump()})
 
     await manager.switch_to(AdminMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
+
 
 @inject
 async def user_change_role(
@@ -89,6 +85,7 @@ async def user_change_role(
     except UserImmuneError:
         await callback.answer("UserImmuneError")
 
+
 @inject
 async def post_banner(
     callback: CallbackQuery,
@@ -115,65 +112,29 @@ async def prepare_broadcast(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
+    broadcast: FromDishka[BroadcastUseCase],
+    session: FromDishka[AsyncSession],
 ):
     album = manager.middleware_data.get("album")
     if not album:
         album = (message,)
 
-    user_service: UserService = manager.middleware_data.get("user_service")
-    session: AsyncSession = manager.middleware_data.get("session")
-
     async with session.begin():
-        active = await user_service.get_active()
-        
-    is_forwarded = True if isinstance(message.forward_origin, MessageOriginChannel) else False
-    broadcast_data = MassMessageData(
-        users=active,
-        is_forwarded=is_forwarded,
-        source_chat_id=message.chat.id,
-        source_message_ids=[m.message_id for m in album],
-    )
+        broadcast_data = await broadcast.prepare(message, album)
 
     manager.dialog_data.update({"broadcast_data": broadcast_data.model_dump()})
 
     await manager.switch_to(AdminMenuSG.broadcast_confirm, show_mode=ShowMode.DELETE_AND_SEND)
 
-async def broadcast_task(
-    notifier: NotifierService,
-    data: MassMessageData,
-    status_message: Message,
-):
-    send_func = notifier.forward_messages if data.is_forwarded else notifier.copy_messages
-    for chunk in batched(data.users, notifier.chunk_size):
-        tasks = [
-            send_func(user_dto, data.source_message_ids, data.source_chat_id) for user_dto in chunk
-        ]
-        result = await asyncio.gather(*tasks)
-        success = [r for r in result if r]
-        data = data.model_copy(
-            update={
-                "progress": data.progress + len(result),
-                "success": data.success + len(success),
-                "failure": data.failure + len(result) - len(success),
-            }
-        )
-
-        if data.progress % 10 == 0 or data.progress == len(data.users):
-            i18n_kwargs = data.model_dump()
-            i18n_kwargs["status"] = notifier.translator.get_translated_text(
-                i18n_key="completed" if data.status else "in_process"
-            )
-            new_status = notifier.translator.get_i18n_text("broadcast_status_text", i18n_kwargs)
-            await notifier.edit_message_text(status_message, new_status)
-    
-        await asyncio.sleep(notifier.chunk_delay)
 
 @inject
 async def execute_broadcast(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    broadcast: FromDishka[BroadcastUseCase],
     notifier: FromDishka[NotifierService],
+    translator: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
@@ -181,12 +142,12 @@ async def execute_broadcast(
     broadcast_data = MassMessageData.model_validate(raw_data)
 
     i18n_kwargs = broadcast_data.model_dump()
-    i18n_kwargs["status"] = notifier.translator.get_translated_text(
+    i18n_kwargs["status"] = translator.get_translated_text(
         i18n_key="completed" if broadcast_data.status else "in_process"
     )
     payload = MessagePayload(i18n_key="broadcast_status_text", i18n_kwargs=i18n_kwargs)
     status_message = await notifier.notify_user(user_dto, payload)
-    asyncio.create_task(broadcast_task(notifier, broadcast_data, status_message))
+    asyncio.create_task(broadcast.execute(broadcast_data, status_message))
 
     await manager.switch_to(AdminMenuSG.main, show_mode=ShowMode.DELETE_AND_SEND)
 
