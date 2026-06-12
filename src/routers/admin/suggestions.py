@@ -17,9 +17,9 @@ from core.schemas.data import SuggestionViewerData
 from core.suggestion_queue import SuggestionQueueManager
 
 from services import NotifierService, SuggestionService, UserService
-from services.suggestion_moderation import SuggestionModerationService
+from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 
-from database.dto import SuggestionFullDTO, UserDTO
+from database.dto import UserDTO
 from database.roles import UserRole
 
 from routers.state import SuggestionViewerState
@@ -61,23 +61,17 @@ async def solo_suggestion_verdict(
     user_dto: UserDTO,
     session: AsyncSession,
     state: FSMContext,
-    suggestion_service: FromDishka[SuggestionService],
-    renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
-    moderation: FromDishka[SuggestionModerationService],
+    moderation_usecase: FromDishka[ModerateSuggestionUseCase],
+    renderer: FromDishka[SuggestionRenderer],
     verdict: bool,
 ):
-    suggestion_dto: SuggestionFullDTO = queue_manager.data.suggestion_dto
-
-    suggestion_dto.accepted = verdict
+    suggestion_dto = queue_manager.data.suggestion_dto
     async with session.begin():
-        await suggestion_service.update(suggestion_dto)
+        await moderation_usecase.execute(suggestion_dto, verdict, force_update=True)
 
     await renderer.verdict_rewrite(user_dto)
     await state.clear()
-
-    if suggestion_dto.accepted:
-        await moderation.process_accepted(suggestion_dto)
 
 
 @router.message(I18nTextFilter("command_enter_viewer"))
@@ -104,25 +98,20 @@ async def viewer_apply_verdict(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    suggestion_service: FromDishka[SuggestionService],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
-    moderation: FromDishka[SuggestionModerationService],
+    moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     dialog_manager: DialogManager,
     verdict: bool,
 ):
-    suggestion_dto = await queue_manager.get_updated_dto()
-    
-    if suggestion_dto.accepted is None:
-        suggestion_dto.accepted = verdict
-        async with session.begin():
-            await suggestion_service.update(suggestion_dto)
+    async with session.begin():
+        updated_dto = await queue_manager.get_updated_dto()
+        result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict)
 
-        if suggestion_dto.accepted:
-            await moderation.process_accepted(suggestion_dto)
-    else:
-        await renderer.verdict_exists(user_dto, suggestion_dto)
+    if result.verdict_exists:
+        await renderer.verdict_exists(user_dto, result.suggestion_dto)
 
+    # ПОЛУЧАЕМ НОВУЮ ПРЕДЛОЖКУ
     if new_suggestion := await queue_manager.pop_next():
         await renderer.suggestion(user_dto, new_suggestion)
     else:

@@ -12,6 +12,7 @@ from di.redis import RedisProvider
 from di.suggestion_viewer import SuggestionViewerProvider
 from di.middleware import MiddlewareProvider
 from di.bot import BotProvider
+from di.usecases import UsecasesProvider
 
 from core.config import RuntimeConfig
 
@@ -33,6 +34,7 @@ async def main():
         SuggestionViewerProvider(),
         MiddlewareProvider(),
         AiogramProvider(),
+        UsecasesProvider(),
     )
 
     bot = await container.get(Bot)

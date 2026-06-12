@@ -10,13 +10,10 @@ from core.schemas import SuggestionViewerData
 from core.suggestion_queue import SuggestionQueueManager
 
 from services.suggestion import SuggestionService
-from services.suggestion_moderation import SuggestionModerationService
-
 from ui.suggestion_renderer import SuggestionRenderer
 
 
 class SuggestionViewerProvider(Provider):
-    suggestion_moderation = provide(SuggestionModerationService, scope=Scope.APP)
     suggestion_renderer = provide(SuggestionRenderer, scope=Scope.APP)
 
     @provide(scope=Scope.REQUEST)
