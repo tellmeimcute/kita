@@ -142,7 +142,6 @@ class SuggestionService:
 
         self.session.add_all(to_add)
         await self.session.flush(to_add)
-        await self.session.commit()
 
         media_dtos = MediaDTO.from_model_list(media_list)
         suggestion_base_dto = SuggestionBaseDTO.model_validate(suggestion_orm)

@@ -23,7 +23,7 @@ class SuggestionModerationService:
             i18n_kwargs=self.utils.get_i18n_kwargs(suggestion_dto),
         )
 
-        asyncio.gather(
+        await asyncio.gather(
             self.notifier.send(strategy),
             self.notifier.notify_user_i18n(suggestion_dto.author, author_payload)
         )

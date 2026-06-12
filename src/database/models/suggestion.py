@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .abstract_model import AbstractModel
@@ -18,7 +18,7 @@ class Suggestion(AbstractModel, TimestampMixin):
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
     forwarded_from: Mapped[str | None] = mapped_column(nullable=True, default=None)
 
-    author_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), index=True)
+    author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), index=True)
 
     # None если еще не рассмотрено.
     accepted: Mapped[bool | None] = mapped_column(nullable=True, default=None, index=True)

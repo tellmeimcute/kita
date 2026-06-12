@@ -58,14 +58,13 @@ async def on_album_received(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
+    session: FromDishka[AsyncSession],
     suggestion_service: FromDishka[SuggestionService],
     notifier: FromDishka[NotifierService],
     user_service: FromDishka[UserService],
     suggestion_utils: FromDishka[SuggestionUtils],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    session: AsyncSession = manager.middleware_data.get("session")
-
     album = manager.middleware_data.get("album")
 
     if not album:
