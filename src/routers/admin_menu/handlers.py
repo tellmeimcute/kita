@@ -26,8 +26,10 @@ from core.i18n_translator import Translator
 from database.dto import UserDTO
 from database.roles import UserRole
 from services import NotifierService, UserService
+from usecases.change_role import ChangeRoleUseCase
 
 from ui.state_groups import AdminMenuSG
+
 
 router = Router(name="admin_menu")
 
@@ -36,10 +38,9 @@ async def select_user(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
+    session: FromDishka[AsyncSession],
+    user_service: FromDishka[UserService]
 ):
-    user_service: UserService = manager.middleware_data.get("user_service")
-    session: AsyncSession = manager.middleware_data.get("session")
-
     id_command = IDCommand(target_id=message.text)
 
     try:
@@ -58,10 +59,10 @@ async def user_change_role(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    session: FromDishka[AsyncSession],
+    change_role: FromDishka[ChangeRoleUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    user_service: UserService = manager.middleware_data.get("user_service")
-    session: AsyncSession = manager.middleware_data.get("session")
 
     target_dto_raw = manager.dialog_data.get("target_dto")
     target_dto = UserDTO.model_validate(target_dto_raw)
@@ -75,9 +76,12 @@ async def user_change_role(
 
     try:
         async with session.begin():
-            new_target_dto = await user_service.moderate_user(
-                target_dto.user_id, target_role, caller=user_dto
+            new_target_dto = await change_role.execute(
+                target_dto.user_id,
+                target_role,
+                caller=user_dto,
             )
+
         await callback.answer("Success")
         await manager.update(
             {"target_dto": new_target_dto.model_dump()}

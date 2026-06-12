@@ -11,7 +11,7 @@ from database.models import UserAlchemy
 from database.roles import UserRole
 from database.redis.user import UserRedis
 
-from core.exceptions import UserImmuneError, SQLUserNotFoundError
+from core.exceptions import SQLUserNotFoundError
 
 logger = getLogger("kita.user_service")
 
@@ -21,20 +21,15 @@ class UserService:
 
     __slots__ = (
         "session",
-        "admin_id",
         "redis",
         "redis_key",
     )
 
-    def __init__(self, session: AsyncSession, config: Config, redis: Redis):
+    def __init__(self, session: AsyncSession, redis: Redis):
         self.session = session
-        self.admin_id = config.ADMIN_ID
         self.redis = redis
 
         self.redis_key = lambda x: f"user:{x}"
-
-    def is_immune(self, user_id: int):
-        return user_id == self.admin_id
 
     async def create(self, prep_user_dto: UserDTO):
         prep_user_alchemy = UserAlchemy(**prep_user_dto.model_dump())
@@ -100,15 +95,3 @@ class UserService:
 
     async def decline_suggestion(self, user_dto: UserDTO):
         await self.dao.decline_all_suggestions(self.session, user_dto.user_id)
-
-    async def moderate_user(self, target_id: int, target_role: UserRole, caller: UserDTO):
-        if self.is_immune(target_id) or caller.user_id == target_id:
-            raise UserImmuneError()
-        
-        target_dto = await self.get(target_id)
-        await self.set_role(target_dto, target_role)
-
-        if target_role == UserRole.BANNED:
-            await self.decline_suggestion(target_dto)
-
-        return target_dto

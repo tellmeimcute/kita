@@ -25,12 +25,13 @@ class I18nText(Text):
         user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
         additional_data = data.copy()
-        additional_data.pop("dialog_data")
         additional_data.pop("middleware_data")
         additional_data.pop("start_data")
         additional_data.pop("event")
 
+        dialog_data = additional_data.pop("dialog_data")
         i18n_kwargs = {"user_dto": user_dto.model_dump()}
+        i18n_kwargs.update(**dialog_data)
         i18n_kwargs.update(runtime_config.model_dump())
         i18n_kwargs.update(additional_data)
         

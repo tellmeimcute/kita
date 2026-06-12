@@ -16,11 +16,12 @@ from core.schemas import IDCommand
 from core.schemas.data import SuggestionViewerData
 from core.suggestion_queue import SuggestionQueueManager
 
-from services import NotifierService, SuggestionService, UserService
-from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
-
 from database.dto import UserDTO
 from database.roles import UserRole
+
+from services import NotifierService, SuggestionService, UserService
+from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
+from usecases.change_role import ChangeRoleUseCase
 
 from routers.state import SuggestionViewerState
 
@@ -133,18 +134,20 @@ async def ban_suggestion_author(
     session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
-    user_service: UserService,
     notifier: FromDishka[NotifierService],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
+    change_role_usecase: FromDishka[ChangeRoleUseCase],
 ):
 
     target_id = queue_manager.data.suggestion_dto.author_id
     target_role = UserRole.BANNED
 
     async with session.begin():
-        target_dto = await user_service.moderate_user(
-            target_id, target_role, caller=user_dto
+        target_dto = await change_role_usecase.execute(
+            target_id,
+            target_role,
+            caller=user_dto,
         )
 
     payload = MessagePayload(

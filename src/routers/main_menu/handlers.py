@@ -90,10 +90,10 @@ async def prefer_anon_toggle(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    session: FromDishka[AsyncSession],
+    user_service: FromDishka[UserService]
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    user_service: UserService = manager.middleware_data.get("user_service")
-    session: AsyncSession = manager.middleware_data.get("session")
 
     user_dto.prefer_anonymous = not user_dto.prefer_anonymous
     async with session.begin():
