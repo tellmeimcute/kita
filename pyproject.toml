@@ -15,3 +15,13 @@ dependencies = [
     "redis>=7.3.0",
     "sqlalchemy>=2.0.45",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.4.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+asyncio_mode = "auto"
