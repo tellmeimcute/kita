@@ -29,12 +29,10 @@ class BotProvider(Provider):
             yield bot
         
         logger.info("Closing Bot session")
-        await bot.session.close()
 
     @provide(scope=Scope.APP)
     def dp(self, redis: Redis) -> Dispatcher:
         logger.info("Initializing Dispatcher instance")
-        storate = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
-        dp = Dispatcher(storage=storate, name="dispatcher")
-        return dp
+        storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+        return Dispatcher(storage=storage, name="dispatcher")
     

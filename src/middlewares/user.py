@@ -69,7 +69,6 @@ class UserMiddleware(KitaMiddleware):
             name=aiogram_user.full_name,
             language_code=language_code,
             role=role,
-            is_bot_blocked=False,
         )
 
         return prep_user_dto

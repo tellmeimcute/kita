@@ -13,7 +13,7 @@ class BaseRedisRepository(Generic[T]):
     expiry: int = 60
 
     @classmethod
-    async def get(cls, redis: Redis, key: str) -> T:
+    async def get(cls, redis: Redis, key: str) -> T | None:
         raw = await redis.get(key)
         if not raw:
             return None

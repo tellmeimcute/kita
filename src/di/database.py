@@ -29,8 +29,7 @@ class DatabaseProvider(Provider):
     @provide(scope=Scope.APP)
     def get_session_maker(self, engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
         logger.info("Initializing async_sessionmaker instance")
-        session_maker = async_sessionmaker(engine, expire_on_commit=False)
-        return session_maker
+        return async_sessionmaker(engine, expire_on_commit=False)
 
     @provide(scope=Scope.REQUEST)
     async def get_session(self, session_maker: async_sessionmaker[AsyncSession]) -> AsyncIterable[AsyncSession]:

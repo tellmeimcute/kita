@@ -10,7 +10,6 @@ from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
 from database.models import Suggestion, Media
 from database.dao import SuggestionDAO
 from database.redis.userstats import UserStatsRedis
-from database.models import Media, Suggestion
 from database.dto import (
     SUGGESTION_DTOS,
     MediaDTO,
@@ -63,7 +62,7 @@ class SuggestionService:
         stats_row = await self.dao.get_stats_by_user_id(self.session, user_dto.user_id)
         user_stats = UserStats.model_validate(stats_row)
 
-        stats_row = await UserStatsRedis.set(self.redis, key, user_stats)
+        await UserStatsRedis.set(self.redis, key, user_stats)
         return user_stats
 
     async def get(self, suggestion_id: int, solo=False):

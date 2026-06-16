@@ -42,7 +42,6 @@ class SuggestionRenderer:
         return await self.notifier.notify_user(user_dto, payload)
 
     async def empty_queue(self, user_dto: UserDTO):
-        user_dto = user_dto
         payload = MessagePayload(
             i18n_key="no_active_suggestions", reply_markup=ReplyKeyboardRemove()
         )

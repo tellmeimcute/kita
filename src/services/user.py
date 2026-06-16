@@ -4,7 +4,6 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
 
-from core.config import Config
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
 from database.models import UserAlchemy
@@ -52,7 +51,7 @@ class UserService:
         if cached_user:
             return cached_user
 
-        user_alchemy = await self.dao.get_one_or_none_by_id(self.session, user_id)
+        user_alchemy = await self.dao.get_one_or_none_by_user_id(self.session, user_id)
         if not user_alchemy:
             raise SQLUserNotFoundError(target_id=user_id)
 
@@ -70,7 +69,7 @@ class UserService:
         if not changed_data:
             return
 
-        await self.dao.update_by_id(self.session, user_dto.user_id, changed_data)
+        await self.dao.update_by_user_id(self.session, user_dto.user_id, changed_data)
         await UserRedis.delete(
             redis=self.redis,
             key=self.redis_key(user_dto.user_id)

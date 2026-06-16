@@ -12,11 +12,11 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
     model = UserAlchemy
 
     @classmethod
-    async def get_one_or_none_by_id(cls, session: AsyncSession, data_id: int):
+    async def get_one_or_none_by_user_id(cls, session: AsyncSession, data_id: int):
         return await cls.get_one_or_none(session, filters=cls.model.user_id == data_id)
 
     @classmethod
-    async def update_by_id(cls, session: AsyncSession, data_id: int, data: dict):
+    async def update_by_user_id(cls, session: AsyncSession, data_id: int, data: dict):
         stmt = update(cls.model).where(cls.model.user_id == data_id).values(data)
         await session.execute(stmt)
         await session.flush()

@@ -13,9 +13,9 @@ class UserDTO(TrackableDto):
     role: UserRole
     name: str
     language_code: str
-    prefer_anonymous: bool
 
-    is_bot_blocked: bool | None
+    prefer_anonymous: bool = False
+    is_bot_blocked: bool | None = False
 
     def update_from_data(self, user_data: "AiogramUser"):
         new_data = {

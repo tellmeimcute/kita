@@ -43,7 +43,7 @@ async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     i18n_middleware = await container.get(KitaI18nMiddleware)
     i18n_middleware.setup(dp)
 
-    logger.info("Middlewares successfully registered ")
+    logger.info("Middlewares successfully registered")
 
 
 async def register_routers(container: AsyncContainer, dp: Dispatcher):
