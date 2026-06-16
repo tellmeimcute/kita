@@ -1,6 +1,7 @@
 
 
 from pydantic import computed_field
+
 from core.enums import RenderType
 
 from .base import TrackableDto
@@ -16,6 +17,7 @@ class SuggestionBaseDTO(TrackableDto):
     media_group_id: str | None
     forwarded_from: str | None
 
+    anonymous: bool = False
     accepted: bool | None
 
 

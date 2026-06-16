@@ -2,6 +2,8 @@
 import asyncio
 from dataclasses import dataclass
 
+from aiogram.utils.i18n import I18n
+
 from core.config import Config
 from core.suggestion_utils import SuggestionUtils
 from core.schemas.message_payload import MessagePayload
@@ -21,20 +23,19 @@ class ModerateSuggestionUseCase:
         notifier: NotifierService,
         utils: SuggestionUtils,
         suggestion_service: SuggestionService,
+        i18n: I18n,
     ):
         self._suggestion_service = suggestion_service
         self._notifier = notifier
         self._utils = utils
         self._config = config
+        self._i18n = i18n
 
     async def _process_accepted(self, suggestion_dto: SuggestionFullDTO):
         channel_payload = self._utils.payload_factory(suggestion_dto, "channel_post_message")
         strategy = self._notifier.send_strategy_factory(self._config.CHANNEL_ID, channel_payload)
         
-        author_payload = MessagePayload(
-            i18n_key="notify_author_suggestion_status",
-            i18n_kwargs=self._utils.get_i18n_kwargs(suggestion_dto),
-        )
+        author_payload = MessagePayload(i18n_key="notify_author_suggestion_posted")
 
         await asyncio.gather(
             self._notifier.send(strategy),

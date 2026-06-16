@@ -134,7 +134,7 @@ msgstr ""
 msgid "channel_post_message"
 msgstr ""
 
-msgid "notify_author_suggestion_status"
+msgid "notify_author_suggestion_posted"
 msgstr ""
 
 msgid "broadcast_btn"

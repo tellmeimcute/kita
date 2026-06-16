@@ -1,15 +1,13 @@
 
 from logging import getLogger
+
 from aiogram.types import Message, MessageOriginChannel
-from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.schemas.objects import UserStats
 from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
-
-from database.models import Suggestion, Media
+from core.schemas.objects import UserStats
 from database.dao import SuggestionDAO
-from database.redis.userstats import UserStatsRedis
 from database.dto import (
     SUGGESTION_DTOS,
     MediaDTO,
@@ -17,7 +15,8 @@ from database.dto import (
     SuggestionFullDTO,
     UserDTO,
 )
-
+from database.models import Media, Suggestion
+from database.redis.userstats import UserStatsRedis
 
 logger = getLogger("kita.suggestion_service")
 
@@ -27,7 +26,7 @@ class SuggestionService:
 
     __slots__ = (
         "session",
-        'config',
+        "config",
         "redis",
     )
 
@@ -125,6 +124,7 @@ class SuggestionService:
             media_group_id=media_group_id,
             caption=caption,
             forwarded_from=forwarded_from,
+            anonymous=author_dto.prefer_anonymous,
         )
 
         media_list = []

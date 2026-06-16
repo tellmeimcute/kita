@@ -41,11 +41,12 @@ class SuggestionUtils:
 
     def get_i18n_kwargs(self, suggestion_dto: SuggestionFullDTO):
         verdict = self.get_verdict(suggestion_dto)
-        author_plus_origin = self.get_author_plus_origin(suggestion_dto)
 
-        if suggestion_dto.author.prefer_anonymous:
+        if suggestion_dto.anonymous:
             author_string = "Anonymous"
+            author_plus_origin = ""
         else:
+            author_plus_origin = self.get_author_plus_origin(suggestion_dto)
             author_string = (
                 author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
             )
@@ -57,7 +58,7 @@ class SuggestionUtils:
         command = f"{command} {suggestion_dto.id}"
 
         i18n_kwargs = suggestion_dto.model_dump(
-            include={"id", "caption", "accepted", "media_group_id", "forwarded_from", "author"}
+            include={"id", "caption", "accepted", "anonymous", "media_group_id", "forwarded_from", "author"}
         )
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
@@ -71,7 +72,7 @@ class SuggestionUtils:
 
         return i18n_kwargs
 
-    def get_media_group(suggestion_dto: SuggestionFullDTO) -> MediaGroupBuilder:
+    def get_media_group(self, suggestion_dto: SuggestionFullDTO) -> MediaGroupBuilder:
         media_group = MediaGroupBuilder()
 
         for media in suggestion_dto.media:

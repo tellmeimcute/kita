@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, BigInteger
+from sqlalchemy import BigInteger, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .abstract_model import AbstractModel
@@ -20,8 +20,10 @@ class Suggestion(AbstractModel, TimestampMixin):
 
     author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), index=True)
 
+    anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"), nullable=False)
+
     # None если еще не рассмотрено.
     accepted: Mapped[bool | None] = mapped_column(nullable=True, default=None, index=True)
 
     author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")
-    media: Mapped[List["Media"]] = relationship(back_populates="suggestion")
+    media: Mapped[list["Media"]] = relationship(back_populates="suggestion")
