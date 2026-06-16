@@ -4,12 +4,11 @@ from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
 from core.config import RuntimeConfig
-from core.i18n_translator import Translator
 from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
-
-from database.dto import SuggestionFullDTO, SUGGESTION_DTOS
+from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
+from database.dto import SuggestionFullDTO
 
 
 class SuggestionUtils:
@@ -17,7 +16,7 @@ class SuggestionUtils:
         self.runtime_config = runtime_config
         self.translator = translator
 
-    def get_verdict(self, suggestion_dto: SUGGESTION_DTOS):
+    def get_verdict(self, suggestion_dto: SuggestionFullDTO):
         i18n_key = "none_suggestion"
         if suggestion_dto.accepted is not None:
             i18n_key = (
@@ -25,7 +24,7 @@ class SuggestionUtils:
             )
         return self.translator.get_translated_text(i18n_key)
 
-    def get_author_plus_origin(self, suggestion_dto: SUGGESTION_DTOS):
+    def get_author_plus_origin(self, suggestion_dto: SuggestionFullDTO):
         return self.translator.get_i18n_text(
             i18n_key="author_plus_origin",
             i18n_kwargs={
@@ -57,7 +56,9 @@ class SuggestionUtils:
         command = self.translator.get_translated_text("command_open_solo_view")
         command = f"{command} {suggestion_dto.id}"
 
-        i18n_kwargs = suggestion_dto.model_dump()
+        i18n_kwargs = suggestion_dto.model_dump(
+            include={"id", "caption", "accepted", "media_group_id", "forwarded_from", "author"}
+        )
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
             author_string=author_string,
@@ -70,7 +71,7 @@ class SuggestionUtils:
 
         return i18n_kwargs
 
-    def get_media_group(self, suggestion_dto: SuggestionFullDTO) -> MediaGroupBuilder:
+    def get_media_group(suggestion_dto: SuggestionFullDTO) -> MediaGroupBuilder:
         media_group = MediaGroupBuilder()
 
         for media in suggestion_dto.media:
@@ -80,11 +81,11 @@ class SuggestionUtils:
 
     def build_mediagroup_content(self, suggestion_dto: SuggestionFullDTO, i18n_key: str):
         media_group: MediaGroupBuilder = self.get_media_group(suggestion_dto)
-        
+
         i18n_kwargs = self.get_i18n_kwargs(suggestion_dto)
         media_group.caption = self.translator.get_i18n_text(i18n_key, i18n_kwargs)
         return media_group.build()
-    
+
     def payload_factory(
         self,
         suggestion_dto: SuggestionFullDTO,
@@ -92,22 +93,18 @@ class SuggestionUtils:
         kb: ReplyKeyboardMarkup | None = None,
     ):
         render_type = suggestion_dto.render_type
-        i18n_kwargs = self.get_i18n_kwargs(suggestion_dto)
-
-        payload = None
 
         if render_type == RenderType.MESSAGE:
-            payload = MessagePayload(
+            i18n_kwargs = self.get_i18n_kwargs(suggestion_dto)
+            return MessagePayload(
                 i18n_key=i18n_key,
                 i18n_kwargs=i18n_kwargs,
                 suggestion_id=suggestion_dto.id,
                 reply_markup=kb,
             )
-        elif render_type == RenderType.MEDIAGROUP:
+
+        if render_type == RenderType.MEDIAGROUP:
             content = self.build_mediagroup_content(suggestion_dto, i18n_key=i18n_key)
-            payload = MessagePayload(mediagroup=content, suggestion_id=suggestion_dto.id)
+            return MessagePayload(mediagroup=content, suggestion_id=suggestion_dto.id)
 
-        if not payload:
-            raise UnsupportedPayload()
-
-        return payload
+        raise UnsupportedPayload()
