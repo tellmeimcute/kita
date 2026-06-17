@@ -1,4 +1,6 @@
+from unittest.mock import Mock
 import pytest
+
 from usecases.moderate_suggestion import ModerateSuggestionUseCase
 
 
@@ -9,6 +11,7 @@ async def test_accept_suggestion(suggestion_dto, suggestion_service_mock, notifi
         notifier=notifier_mock,
         utils=utils_mock,
         suggestion_service=suggestion_service_mock,
+        i18n=Mock(),
     )
 
     result = await usecase.execute(suggestion_dto, verdict=True)
@@ -25,6 +28,7 @@ async def test_decline_suggestion(suggestion_dto, suggestion_service_mock, notif
         notifier=notifier_mock,
         utils=utils_mock,
         suggestion_service=suggestion_service_mock,
+        i18n=Mock(),
     )
 
     result = await usecase.execute(suggestion_dto, verdict=False)
@@ -43,6 +47,7 @@ async def test_verdict_already_exists(suggestion_dto, suggestion_service_mock, n
         notifier=notifier_mock,
         utils=utils_mock,
         suggestion_service=suggestion_service_mock,
+        i18n=Mock(),
     )
 
     result = await usecase.execute(suggestion_dto, verdict=False)
@@ -61,6 +66,7 @@ async def test_force_update_overwrites_existing_verdict(suggestion_dto, suggesti
         notifier=notifier_mock,
         utils=utils_mock,
         suggestion_service=suggestion_service_mock,
+        i18n=Mock(),
     )
 
     result = await usecase.execute(suggestion_dto, verdict=False, force_update=True)
