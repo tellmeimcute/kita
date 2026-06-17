@@ -5,26 +5,20 @@ from aiogram_dialog import setup_dialogs
 from dishka import AsyncContainer
 
 from middlewares import (
+    AdminMiddleware,
     BanCheckMiddleware,
+    KitaI18nMiddleware,
     MediaGroupMiddleware,
     SessionMiddleware,
     UserMiddleware,
-    AdminMiddleware,
-    KitaI18nMiddleware,
 )
-
-from routers import (
-    admin_suggestion_router,
-)
-
-from routers.errors import router as errors_router
-
-from routers.main_menu.handlers import router as main_menu_router
-from routers.main_menu.dialog import dialog as main_menu_dialog
-
+from routers import admin_suggestion_router
 from routers.admin_menu.dialog import dialog as admin_menu_dialog
 from routers.admin_menu.handlers import router as admin_menu_router
-
+from routers.main_menu.dialog import dialog as main_menu_dialog
+from routers.main_menu.handlers import router as main_menu_router
+from routers.system.chat_member import router as chat_member_router
+from routers.system.errors import router as errors_router
 
 logger = logging.getLogger("kita.startup")
 
@@ -68,11 +62,13 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     setup_dialogs(dp)
     dp.include_routers(
         errors_router,
+        chat_member_router,
         user_routers,
         admin_routers,
     )
 
     logger.info("Routers successfully registered")
+
 
 async def register_all(
     container: AsyncContainer,

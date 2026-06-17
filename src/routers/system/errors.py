@@ -1,27 +1,26 @@
 from logging import getLogger
+
+from aiogram import F, Router, html
+from aiogram.filters.exception import ExceptionTypeFilter
+from aiogram.types import ErrorEvent, Message
+from dishka import FromDishka
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from aiogram import Router, F, html
-from aiogram.types import Message, ErrorEvent
-from aiogram.filters.exception import ExceptionTypeFilter
-
-from dishka import FromDishka
-
-from core.schemas.message_payload import MessagePayload
 from core.exceptions import (
-    SQLUserNotFoundError,
-    SQLSuggestionNotFoundError,
-    UserImmuneError,
     KitaValidationError,
+    SQLSuggestionNotFoundError,
+    SQLUserNotFoundError,
     UnsupportedPayload,
+    UserImmuneError,
 )
-
+from core.schemas.message_payload import MessagePayload
 from services import NotifierService, SuggestionService
 
 router = Router(name="errors")
 
 logger = getLogger(name="kita.errors")
+
 
 @router.error(ExceptionTypeFilter(SQLUserNotFoundError), F.update.message.as_("message"))
 async def user_not_found(
@@ -44,6 +43,7 @@ async def user_not_found(
 
     strategy = notifier.send_strategy_factory(caller_id, payload)
     await notifier.send(strategy)
+
 
 @router.error(ExceptionTypeFilter(UserImmuneError), F.update.message.as_("message"))
 async def user_is_immune(
@@ -94,7 +94,7 @@ async def validation_error(
 ):
     caller_id = message.from_user.id
     e: KitaValidationError | ValidationError = event.exception
-    
+
     logger.error(e, exc_info=True)
     is_kita_exc = isinstance(e, KitaValidationError)
 

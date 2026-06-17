@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +23,8 @@ class UserAlchemyDAO(BaseDao[UserAlchemy]):
 
     @classmethod
     async def get_active(cls, session: AsyncSession) -> Sequence[UserAlchemy]:
-        return await cls.get(session, UserAlchemy.role != UserRole.BANNED)
+        filters = (UserAlchemy.role != UserRole.BANNED) & UserAlchemy.is_bot_blocked.is_not(True)
+        return await cls.get(session, filters)
 
     @classmethod
     async def get_admins(cls, session: AsyncSession) -> Sequence[UserAlchemy]:

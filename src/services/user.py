@@ -1,16 +1,14 @@
-
 from logging import getLogger
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.exceptions import SQLUserNotFoundError
 from database.dao import UserAlchemyDAO
 from database.dto import UserDTO
 from database.models import UserAlchemy
-from database.roles import UserRole
 from database.redis.user import UserRedis
-
-from core.exceptions import SQLUserNotFoundError
+from database.roles import UserRole
 
 logger = getLogger("kita.user_service")
 
@@ -65,15 +63,15 @@ class UserService:
 
         return user_dto
 
+    async def update_by_user_id(self, user_id: int, data: dict):
+        await self.dao.update_by_user_id(self.session, user_id, data)
+        await UserRedis.delete(redis=self.redis, key=self.redis_key(user_id))
+
     async def update_from_data(self, user_dto: UserDTO, changed_data: dict):
         if not changed_data:
             return
 
-        await self.dao.update_by_user_id(self.session, user_dto.user_id, changed_data)
-        await UserRedis.delete(
-            redis=self.redis,
-            key=self.redis_key(user_dto.user_id)
-        )
+        await self.update_by_user_id(user_dto.user_id, changed_data)
 
         logger.info(
             "Update database info for user %s. New data: %s", user_dto.user_id, changed_data
