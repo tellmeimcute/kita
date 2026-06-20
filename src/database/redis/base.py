@@ -20,7 +20,7 @@ class BaseRedisRepository(Generic[T]):
         try:
             return cls.model.model_validate_json(raw)
         except Exception as e:
-            logger.error("Fail to get user from cache: %s", e, exc_info=True)
+            logger.error("Fail to get key %s from cache: %s", key, e, exc_info=True)
             await cls.delete(redis, key)
 
     @classmethod
