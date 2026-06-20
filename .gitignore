@@ -13,8 +13,9 @@ wheels/
 # sqlite db
 *.db
 
-# ruff 
+# cache 
 .ruff_cache
+.pytest_cache
 
 # compiled locales
 *.mo
