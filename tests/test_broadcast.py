@@ -5,7 +5,7 @@ from aiogram.types import Message
 
 from core.schemas.data import MassMessageData
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 from usecases.broadcast import BroadcastUseCase
 
 

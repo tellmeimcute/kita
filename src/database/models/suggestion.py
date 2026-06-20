@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, ForeignKey, text
+from sqlalchemy import BigInteger, ForeignKey, Enum, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from database.enums import SuggestionStatus
 
 from .abstract_model import AbstractModel
 from .timestamp import TimestampMixin
@@ -22,8 +24,17 @@ class Suggestion(AbstractModel, TimestampMixin):
 
     anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"), nullable=False)
 
-    # None если еще не рассмотрено.
-    accepted: Mapped[bool | None] = mapped_column(nullable=True, default=None, index=True)
+    status: Mapped[SuggestionStatus] = mapped_column(
+        Enum(
+            SuggestionStatus,
+            name="suggestion_status",
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        default=SuggestionStatus.PENDING,
+        server_default=SuggestionStatus.PENDING.value,
+        index=True,
+    )
 
     author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")
     media: Mapped[list["Media"]] = relationship(back_populates="suggestion")

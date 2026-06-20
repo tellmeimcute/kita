@@ -19,7 +19,7 @@ from core.schemas import IDCommand
 from core.schemas.data import MassMessageData
 from core.schemas.message_payload import MessagePayload
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 from services import NotifierService, UserService
 from ui.state_groups import AdminMenuSG
 from usecases.broadcast import BroadcastUseCase

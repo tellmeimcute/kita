@@ -5,7 +5,7 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import Whenable
 
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 
 
 def role_condition(

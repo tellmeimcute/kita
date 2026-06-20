@@ -4,7 +4,7 @@ from aiogram_dialog.widgets.style import Style
 from aiogram_dialog.widgets.kbd import SwitchTo, Row, Button, Start
 from aiogram_dialog.widgets.input import MessageInput
 
-from database.roles import UserRole
+from database.enums import UserRole
 from ui.widgets.i18n_text import I18nText
 from ui.state_groups import AdminMenuSG, UserMenuSG
 

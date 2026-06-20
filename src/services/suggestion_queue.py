@@ -27,9 +27,9 @@ class SuggestionQueueManager:
 
     async def get_updated_dto(self) -> SuggestionFullDTO:
         suggestion_dto = self.data.suggestion_dto
-        updated_dto = await self.suggestion_service.get(suggestion_dto.id, solo=True)
+        updated_dto = await self.suggestion_service.get(suggestion_dto.id)
 
-        self.data.suggestion_dto.accepted = updated_dto.accepted
+        self.data.suggestion_dto.status = updated_dto.status
         return self.data.suggestion_dto
 
     async def pop_next(self, dump_into_state=True) -> SuggestionFullDTO | None:

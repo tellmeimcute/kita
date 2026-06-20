@@ -1,6 +1,6 @@
 import pytest
 from core.exceptions import UserImmuneError
-from database.roles import UserRole
+from database.enums import UserRole
 from usecases.change_role import ChangeRoleUseCase
 
 

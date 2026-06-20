@@ -4,7 +4,7 @@ import pytest
 
 from database.dto import UserDTO
 from database.dto.suggestion import SuggestionFullDTO
-from database.roles import UserRole
+from database.enums import UserRole, SuggestionStatus
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def suggestion_dto(admin_dto):
         caption="test suggestion",
         media_group_id=None,
         forwarded_from=None,
-        accepted=None,
+        status=SuggestionStatus.PENDING,
     )
 
 

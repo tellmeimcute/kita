@@ -1,6 +1,6 @@
 
 from typing import TYPE_CHECKING
-from database.roles import UserRole
+from database.enums import UserRole
 from .base import TrackableDto
 
 if TYPE_CHECKING:

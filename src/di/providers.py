@@ -5,22 +5,30 @@ from dishka.integrations.aiogram import AiogramMiddlewareData
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 
-from services.user import UserService
-from services.suggestion import SuggestionService
-from services.notifier import NotifierService
-
 from core.i18n_translator import Translator
 from core.suggestion_utils import SuggestionUtils
 
+from services.user import UserService
+from services.suggestion import SuggestionService
+from services.notifier import NotifierService
+from services.message_parser import MessageParser
+
+from database.repository import SuggestionRepository, UserRepository, MediaRepository
+
 
 class ServicesProvider(Provider):
+    notifier_service = provide(NotifierService, scope=Scope.APP)
     user_service = provide(UserService, scope=Scope.REQUEST)
     suggestion_service = provide(SuggestionService, scope=Scope.REQUEST)
-    notifier_service = provide(NotifierService, scope=Scope.APP)
+    
+    suggestion_repo = provide(SuggestionRepository, scope=Scope.REQUEST)
+    user_repo = provide(UserRepository, scope=Scope.REQUEST)
+    media_repo = provide(MediaRepository, scope=Scope.REQUEST)
 
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
     suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
+    message_parser = provide(MessageParser, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     def i18n(self) -> I18n:

@@ -6,7 +6,7 @@ from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.schemas.data import MassMessageData
-from database.dao import MediaDAO, SuggestionDAO, UserAlchemyDAO
+from database.repository import SuggestionRepository, UserRepository, MediaRepository
 from usecases.broadcast import BroadcastUseCase
 
 
@@ -14,11 +14,14 @@ from usecases.broadcast import BroadcastUseCase
 async def get_app_stats(
     dialog_manager: DialogManager,
     session: FromDishka[AsyncSession],
+    s_repo: FromDishka[SuggestionRepository],
+    u_repo: FromDishka[UserRepository],
+    m_repo: FromDishka[MediaRepository],
     **kwargs
 ):
-    suggestions_count = await SuggestionDAO.count(session)
-    media_count = await MediaDAO.count(session)
-    user_stats = await UserAlchemyDAO.get_users_stats(session)
+    user_stats = await u_repo.user_stats()
+    suggestions_count = await s_repo.count()
+    media_count = await m_repo.count()
 
     i18n_kwargs = user_stats._asdict()
     i18n_kwargs.update(suggestions=suggestions_count, medias=media_count)

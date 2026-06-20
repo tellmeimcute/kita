@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import BigInteger, Enum, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.roles import UserRole
+from database.enums import UserRole
 
 from .abstract_model import AbstractModel
 from .timestamp import TimestampMixin

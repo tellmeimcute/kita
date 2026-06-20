@@ -9,6 +9,7 @@ from core.suggestion_utils import SuggestionUtils
 from core.schemas.message_payload import MessagePayload
 
 from database.dto import SuggestionFullDTO
+from database.enums import SuggestionStatus as Status
 from services import NotifierService, SuggestionService
 
 @dataclass
@@ -48,10 +49,15 @@ class ModerateSuggestionUseCase:
         verdict: bool,
         force_update: bool = False,
     ) -> ModerationResult:
-        if suggestion_dto.accepted is not None and not force_update:
+        
+        if suggestion_dto.status != Status.PENDING and not force_update:
             return ModerationResult(suggestion_dto, True)
 
-        suggestion_dto.accepted = verdict
+        suggestion_dto.status = (
+            Status.ACCEPTED 
+            if verdict else Status.DECLINED
+        )
+
         await self._suggestion_service.update(suggestion_dto)
 
         if verdict:

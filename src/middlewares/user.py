@@ -13,7 +13,7 @@ from core.consts import DISHKA_CONTAINER_KEY
 from core.exceptions import SQLUserNotFoundError
 
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 from services.user import UserService
 
 from .base import KitaMiddleware
@@ -62,7 +62,7 @@ class UserMiddleware(KitaMiddleware):
         if user_dto.is_bot_blocked:
             user_dto.is_bot_blocked = False
         if changed_data := user_dto.prepare_changed_data():
-            await user_service.update_from_data(user_dto, changed_data)
+            await user_service.update_by_user_id(user_dto.user_id, **changed_data)
         return user_dto
 
     def dto_from_aiogram(self, aiogram_user: AiogramUser) -> UserDTO:

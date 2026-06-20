@@ -8,8 +8,9 @@ from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
-from database.dto import SuggestionFullDTO
 
+from database.dto import SuggestionFullDTO
+from database.enums import SuggestionStatus
 
 class SuggestionUtils:
     def __init__(self, runtime_config: RuntimeConfig, translator: Translator):
@@ -18,17 +19,22 @@ class SuggestionUtils:
 
     def get_verdict(self, suggestion_dto: SuggestionFullDTO):
         i18n_key = "none_suggestion"
-        if suggestion_dto.accepted is not None:
+        if suggestion_dto.status != SuggestionStatus.PENDING:
+            is_accepted = suggestion_dto.status == SuggestionStatus.ACCEPTED
             i18n_key = (
-                "bool_suggestion_true" if suggestion_dto.accepted else "bool_suggestion_false"
+                "bool_suggestion_true" if is_accepted else "bool_suggestion_false"
             )
         return self.translator.get_translated_text(i18n_key)
 
     def get_author_plus_origin(self, suggestion_dto: SuggestionFullDTO):
+        author = suggestion_dto.author
+        is_anon = suggestion_dto.anonymous
+        author_name = "Anonymous" if is_anon else author.name
+
         return self.translator.get_i18n_text(
             i18n_key="author_plus_origin",
             i18n_kwargs={
-                "author_name": suggestion_dto.author.name,
+                "author_name": author_name,
                 "forwarded_from": suggestion_dto.forwarded_from,
             },
         )
@@ -42,14 +48,10 @@ class SuggestionUtils:
     def get_i18n_kwargs(self, suggestion_dto: SuggestionFullDTO):
         verdict = self.get_verdict(suggestion_dto)
 
-        if suggestion_dto.anonymous:
-            author_string = "Anonymous"
-            author_plus_origin = ""
-        else:
-            author_plus_origin = self.get_author_plus_origin(suggestion_dto)
-            author_string = (
-                author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
-            )
+        author_plus_origin = self.get_author_plus_origin(suggestion_dto)
+        author_string = (
+            author_plus_origin if suggestion_dto.forwarded_from else suggestion_dto.author.name
+        )
 
         caption = suggestion_dto.caption if suggestion_dto.caption else ""
         admin_caption = self.admin_original_caption(caption) if suggestion_dto.caption else ""
@@ -58,7 +60,7 @@ class SuggestionUtils:
         command = f"{command} {suggestion_dto.id}"
 
         i18n_kwargs = suggestion_dto.model_dump(
-            include={"id", "caption", "accepted", "anonymous", "media_group_id", "forwarded_from", "author"}
+            include={"id", "caption", "status", "anonymous", "media_group_id", "forwarded_from", "author"}
         )
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,

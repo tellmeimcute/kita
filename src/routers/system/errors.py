@@ -15,6 +15,7 @@ from core.exceptions import (
     UserImmuneError,
 )
 from core.schemas.message_payload import MessagePayload
+from database.enums import SuggestionStatus
 from services import NotifierService, SuggestionService
 
 router = Router(name="errors")
@@ -121,11 +122,10 @@ async def payload_error(
 
     logger.error(e, exc_info=True)
 
-    if e.payload.suggestion_id:
+    suggestion_id = e.payload.suggestion_id
+    if suggestion_id:
         async with session.begin():
-            await suggestion_service.dao.update_by_id(
-                session, e.payload.suggestion_id, {"accepted": False}
-            )
+            await suggestion_service.update_by_id(suggestion_id, status=SuggestionStatus.DECLINED)
 
     payload = MessagePayload(
         i18n_key="command_syntax_error",

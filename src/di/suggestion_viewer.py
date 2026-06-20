@@ -7,8 +7,7 @@ from dishka.integrations.aiogram import AiogramMiddlewareData
 from aiogram.fsm.context import FSMContext
 
 from core.schemas import SuggestionViewerData
-from core.suggestion_queue import SuggestionQueueManager
-
+from services.suggestion_queue import SuggestionQueueManager
 from services.suggestion import SuggestionService
 from ui.suggestion_renderer import SuggestionRenderer
 

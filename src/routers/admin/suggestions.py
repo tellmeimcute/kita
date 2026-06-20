@@ -14,12 +14,12 @@ from core.filters import I18nTextFilter, TextArgsFilter
 from core.schemas.message_payload import MessagePayload
 from core.schemas import IDCommand
 from core.schemas.data import SuggestionViewerData
-from core.suggestion_queue import SuggestionQueueManager
 
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 
-from services import NotifierService, SuggestionService, UserService
+from services import NotifierService, SuggestionService
+from services.suggestion_queue import SuggestionQueueManager
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 from usecases.change_role import ChangeRoleUseCase
 

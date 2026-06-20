@@ -5,7 +5,7 @@ from core.config import Config
 from core.exceptions import UserImmuneError
 
 from database.dto import UserDTO
-from database.roles import UserRole
+from database.enums import UserRole
 
 from services import UserService
 
@@ -32,7 +32,8 @@ class ChangeRoleUseCase:
             raise UserImmuneError()
 
         target_dto = await self._user_service.get(target_id)
-        await self._user_service.set_role(target_dto, target_role)
+        target_dto.role = target_role
+        await self._user_service.update(target_dto)
 
         if target_role == UserRole.BANNED:
             await self._user_service.decline_suggestion(target_dto)

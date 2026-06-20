@@ -8,9 +8,8 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.i18n_translator import Translator
-from core.suggestion_queue import SuggestionQueueManager
 from database.dto import UserDTO
-
+from services.suggestion_queue import SuggestionQueueManager
 from routers.state import SuggestionViewerState
 from ui.suggestion_renderer import SuggestionRenderer
 
