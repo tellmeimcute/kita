@@ -13,7 +13,7 @@ from usecases.broadcast import BroadcastUseCase
 @inject
 async def get_app_stats(
     dialog_manager: DialogManager,
-    session: AsyncSession,
+    session: FromDishka[AsyncSession],
     **kwargs
 ):
     suggestions_count = await SuggestionDAO.count(session)

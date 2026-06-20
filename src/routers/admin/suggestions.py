@@ -36,8 +36,8 @@ logger = getLogger("kita.admin_suggestions")
 @router.message(TextArgsFilter("command_open_solo_view", IDCommand))
 async def solo_suggestion(
     message: Message,
-    session: AsyncSession,
     user_dto: UserDTO,
+    session: FromDishka[AsyncSession],
     suggestion_service: FromDishka[SuggestionService],
     renderer: FromDishka[SuggestionRenderer],
     state: FSMContext,
@@ -60,8 +60,8 @@ async def solo_suggestion(
 async def solo_suggestion_verdict(
     message: Message,
     user_dto: UserDTO,
-    session: AsyncSession,
     state: FSMContext,
+    session: FromDishka[AsyncSession],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     renderer: FromDishka[SuggestionRenderer],
@@ -96,9 +96,9 @@ async def enter_suggestion_viewer(
 @router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
 async def viewer_apply_verdict(
     message: Message,
-    session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
+    session: FromDishka[AsyncSession],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
@@ -131,9 +131,9 @@ VIEWER_BAN_FILTER = I18nTextFilter("ban_btn")
 @router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(
     message: Message,
-    session: AsyncSession,
     state: FSMContext,
     user_dto: UserDTO,
+    session: FromDishka[AsyncSession],
     notifier: FromDishka[NotifierService],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
@@ -158,10 +158,11 @@ async def ban_suggestion_author(
 
     #
     current_state = await state.get_state()
-    if current_state != "SuggestionViewerState:in_solo_view":
+    if current_state != SuggestionViewerState.in_solo_view.state:
         queue_manager.data.suggestion_dtos = None
         if new_suggestion := await queue_manager.pop_next():
             return await renderer.suggestion(user_dto, new_suggestion)
         await renderer.empty_queue(user_dto)
             
     await state.clear()
+    

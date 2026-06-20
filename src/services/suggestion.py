@@ -28,11 +28,14 @@ class SuggestionService:
         "session",
         "config",
         "redis",
+        "redis_key",
     )
 
     def __init__(self, session: AsyncSession, redis: Redis):
         self.session = session
         self.redis = redis
+
+        self.redis_key = lambda x: f"user_stats:{x}"
 
     def _parse_media_info(self, message: Message) -> tuple[str, str] | None:
         if message.video:
@@ -52,7 +55,7 @@ class SuggestionService:
         return None
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        key = f"user_stats:{user_dto.user_id}"
+        key = self.redis_key(user_dto.user_id)
 
         stats_row = await UserStatsRedis.get(self.redis, key)
         if stats_row:

@@ -32,13 +32,13 @@ class UserMiddleware(KitaMiddleware):
         event: Message | CallbackQuery,
         data: dict[str, Any],
     ) -> Any:
-        session: AsyncSession = data.get("session")
+        container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
+        session: AsyncSession = await container.get(AsyncSession)
 
         if not session or not event.from_user:
             logger.warning("No user in event. Stop")
             return None
 
-        container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
         user_service: UserService = await container.get(UserService)
 
         user_tg = event.from_user

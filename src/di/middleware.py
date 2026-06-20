@@ -7,14 +7,12 @@ from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
     MediaGroupMiddleware,
-    SessionMiddleware,
     UserMiddleware,
     KitaI18nMiddleware,
     RateLimitMiddleware,
 )
 
 class MiddlewareProvider(Provider):
-    session_middleware = provide(SessionMiddleware, scope=Scope.APP)
     user_middleware = provide(UserMiddleware, scope=Scope.APP)
     bancheck_middleware = provide(BanCheckMiddleware, scope=Scope.APP)
     admin_middleware = provide(AdminMiddleware, scope=Scope.APP)

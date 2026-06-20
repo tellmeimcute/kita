@@ -9,7 +9,6 @@ from middlewares import (
     BanCheckMiddleware,
     KitaI18nMiddleware,
     MediaGroupMiddleware,
-    SessionMiddleware,
     UserMiddleware,
     RateLimitMiddleware,
 )
@@ -25,14 +24,12 @@ logger = logging.getLogger("kita.startup")
 
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
-    session_middleware = await container.get(SessionMiddleware)
     user_middleware = await container.get(UserMiddleware)
     bancheck_middleware = await container.get(BanCheckMiddleware)
     i18n_middleware = await container.get(KitaI18nMiddleware)
     media_group_middleware = await container.get(MediaGroupMiddleware)
     rate_limit_middleware = await container.get(RateLimitMiddleware)
 
-    session_middleware.setup(dp)
     user_middleware.setup(dp)
     i18n_middleware.setup(dp)
     bancheck_middleware.setup(dp)

@@ -37,7 +37,7 @@ class TextArgsFilter(Filter):
 
             args = raw_text[len(expected) :].strip().split()
             command_text = raw_text[: len(expected)]
-        except:
+        except Exception:
             return False
 
         if command_text != expected:
@@ -47,7 +47,7 @@ class TextArgsFilter(Filter):
             field_names = self.schema.model_fields.keys()
             data = dict(zip(field_names, args))
             cmd_data = self.schema(**data)
-        except:
+        except Exception:
             return False
 
         self.return_data.update({"command": cmd_data})
