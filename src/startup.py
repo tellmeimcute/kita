@@ -11,6 +11,7 @@ from middlewares import (
     MediaGroupMiddleware,
     SessionMiddleware,
     UserMiddleware,
+    RateLimitMiddleware,
 )
 from routers import admin_suggestion_router
 from routers.admin_menu.dialog import dialog as admin_menu_dialog
@@ -27,17 +28,18 @@ async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     session_middleware = await container.get(SessionMiddleware)
     user_middleware = await container.get(UserMiddleware)
     bancheck_middleware = await container.get(BanCheckMiddleware)
+    i18n_middleware = await container.get(KitaI18nMiddleware)
     media_group_middleware = await container.get(MediaGroupMiddleware)
+    rate_limit_middleware = await container.get(RateLimitMiddleware)
 
     session_middleware.setup(dp)
     user_middleware.setup(dp)
+    i18n_middleware.setup(dp)
     bancheck_middleware.setup(dp)
     media_group_middleware.setup(dp)
+    rate_limit_middleware.setup(dp)
 
-    i18n_middleware = await container.get(KitaI18nMiddleware)
-    i18n_middleware.setup(dp)
-
-    logger.info("Middlewares successfully registered")
+    logger.info("Dispatcher Middlewares successfully registered")
 
 
 async def register_routers(container: AsyncContainer, dp: Dispatcher):

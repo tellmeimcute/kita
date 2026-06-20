@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import Config
 from core.consts import DISHKA_CONTAINER_KEY
 from core.exceptions import SQLUserNotFoundError
+
 from database.dto import UserDTO
 from database.roles import UserRole
 from services.user import UserService
@@ -41,14 +42,14 @@ class UserMiddleware(KitaMiddleware):
         user_service: UserService = await container.get(UserService)
 
         user_tg = event.from_user
-
         async with session.begin():
             try:
                 user_dto = await self._resolve_user(user_service, user_tg)
             except SQLUserNotFoundError:
                 user_dto = await user_service.create(self.dto_from_aiogram(user_tg))
 
-        data.update(user_dto=user_dto, user_service=user_service)
+        data.update(user_dto=user_dto)
+
         return await handler(event, data)
 
     async def _resolve_user(

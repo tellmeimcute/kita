@@ -34,11 +34,10 @@ async def on_language_selected(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    user_service: FromDishka[UserService],
+    session: FromDishka[AsyncSession],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    user_service: UserService = manager.middleware_data.get("user_service")
-    session: AsyncSession = manager.middleware_data.get("session")
-
     i18n: I18n = manager.middleware_data.get("i18n")
 
     if user_dto.language_code == button.widget_id:

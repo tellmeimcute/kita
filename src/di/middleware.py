@@ -10,6 +10,7 @@ from middlewares import (
     SessionMiddleware,
     UserMiddleware,
     KitaI18nMiddleware,
+    RateLimitMiddleware,
 )
 
 class MiddlewareProvider(Provider):
@@ -17,6 +18,7 @@ class MiddlewareProvider(Provider):
     user_middleware = provide(UserMiddleware, scope=Scope.APP)
     bancheck_middleware = provide(BanCheckMiddleware, scope=Scope.APP)
     admin_middleware = provide(AdminMiddleware, scope=Scope.APP)
+    rate_limit_middleware = provide(RateLimitMiddleware, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
     async def kita_i18n_middleware(self, i18n: I18n) -> KitaI18nMiddleware:

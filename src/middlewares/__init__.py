@@ -4,6 +4,7 @@ from .media_group import MediaGroupMiddleware
 from .session import SessionMiddleware
 from .user import UserMiddleware
 from .i18n import KitaI18nMiddleware
+from .rate_limit import RateLimitMiddleware
 
 __all__ = (
     "SessionMiddleware",
@@ -12,4 +13,5 @@ __all__ = (
     "AdminMiddleware",
     "BanCheckMiddleware",
     "KitaI18nMiddleware",
+    "RateLimitMiddleware",
 )

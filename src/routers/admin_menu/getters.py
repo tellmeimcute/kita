@@ -11,9 +11,11 @@ from usecases.broadcast import BroadcastUseCase
 
 
 @inject
-async def get_app_stats(dialog_manager: DialogManager, **kwargs):
-    session: AsyncSession = dialog_manager.middleware_data.get("session")
-
+async def get_app_stats(
+    dialog_manager: DialogManager,
+    session: AsyncSession,
+    **kwargs
+):
     suggestions_count = await SuggestionDAO.count(session)
     media_count = await MediaDAO.count(session)
     user_stats = await UserAlchemyDAO.get_users_stats(session)

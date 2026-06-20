@@ -11,6 +11,7 @@ from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+
 from core.config import Config
 
 logger = getLogger("kita.providers")
@@ -35,4 +36,3 @@ class BotProvider(Provider):
         logger.info("Initializing Dispatcher instance")
         storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
         return Dispatcher(storage=storage, name="dispatcher")
-    

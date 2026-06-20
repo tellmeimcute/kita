@@ -219,7 +219,9 @@ msgid "settings_menu_btn"
 msgstr "⚙ Settings"
 
 msgid "settings_menu_text"
-msgstr "⚙ <b>Settings menu</b>\n\n"
+msgstr ""
+"⚙ <b>Settings menu</b>\n"
+"\n"
 "If anonymity is enabled, your nickname will not be shown in the channel"
 
 msgid "locale_settings_btn"
@@ -266,6 +268,9 @@ msgstr ""
 "<b>User</b> @{target_dto[username]}\n"
 "<b>Role</b> {target_dto[role]}\n"
 "<b>ID</b> <code>{target_dto[user_id]}</code>"
+
+msgid "rate_limited_warning"
+msgstr "RateLimited. Wait a few seconds 😴"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
