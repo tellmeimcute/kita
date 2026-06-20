@@ -65,10 +65,9 @@ class NotifierService:
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
         """use locale from i18n middleware"""
+        
         if user_dto.is_bot_blocked:
-            return logger.info(
-                "User %s (%s) has blocked the bot. Skip.", user_dto.username, user_dto.user_id
-            )
+            return logger.info("UserID %s has blocked the bot. Skip.", user_dto.user_id)
         
         strategy = self.send_strategy_factory(user_dto.user_id, payload)
         return await self.send(strategy)
