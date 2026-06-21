@@ -10,7 +10,6 @@ from dishka import AsyncContainer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.consts import DISHKA_CONTAINER_KEY
-from core.exceptions import SQLUserNotFoundError
 from database.dto import UserDTO
 from services.user import UserService
 
@@ -44,11 +43,9 @@ class KitaI18nMiddleware(KitaMiddleware):
 
         aiogram_user: AiogramUser = data.get("event_from_user")
 
-        try:
-            async with session.begin():
-                return await user_service.get(aiogram_user.id)
-        except SQLUserNotFoundError:
-            return None
+        async with session.begin():
+            return await user_service.get(aiogram_user.id)
+
 
     async def get_locale(self, event: TelegramObject, data: dict[str, Any]):
         user_dto: UserDTO | None = await self.get_user_dto(data)

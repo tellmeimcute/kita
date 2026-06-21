@@ -1,5 +1,6 @@
 
 from typing import TYPE_CHECKING
+from datetime import datetime
 from database.enums import UserRole
 from .base import TrackableDto
 
@@ -16,6 +17,9 @@ class UserDTO(TrackableDto):
 
     prefer_anonymous: bool = False
     is_bot_blocked: bool | None = False
+
+    created_at: datetime
+    updated_at: datetime
 
     def update_from_data(self, user_data: "AiogramUser"):
         new_data = {
@@ -35,3 +39,4 @@ class UserDTO(TrackableDto):
     @property
     def is_banned(self) -> bool:
         return self.role == UserRole.BANNED
+    

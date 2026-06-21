@@ -5,7 +5,6 @@ from logging import getLogger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.exceptions import SQLUserNotFoundError
 from database.repository import UserRepository
 from database.dto import UserDTO
 from database.redis.user import UserRedis
@@ -43,15 +42,15 @@ class UserService:
 
         return user_dto
 
-    async def get(self, user_id: int) -> UserDTO:
+    async def get(self, user_id: int) -> UserDTO | None:
         cached_user = await UserRedis.get(self.redis, self.redis_key(user_id))
         if cached_user:
             return cached_user
 
         user_dto = await self.repo.get_by_id(user_id)
         if not user_dto:
-            raise SQLUserNotFoundError(target_id=user_id)
-
+            return None
+            
         await UserRedis.set(
             redis=self.redis,
             key=self.redis_key(user_dto.user_id),

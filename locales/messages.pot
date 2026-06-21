@@ -89,6 +89,9 @@ msgstr ""
 msgid "wait_user_id_text"
 msgstr ""
 
+msgid "user_not_found_wait_next_id"
+msgstr ""
+
 msgid "viewer_accept"
 msgstr ""
 

@@ -2,24 +2,29 @@
 
 import asyncio
 
+from pydantic import ValidationError
+
 from aiogram import Router
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
+
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import Config, RuntimeConfig
-from core.exceptions import SQLUserNotFoundError, UserImmuneError
+from core.exceptions import UserImmuneError
 from core.i18n_translator import Translator
 from core.schemas import IDCommand
 from core.schemas.data import MassMessageData
 from core.schemas.message_payload import MessagePayload
+
 from database.dto import UserDTO
 from database.enums import UserRole
+
 from services import NotifierService, UserService
 from ui.state_groups import AdminMenuSG
 from usecases.broadcast import BroadcastUseCase
@@ -34,19 +39,21 @@ async def select_user(
     message_input: MessageInput,
     manager: DialogManager,
     session: FromDishka[AsyncSession],
-    user_service: FromDishka[UserService]
+    user_service: FromDishka[UserService],
 ):
-    id_command = IDCommand(target_id=message.text)
-
     try:
+        id_command = IDCommand(target_id=message.text)
         async with session.begin():
             target_dto = await user_service.get(id_command.target_id)
-    except SQLUserNotFoundError:
-        await manager.switch_to(AdminMenuSG.main, show_mode=ShowMode.DELETE_AND_SEND)
-        return
-    
-    manager.dialog_data.update({"target_dto": target_dto.model_dump()})
+    except ValidationError:
+        target_dto = None
 
+    if not target_dto:
+        return await manager.switch_to(
+            AdminMenuSG.user_select_again, show_mode=ShowMode.DELETE_AND_SEND
+        )
+ 
+    manager.dialog_data.update({"target_dto": target_dto.model_dump(mode="json")})
     await manager.switch_to(AdminMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
 
@@ -59,7 +66,6 @@ async def user_change_role(
     change_role: FromDishka[ChangeRoleUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-
     target_dto_raw = manager.dialog_data.get("target_dto")
     target_dto = UserDTO.model_validate(target_dto_raw)
 
@@ -78,9 +84,9 @@ async def user_change_role(
                 caller=user_dto,
             )
 
-        await callback.answer("Success")
+        await callback.answer()
         await manager.update(
-            {"target_dto": new_target_dto.model_dump()}
+            {"target_dto": new_target_dto.model_dump(mode="json")}
         )
     except UserImmuneError:
         await callback.answer("UserImmuneError")

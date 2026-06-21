@@ -122,6 +122,11 @@ msgstr "Unban"
 msgid "wait_user_id_text"
 msgstr "Waiting for Telegram UserID"
 
+msgid "user_not_found_wait_next_id"
+msgstr ""
+"<b>User not found :(</b>\n"
+"Try again! Or return to main menu 😭"
+
 msgid "viewer_accept"
 msgstr "Accept"
 
@@ -264,9 +269,13 @@ msgstr "Menu"
 
 msgid "admin_moderation_user_profile"
 msgstr ""
-"<b>User</b> @{target_dto[username]}\n"
-"<b>Role</b> {target_dto[role]}\n"
-"<b>ID</b> <code>{target_dto[user_id]}</code>"
+"<b>User</b> <code>{target_dto[user_id]}</code>\n"
+"<b>Name</b> <code>{target_dto[name]}</code>\n"
+"<b>Username</b> @{target_dto[username]}\n"
+"<b>Role</b> <code>{target_dto[role]}</code>\n"
+"\n"
+"<b>Register Date</b> <code>{target_dto[created_at]}</code>\n"
+"<b>Last Updated</b> <code>{target_dto[updated_at]}</code>\n"
 
 msgid "rate_limited_warning"
 msgstr "RateLimited. Wait a few seconds 😴"

@@ -17,6 +17,7 @@ class AdminMenuSG(StatesGroup):
     main = State()
 
     user_select = State()
+    user_select_again = State()
     user_moderation = State()
 
     app_stats = State()

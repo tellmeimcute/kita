@@ -43,6 +43,13 @@ user_select_window = Window(
     state=AdminMenuSG.user_select,
 )
 
+user_select_again_window = Window(
+    I18nText("user_not_found_wait_next_id"),
+    MessageInput(select_user),
+    SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, show_mode=ShowMode.AUTO),
+    state=AdminMenuSG.user_select_again,
+)
+
 user_moderation_window = Window(
     I18nText("admin_moderation_user_profile"),
     Button(
@@ -102,6 +109,7 @@ confirm_broadcast = Window(
 dialog = Dialog(
     main_window,
     user_select_window,
+    user_select_again_window,
     user_moderation_window,
     bot_stats_window,
     wait_broadcast_window,

@@ -30,7 +30,7 @@ class I18nText(Text):
         additional_data.pop("event")
 
         dialog_data = additional_data.pop("dialog_data")
-        i18n_kwargs = {"user_dto": user_dto.model_dump()}
+        i18n_kwargs = {"user_dto": user_dto.model_dump(mode="json")}
         i18n_kwargs.update(**dialog_data)
         i18n_kwargs.update(runtime_config.model_dump())
         i18n_kwargs.update(additional_data)

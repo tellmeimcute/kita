@@ -124,6 +124,11 @@ msgstr "Разбанить"
 msgid "wait_user_id_text"
 msgstr "Пришлите <b>Telegram UserID</b> пользователя."
 
+msgid "user_not_found_wait_next_id"
+msgstr ""
+"<b>Пользователь не найден :(</b>\n"
+"Попробуй снова! Ну или вернись в главное меню 😭"
+
 msgid "viewer_accept"
 msgstr "Принять"
 
@@ -267,9 +272,13 @@ msgstr "Меню"
 
 msgid "admin_moderation_user_profile"
 msgstr ""
-"<b>Пользователь</b> @{target_dto[username]}\n"
-"<b>Роль</b> {target_dto[role]}\n"
-"<b>ID</b> <code>{target_dto[user_id]}</code>"
+"<b>Пользователь</b> <code>{target_dto[user_id]}</code>\n"
+"<b>Name</b> <code>{target_dto[name]}</code>\n"
+"<b>Username</b> @{target_dto[username]}\n"
+"<b>Роль</b> <code>{target_dto[role]}</code>\n"
+"\n"
+"<b>Дата регистрации</b> <code>{target_dto[created_at]}</code>\n"
+"<b>Последнее обновление</b> <code>{target_dto[updated_at]}</code>\n"
 
 msgid "rate_limited_warning"
 msgstr "RateLimited. Подождите пару секунд 😴"
