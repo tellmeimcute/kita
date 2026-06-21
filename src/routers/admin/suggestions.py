@@ -16,7 +16,7 @@ from core.schemas import IDCommand
 from core.schemas.data import SuggestionViewerData
 
 from database.dto import UserDTO
-from database.enums import UserRole
+from database.enums import UserRole, SuggestionStatus
 
 from services import NotifierService, SuggestionService
 from services.suggestion_queue import SuggestionQueueManager
@@ -55,8 +55,8 @@ async def solo_suggestion(
     await renderer.wait_verdict(user_dto)
 
 
-@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=True))
-@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=False))
+@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
+@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
 async def solo_suggestion_verdict(
     message: Message,
     user_dto: UserDTO,
@@ -65,7 +65,7 @@ async def solo_suggestion_verdict(
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     renderer: FromDishka[SuggestionRenderer],
-    verdict: bool,
+    verdict: SuggestionStatus,
 ):
     suggestion_dto = queue_manager.data.suggestion_dto
     async with session.begin():
@@ -92,8 +92,8 @@ async def enter_suggestion_viewer(
     await state.clear()
     await renderer.empty_queue(user_dto)
 
-@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=True))
-@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=False))
+@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
+@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
 async def viewer_apply_verdict(
     message: Message,
     state: FSMContext,
@@ -103,7 +103,7 @@ async def viewer_apply_verdict(
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     dialog_manager: DialogManager,
-    verdict: bool,
+    verdict: SuggestionStatus,
 ):
     async with session.begin():
         updated_dto = await queue_manager.get_updated_dto()

@@ -15,7 +15,7 @@ async def test_accept_suggestion(suggestion_dto, suggestion_service_mock, notifi
         i18n=Mock(),
     )
 
-    result = await usecase.execute(suggestion_dto, verdict=True)
+    result = await usecase.execute(suggestion_dto, verdict=SuggestionStatus.ACCEPTED)
 
     assert not result.verdict_exists
     assert suggestion_dto.status == SuggestionStatus.ACCEPTED
@@ -32,7 +32,7 @@ async def test_decline_suggestion(suggestion_dto, suggestion_service_mock, notif
         i18n=Mock(),
     )
 
-    result = await usecase.execute(suggestion_dto, verdict=False)
+    result = await usecase.execute(suggestion_dto, verdict=SuggestionStatus.DECLINED)
 
     assert not result.verdict_exists
     assert suggestion_dto.status == SuggestionStatus.DECLINED
@@ -51,7 +51,7 @@ async def test_verdict_already_exists(suggestion_dto, suggestion_service_mock, n
         i18n=Mock(),
     )
 
-    result = await usecase.execute(suggestion_dto, verdict=False)
+    result = await usecase.execute(suggestion_dto, verdict=SuggestionStatus.DECLINED)
 
     assert result.verdict_exists
     assert suggestion_dto.status == SuggestionStatus.ACCEPTED
@@ -70,7 +70,7 @@ async def test_force_update_overwrites_existing_verdict(suggestion_dto, suggesti
         i18n=Mock(),
     )
 
-    result = await usecase.execute(suggestion_dto, verdict=False, force_update=True)
+    result = await usecase.execute(suggestion_dto, verdict=SuggestionStatus.DECLINED, force_update=True)
 
     assert not result.verdict_exists
     assert suggestion_dto.status == SuggestionStatus.DECLINED

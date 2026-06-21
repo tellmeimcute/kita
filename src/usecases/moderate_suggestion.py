@@ -46,21 +46,17 @@ class ModerateSuggestionUseCase:
     async def execute(
         self,
         suggestion_dto: SuggestionFullDTO,
-        verdict: bool,
+        verdict: Status,
         force_update: bool = False,
     ) -> ModerationResult:
         
         if suggestion_dto.status != Status.PENDING and not force_update:
             return ModerationResult(suggestion_dto, True)
 
-        suggestion_dto.status = (
-            Status.ACCEPTED 
-            if verdict else Status.DECLINED
-        )
-
+        suggestion_dto.status = verdict
         await self._suggestion_service.update(suggestion_dto)
 
-        if verdict:
+        if verdict == Status.ACCEPTED:
             await self._process_accepted(suggestion_dto)
 
         return ModerationResult(suggestion_dto, False)
