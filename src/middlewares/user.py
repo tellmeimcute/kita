@@ -62,7 +62,7 @@ class UserMiddleware(KitaMiddleware):
         if user_dto.is_bot_blocked:
             user_dto.is_bot_blocked = False
         if changed_data := user_dto.prepare_changed_data():
-            await user_service.update_by_user_id(user_dto.user_id, **changed_data)
+            await user_service.update(user_dto.user_id, **changed_data)
         return user_dto
 
     def dto_from_aiogram(self, aiogram_user: AiogramUser) -> UserDTO:

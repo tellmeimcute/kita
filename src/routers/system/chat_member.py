@@ -20,6 +20,6 @@ async def on_user_block_bot(
 ):
     user_id = event.from_user.id
     async with session.begin():
-        await user_service.update_by_user_id(user_id, is_bot_blocked=True)
+        await user_service.update(user_id, is_bot_blocked=True)
 
     logger.info("UserID %s blocked the bot.", user_id)

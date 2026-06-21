@@ -23,7 +23,7 @@ class SuggestionQueueManager:
         self.data = data
 
     async def dump_into_state(self):
-        await self.state.set_data({"viewer_data": self.data.model_dump()})
+        await self.state.set_data({"viewer_data": self.data.model_dump(mode="json")})
 
     async def get_updated_dto(self) -> SuggestionFullDTO:
         suggestion_dto = self.data.suggestion_dto

@@ -60,13 +60,14 @@ class UserService:
 
         return user_dto
 
-    async def update_by_user_id(self, user_id: int, **data: Any):
+    async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, data)
         await UserRedis.delete(redis=self.redis, key=self.redis_key(user_id))
         logger.info("Update database info for user %s.", user_id)
 
-    async def update(self, user_dto: UserDTO):
+    async def save(self, user_dto: UserDTO):
         await self.repo.save(user_dto)
+        await UserRedis.delete(redis=self.redis, key=self.redis_key(user_dto.user_id))
         logger.info("Update database info for user %s.", user_dto.user_id)
 
     async def get_active(self):

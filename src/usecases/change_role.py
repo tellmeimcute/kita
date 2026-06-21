@@ -33,7 +33,7 @@ class ChangeRoleUseCase:
 
         target_dto = await self._user_service.get(target_id)
         target_dto.role = target_role
-        await self._user_service.update(target_dto)
+        await self._user_service.save(target_dto)
 
         if target_role == UserRole.BANNED:
             await self._user_service.decline_suggestion(target_dto)

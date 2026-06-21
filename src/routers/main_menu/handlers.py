@@ -45,7 +45,7 @@ async def on_language_selected(
 
     user_dto.language_code = button.widget_id
     async with session.begin():
-        await user_service.update(user_dto)
+        await user_service.save(user_dto)
 
     i18n.ctx_locale.set(user_dto.language_code)
     await callback.answer(text=button.widget_id)
@@ -96,7 +96,7 @@ async def prefer_anon_toggle(
 
     user_dto.prefer_anonymous = not user_dto.prefer_anonymous
     async with session.begin():
-        await user_service.update(user_dto)
+        await user_service.save(user_dto)
 
     await callback.answer(text="Success")
     await manager.switch_to(UserMenuSG.settings)

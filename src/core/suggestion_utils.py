@@ -59,9 +59,11 @@ class SuggestionUtils:
         command = self.translator.get_translated_text("command_open_solo_view")
         command = f"{command} {suggestion_dto.id}"
 
-        i18n_kwargs = suggestion_dto.model_dump(
-            include={"id", "caption", "status", "anonymous", "media_group_id", "forwarded_from", "author"}
-        )
+        i18n_kwargs = suggestion_dto.model_dump()
+
+        created_at = suggestion_dto.created_at.strftime("%d/%m/%Y, %H:%M:%S")
+        updated_at = suggestion_dto.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
+
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
             author_string=author_string,
@@ -70,6 +72,8 @@ class SuggestionUtils:
             command=html.code(command),
             verdict=verdict,
             bot_url=self.runtime_config.bot_url,
+            created_at=created_at,
+            updated_at=updated_at
         )
 
         return i18n_kwargs
