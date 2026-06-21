@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 
 from core.schemas import SuggestionViewerData
-from core.exceptions import SQLSuggestionNotFoundError
 from database.dto import SuggestionFullDTO
 from services import SuggestionService
 
@@ -33,12 +32,9 @@ class SuggestionQueueManager:
         return self.data.suggestion_dto
 
     async def pop_next(self, dump_into_state=True) -> SuggestionFullDTO | None:
-        try:
-            if not self.data.suggestion_dtos:
-                async with self.session.begin():
-                    self.data.suggestion_dtos = await self.suggestion_service.get_active()
-        except SQLSuggestionNotFoundError:
-            return None
+        if not self.data.suggestion_dtos:
+            async with self.session.begin():
+                self.data.suggestion_dtos = await self.suggestion_service.get_active()
 
         if not self.data.suggestion_dtos:
             return None

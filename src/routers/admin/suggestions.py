@@ -44,6 +44,8 @@ async def solo_suggestion(
     command: IDCommand,
 ):
     suggestion_dto = await suggestion_service.get(command.target_id)
+    if not suggestion_dto:
+        return await renderer.not_found(user_dto, command.target_id)
 
     await state.set_state(SuggestionViewerState.in_solo_view)
 

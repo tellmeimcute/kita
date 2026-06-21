@@ -2,7 +2,6 @@
 from unittest.mock import AsyncMock, Mock
 import pytest
 
-from core.exceptions import SQLSuggestionNotFoundError
 from services.suggestion import SuggestionService
 
 
@@ -17,8 +16,8 @@ async def test_get_by_id_none(suggestion_repo_mock):
         parser=Mock(),
     )
 
-    with pytest.raises(SQLSuggestionNotFoundError):
-        dto = await service.get(1)
+    dto = await service.get(1)
+    assert not dto
 
 
 @pytest.mark.asyncio

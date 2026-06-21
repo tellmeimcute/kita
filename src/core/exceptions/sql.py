@@ -9,6 +9,4 @@ class SQLModelNotFoundError(KitaExceptionI18nKwargs):
         self.target_id = target_id
         super().__init__(**extra)
 
-class SQLSuggestionNotFoundError(SQLModelNotFoundError): ...
-
 class SQLUserNotFoundError(SQLModelNotFoundError): ...

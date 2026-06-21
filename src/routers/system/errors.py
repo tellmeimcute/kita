@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import (
     KitaValidationError,
-    SQLSuggestionNotFoundError,
     SQLUserNotFoundError,
     UnsupportedPayload,
     UserImmuneError,
@@ -57,29 +56,6 @@ async def user_is_immune(
 
     payload = MessagePayload(
         i18n_key="error_user_immune",
-        reply_markup=e.return_kb,
-    )
-
-    strategy = notifier.send_strategy_factory(caller_id, payload)
-    await notifier.send(strategy)
-
-
-@router.error(ExceptionTypeFilter(SQLSuggestionNotFoundError), F.update.message.as_("message"))
-async def suggestion_not_found(
-    event: ErrorEvent,
-    message: Message,
-    notifier: FromDishka[NotifierService],
-):
-    caller_id = message.from_user.id
-    e: SQLSuggestionNotFoundError = event.exception
-
-    i18n_kwargs = {"suggestion_id": e.target_id}
-    if e.i18n_kwargs:
-        i18n_kwargs.update(e.i18n_kwargs)
-
-    payload = MessagePayload(
-        i18n_key="error_suggestion_not_found",
-        i18n_kwargs=i18n_kwargs,
         reply_markup=e.return_kb,
     )
 

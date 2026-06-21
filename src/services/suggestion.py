@@ -1,18 +1,16 @@
 
 from typing import Any
 from logging import getLogger
-from dataclasses import asdict
 
 from aiogram.types import Message
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.exceptions import SQLSuggestionNotFoundError, UnsupportedPayload
+from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 
 from database.repository import SuggestionRepository
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from database.models import Media, Suggestion
 from database.redis.userstats import UserStatsRedis
 
 from services.message_parser import MessageParser
@@ -55,16 +53,10 @@ class SuggestionService:
         return user_stats
 
     async def get(self, suggestion_id: int):
-        dto = await self.repo.get_by_id(suggestion_id)
-        if not dto:
-            raise SQLSuggestionNotFoundError(suggestion_id)
-        return dto
+        return await self.repo.get_by_id(suggestion_id)
 
     async def get_active(self) -> list[SuggestionFullDTO]:
-        dtos = await self.repo.get_active()
-        if not dtos:
-            raise SQLSuggestionNotFoundError()
-        return dtos
+        return await self.repo.get_active()
 
     async def update(self, suggestion_dto: SuggestionBaseDTO):
         await self.repo.save(suggestion_dto)
@@ -76,28 +68,22 @@ class SuggestionService:
 
     async def create(self, author_dto: UserDTO, album: list[Message]) -> SuggestionFullDTO:
         first_msg = album[0]
-
         media_group_id = first_msg.media_group_id
         caption = first_msg.caption or first_msg.text
         forwarded_from = self.parser.parse_forward_origin(first_msg)
-        
-        suggestion_orm = Suggestion(
-            author_id=author_dto.user_id,
-            media_group_id=media_group_id,
-            caption=caption,
-            forwarded_from=forwarded_from,
-            anonymous=author_dto.prefer_anonymous,
-        )
+        media_info = [
+            info for msg in album 
+            if (info := self.parser.parse_media(msg))
+        ]
 
-        for msg in album:
-            if media_info := self.parser.parse_media(msg):
-                suggestion_orm.media.append(Media(**asdict(media_info)))
-
-        if not suggestion_orm.caption and not suggestion_orm.media:
+        if not caption and not media_info:
             raise UnsupportedPayload()
 
-        self.session.add(suggestion_orm)
-        await self.session.flush()
-        await self.session.refresh(suggestion_orm, attribute_names=["media", "author"])
-        return SuggestionFullDTO.model_validate(suggestion_orm)
-    
+        return await self.repo.create(
+            author_id=author_dto.user_id,
+            anonymous=author_dto.prefer_anonymous,
+            mediainfo=media_info,
+            caption=caption,
+            media_group_id=media_group_id,
+            forwarded_from=forwarded_from,
+        )

@@ -51,3 +51,11 @@ class SuggestionRenderer:
         i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_dto)
         payload = MessagePayload(i18n_key="suggestion_verdict_exists", i18n_kwargs=i18n_kwargs)
         await self.notifier.notify_user(user_dto, payload)
+
+    async def not_found(self, user_dto: UserDTO, suggestion_id: int):
+        i18n_kwargs = {"suggestion_id": suggestion_id}
+        payload = MessagePayload(
+            i18n_key="error_suggestion_not_found",
+            i18n_kwargs=i18n_kwargs,
+        )
+        await self.notifier.notify_user(user_dto, payload)

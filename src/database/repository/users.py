@@ -1,5 +1,5 @@
 
-from typing import Sequence
+from typing import Sequence, Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,15 +25,13 @@ class UserRepository:
             return None
         return UserDTO.model_validate(orm_model)
     
-    async def update(self, user_id: int, data: dict):
+    async def update(self, user_id: int, **data: Any):
         stmt = update(UserAlchemy).where(UserAlchemy.user_id == user_id).values(data)
         await self._session.execute(stmt)
 
     async def save(self, dto: UserDTO):
-        changed = dto.prepare_changed_data()
-        if not changed:
-            return
-        await self.update(dto.user_id, changed)
+        if changed := dto.prepare_changed_data():
+            await self.update(dto.user_id, **changed)
 
     async def create(self, dto: UserDTO):
         orm = UserAlchemy(**dto.model_dump())
