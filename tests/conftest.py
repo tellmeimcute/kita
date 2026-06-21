@@ -56,9 +56,9 @@ def config_mock():
 def user_service_mock():
     return Mock(
         get=AsyncMock(),
-        set_role=AsyncMock(),
+        update=AsyncMock(),
         decline_suggestion=AsyncMock(),
-        spec=["get", "set_role", "decline_suggestion"],
+        spec=["get", "update", "decline_suggestion"],
     )
 
 
@@ -84,4 +84,11 @@ def utils_mock():
     return Mock(
         payload_factory=Mock(),
         get_i18n_kwargs=Mock(return_value={}),
+    )
+
+
+@pytest.fixture
+def suggestion_repo_mock():
+    return AsyncMock(
+        get_by_id=AsyncMock(),
     )
