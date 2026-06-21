@@ -53,7 +53,10 @@ async def select_user(
             AdminMenuSG.user_select_again, show_mode=ShowMode.DELETE_AND_SEND
         )
  
-    manager.dialog_data.update({"target_dto": target_dto.model_dump(mode="json")})
+    manager.dialog_data.update({
+        "target_dto": target_dto.model_dump(mode="json"),
+        "target_dto_i18n": target_dto.to_i18n_kwargs(),
+    })
     await manager.switch_to(AdminMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
 
@@ -85,9 +88,10 @@ async def user_change_role(
             )
 
         await callback.answer()
-        await manager.update(
-            {"target_dto": new_target_dto.model_dump(mode="json")}
-        )
+        await manager.update({
+            "target_dto": new_target_dto.model_dump(mode="json"),
+            "target_dto_i18n": new_target_dto.to_i18n_kwargs(),
+        })
     except UserImmuneError:
         await callback.answer("UserImmuneError")
 

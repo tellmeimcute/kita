@@ -32,6 +32,14 @@ class UserDTO(TrackableDto):
             if current_data[key] != value:
                 setattr(self, key, value)
 
+    def to_i18n_kwargs(self) -> dict:
+        data = self.model_dump(mode="json")
+        updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
+        created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
+
+        data.update(updated_at=updated_at, created_at=created_at)
+        return data
+
     @property
     def is_admin(self) -> bool:
         return self.role == UserRole.ADMIN
