@@ -154,11 +154,15 @@ msgid "post_banner_btn"
 msgstr "🖼 Post banner"
 
 msgid "banner_wait_for_text"
-msgstr "Waiting for banner text."
+msgstr ""
+"Send banner content.\n"
+"\n"
+"<b>Banner must contain text</b>\n"
+"You can optionally attach one piece of media (image/video/animation)"
 
 msgid "banner_wait_for_text_again"
 msgstr ""
-"Only text accepted.\n"
+"<b>Text not found!</b>\n"
 "Try again! Or return to the admin menu 😭"
 
 msgid "channel_banner_sent"
