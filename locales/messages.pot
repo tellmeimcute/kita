@@ -122,10 +122,19 @@ msgstr ""
 msgid "post_banner_btn"
 msgstr ""
 
+msgid "banner_wait_for_text"
+msgstr ""
+
+msgid "banner_wait_for_text_again"
+msgstr ""
+
 msgid "channel_banner_sent"
 msgstr ""
 
 msgid "channel_banner"
+msgstr ""
+
+msgid "channel_banner_btn"
 msgstr ""
 
 msgid "wait_verdict_text"

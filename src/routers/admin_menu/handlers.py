@@ -4,9 +4,7 @@ import asyncio
 
 from pydantic import ValidationError
 
-from aiogram import Router
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
@@ -15,7 +13,6 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.config import Config, RuntimeConfig
 from core.exceptions import UserImmuneError
 from core.i18n_translator import Translator
 from core.schemas import IDCommand
@@ -27,10 +24,9 @@ from database.enums import UserRole
 
 from services import NotifierService, UserService
 from ui.state_groups import AdminMenuSG
+
 from usecases.broadcast import BroadcastUseCase
 from usecases.change_role import ChangeRoleUseCase
-
-router = Router(name="admin_menu")
 
 
 @inject
@@ -97,27 +93,6 @@ async def user_change_role(
 
 
 @inject
-async def post_banner(
-    callback: CallbackQuery,
-    button: Button,
-    manager: DialogManager,
-    translator: FromDishka[Translator],
-    notifier: FromDishka[NotifierService],
-    config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig]
-):
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Предложка", url=runtime_config.bot_url)
-
-    payload = MessagePayload(i18n_key="channel_banner", reply_markup=builder.as_markup())
-    strategy = notifier.send_strategy_factory(config.CHANNEL_ID, payload)
-    await notifier.send(strategy)
-
-    text = translator.get_translated_text("channel_banner_sent")
-    await callback.answer(text)
-
-
-@inject
 async def prepare_broadcast(
     message: Message,
     message_input: MessageInput,
@@ -160,6 +135,3 @@ async def execute_broadcast(
     asyncio.create_task(broadcast.execute(broadcast_data, status_message))
 
     await manager.switch_to(AdminMenuSG.main, show_mode=ShowMode.DELETE_AND_SEND)
-
-
-

@@ -157,11 +157,22 @@ msgstr "📄 Моя статистика"
 msgid "post_banner_btn"
 msgstr "🖼 Запостить баннер"
 
+msgid "banner_wait_for_text"
+msgstr "Жду текст баннера."
+
+msgid "banner_wait_for_text_again"
+msgstr ""
+"Для баннера принимается только текст.\n"
+"Попробуй снова! Ну или вернись в админ меню 😭"
+
 msgid "channel_banner_sent"
 msgstr "Баннер отправлен в канал."
 
 msgid "channel_banner"
-msgstr "Предложка -->"
+msgstr "{text}"
+
+msgid "channel_banner_btn"
+msgstr "😏 Предложка"
 
 msgid "wait_verdict_text"
 msgstr "Запостить или отказать? А может забанить 😏"

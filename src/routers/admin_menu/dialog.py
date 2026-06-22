@@ -6,7 +6,7 @@ from aiogram_dialog.widgets.input import MessageInput
 
 from database.enums import UserRole
 from ui.widgets.i18n_text import I18nText
-from ui.state_groups import AdminMenuSG, UserMenuSG
+from ui.state_groups import AdminMenuSG, UserMenuSG, BannerMenuSG
 
 from routers.shared_getters import role_condition
 
@@ -14,7 +14,6 @@ from .getters import get_app_stats, get_broadcast_info
 from .handlers import (
     select_user,
     user_change_role,
-    post_banner,
     prepare_broadcast,
     execute_broadcast,
 )
@@ -25,7 +24,7 @@ main_window = Window(
     SwitchTo(I18nText("user_moderation_btn"), id="user_select", state=AdminMenuSG.user_select),
     Row(
         SwitchTo(I18nText("app_stats_btn"), id="app_stats", state=AdminMenuSG.app_stats),
-        Button(I18nText("post_banner_btn"), id="post_banner", on_click=post_banner),
+        Start(I18nText("post_banner_btn"), id="post_banner", state=BannerMenuSG.prepare_banner),
     ),
     Start(
         I18nText("menu_btn"),

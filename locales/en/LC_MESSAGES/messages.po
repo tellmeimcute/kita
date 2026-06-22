@@ -153,11 +153,22 @@ msgstr "📄 My statistics"
 msgid "post_banner_btn"
 msgstr "🖼 Post banner"
 
+msgid "banner_wait_for_text"
+msgstr "Waiting for banner text."
+
+msgid "banner_wait_for_text_again"
+msgstr ""
+"Only text accepted.\n"
+"Try again! Or return to the admin menu 😭"
+
 msgid "channel_banner_sent"
 msgstr "Banner sent to the channel."
 
 msgid "channel_banner"
-msgstr "Suggestions -->"
+msgstr "{text}"
+
+msgid "channel_banner_btn"
+msgstr "😏 Suggestions"
 
 msgid "wait_verdict_text"
 msgstr "Post or decline? Or maybe ban 😏"

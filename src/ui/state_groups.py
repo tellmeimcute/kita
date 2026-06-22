@@ -24,3 +24,8 @@ class AdminMenuSG(StatesGroup):
 
     wait_broadcast_content = State()
     broadcast_confirm = State()
+
+
+class BannerMenuSG(StatesGroup):
+    prepare_banner = State()
+    something_wrong = State()

@@ -14,11 +14,13 @@ from middlewares import (
 )
 from routers import admin_suggestion_router
 from routers.admin_menu.dialog import dialog as admin_menu_dialog
-from routers.admin_menu.handlers import router as admin_menu_router
+from routers.banner_menu.dialog import dialog as admin_banner_dialog
+
 from routers.main_menu.dialog import dialog as main_menu_dialog
 from routers.main_menu.handlers import router as main_menu_router
 from routers.system.chat_member import router as chat_member_router
 from routers.system.errors import router as errors_router
+
 
 logger = logging.getLogger("kita.startup")
 
@@ -49,10 +51,10 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     )
 
     admin_routers = Router(name="admin_root")
-    admin_menu_router.include_routers(admin_menu_dialog)
     admin_routers.include_routers(
         admin_suggestion_router,
-        admin_menu_router,
+        admin_menu_dialog,
+        admin_banner_dialog,
     )
 
     admin_middleware = await container.get(AdminMiddleware)
