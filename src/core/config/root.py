@@ -7,9 +7,11 @@ from .redis import RedisConfig
 from .rate_limit import RateLimitConfig
 
 class Config(BaseConfig):
-    TG_TOKEN: SecretStr
-    ADMIN_ID: int
-    CHANNEL_ID: int
+    tg_token: SecretStr
+    admin_id: int
+    channel_id: int
+
+    log_level: str = "INFO"
 
     redis: RedisConfig = Field(default_factory=RedisConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)

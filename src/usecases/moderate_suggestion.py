@@ -43,7 +43,7 @@ class ModerateSuggestionUseCase:
 
     async def _process_accepted(self, suggestion_dto: SuggestionFullDTO):
         channel_payload = self._utils.payload_factory(suggestion_dto, "channel_post_message")
-        strategy = self._notifier.send_strategy_factory(self._config.CHANNEL_ID, channel_payload)
+        strategy = self._notifier.send_strategy_factory(self._config.channel_id, channel_payload)
         
         author_payload = MessagePayload(i18n_key="notify_author_suggestion_posted")
 

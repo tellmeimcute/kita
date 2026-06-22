@@ -23,7 +23,7 @@ class BotProvider(Provider):
         logger.info("Initializing Bot instance")
 
         async with Bot(
-            token=config.TG_TOKEN.get_secret_value(),
+            token=config.tg_token.get_secret_value(),
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
             session=AiohttpSession(proxy=config.PROXY),
         ) as bot:

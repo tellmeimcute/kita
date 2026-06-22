@@ -22,7 +22,7 @@ logger = getLogger("kita.middleware")
 
 class UserMiddleware(KitaMiddleware):
     def __init__(self, config: Config, i18n: I18n):
-        self.admin_id = config.ADMIN_ID
+        self.admin_id = config.admin_id
         self.i18n = i18n
 
     async def __call__(

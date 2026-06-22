@@ -15,13 +15,15 @@ from di.bot import BotProvider
 from di.usecases import UsecasesProvider
 
 from core.config import RuntimeConfig
+from core.logging_config import setup_logging
 
 from startup import register_all
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("kita.main")
 
 async def main():
+
+    setup_logging()
 
     container = make_async_container(
         ConfigProvider(),

@@ -26,7 +26,7 @@ class ChangeRoleUseCase:
         self._user_service = user_service
 
     def is_immune(self, user_id: int):
-        return user_id == self._config.ADMIN_ID
+        return user_id == self._config.admin_id
 
     async def execute(
         self,

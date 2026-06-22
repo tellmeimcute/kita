@@ -19,7 +19,7 @@ class ConfigProvider(Provider):
     async def runtime_config(self, bot: Bot, config: Config) -> RuntimeConfig:
         logger.info("Initializing RuntimeConfig instance")
 
-        channel_info = await bot.get_chat(config.CHANNEL_ID)
+        channel_info = await bot.get_chat(config.channel_id)
         bot_user = await bot.get_me()
 
         return RuntimeConfig(

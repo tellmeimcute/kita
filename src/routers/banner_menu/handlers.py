@@ -38,28 +38,28 @@ async def get_banner_text(
     if isinstance(media, list):
         media = media[0]
         await message.bot.send_photo(
-            config.CHANNEL_ID,
+            config.channel_id,
             photo=media.file_id,
             caption=banner_text,
             reply_markup=markup,
         )
     elif isinstance(media, Video):
         await message.bot.send_video(
-            config.CHANNEL_ID,
+            config.channel_id,
             video=media.file_id,
             caption=banner_text,
             reply_markup=markup,
         )
     elif isinstance(media, Animation):
         await message.bot.send_animation(
-            config.CHANNEL_ID,
+            config.channel_id,
             animation=media.file_id,
             caption=banner_text,
             reply_markup=markup,
         )
     elif not media:
         await message.bot.send_message(
-            config.CHANNEL_ID,
+            config.channel_id,
             text=banner_text,
             reply_markup=markup,
         )
