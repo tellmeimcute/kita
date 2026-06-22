@@ -18,6 +18,15 @@ class ModerationResult:
     verdict_exists: bool
 
 class ModerateSuggestionUseCase:
+
+    __slots__ = (
+        "_suggestion_service",
+        "_notifier",
+        "_utils",
+        "_config",
+        "_i18n",
+    )
+
     def __init__(
         self,
         config: Config,

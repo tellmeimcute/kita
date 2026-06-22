@@ -9,6 +9,14 @@ from services import SuggestionService
 
 
 class SuggestionQueueManager:
+
+    __slots__ = (
+        "session",
+        "suggestion_service",
+        "state",
+        "data",
+    )
+
     def __init__(
         self,
         session: AsyncSession,

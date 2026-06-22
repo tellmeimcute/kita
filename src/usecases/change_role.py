@@ -11,6 +11,12 @@ from services import UserService
 
 
 class ChangeRoleUseCase:
+
+    __slots__ = (
+        "_config",
+        "_user_service",
+    )
+
     def __init__(
         self,
         config: Config,

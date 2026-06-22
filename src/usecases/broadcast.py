@@ -10,6 +10,13 @@ from services import NotifierService, UserService
 
 
 class BroadcastUseCase:
+
+    __slots__ = (
+        "_user_service",
+        "_notifier",
+        "_translator",
+    )
+
     def __init__(
         self,
         user_service: UserService,
