@@ -5,11 +5,11 @@ from dataclasses import dataclass
 from aiogram.utils.i18n import I18n
 
 from core.config import Config
-from core.suggestion_utils import SuggestionUtils
 from core.schemas.message_payload import MessagePayload
 
 from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
+from ui.suggestion_utils import SuggestionUtils
 from services import NotifierService, SuggestionService
 
 @dataclass

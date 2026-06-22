@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 
 from core.i18n_translator import Translator
-from core.suggestion_utils import SuggestionUtils
 
 from services.user import UserService
 from services.suggestion import SuggestionService
@@ -14,7 +13,7 @@ from services.notifier import NotifierService
 from services.message_parser import MessageParser
 
 from database.repository import SuggestionRepository, UserRepository, MediaRepository
-
+from ui.suggestion_utils import SuggestionUtils
 
 class ServicesProvider(Provider):
     notifier_service = provide(NotifierService, scope=Scope.APP)

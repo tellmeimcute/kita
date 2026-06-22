@@ -3,8 +3,9 @@ from aiogram.types import ReplyKeyboardRemove
 
 from ui.keyboards import ReplyKeyboard
 from database.dto import SuggestionFullDTO, UserDTO
-from core.suggestion_utils import SuggestionUtils
+
 from core.schemas.message_payload import MessagePayload
+from ui.suggestion_utils import SuggestionUtils
 from services import NotifierService
 
 class SuggestionRenderer:

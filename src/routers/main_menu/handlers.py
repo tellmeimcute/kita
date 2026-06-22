@@ -16,7 +16,6 @@ from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput
 
 from core.exceptions import UnsupportedPayload
-from core.suggestion_utils import SuggestionUtils
 from core.schemas.message_payload import MessagePayload
 from core.filters import I18nTextFilter
 
@@ -26,6 +25,7 @@ from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 
 from ui.state_groups import UserMenuSG
+from ui.suggestion_utils import SuggestionUtils
 
 router = Router(name="main_menu")
 
