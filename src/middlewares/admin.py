@@ -14,6 +14,9 @@ class AdminMiddleware(KitaMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         user_dto: UserDTO = data.get("user_dto")
-        if not user_dto or not user_dto.is_admin:
-            return
-        return await handler(event, data)
+        if user_dto and user_dto.is_admin:
+            return await handler(event, data)
+
+        if isinstance(event, CallbackQuery):
+            await event.answer()
+        
