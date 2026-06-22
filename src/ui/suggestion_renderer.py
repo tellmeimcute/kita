@@ -36,14 +36,14 @@ class SuggestionRenderer:
         await self.notifier.notify_user(user_dto, payload)
 
     async def suggestion(self, user_dto: UserDTO, suggestion_dto: SuggestionFullDTO):
-        i18n_key = "admin_get_suggestion_caption"
+        i18n_key = "suggestion_admin_viewer_info"
         kb = ReplyKeyboard.viewer_admin_action()
         payload = self.utils.payload_factory(suggestion_dto, i18n_key, kb)
         return await self.notifier.notify_user(user_dto, payload)
 
     async def empty_queue(self, user_dto: UserDTO):
         payload = MessagePayload(
-            i18n_key="no_active_suggestions", reply_markup=ReplyKeyboardRemove()
+            i18n_key="suggestion_no_active", reply_markup=ReplyKeyboardRemove()
         )
         return await self.notifier.notify_user(user_dto, payload)
 
@@ -54,8 +54,5 @@ class SuggestionRenderer:
 
     async def not_found(self, user_dto: UserDTO, suggestion_id: int):
         i18n_kwargs = {"suggestion_id": suggestion_id}
-        payload = MessagePayload(
-            i18n_key="error_suggestion_not_found",
-            i18n_kwargs=i18n_kwargs,
-        )
+        payload = MessagePayload(i18n_key="suggestion_not_found", i18n_kwargs=i18n_kwargs)
         await self.notifier.notify_user(user_dto, payload)

@@ -19,62 +19,25 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "bool_suggestion_true"
+msgid "suggestion_status_accepted"
 msgstr "🟢 Принята"
 
-msgid "bool_suggestion_false"
+msgid "suggestion_status_declined"
 msgstr "🔴 Отклонена"
 
-msgid "none_suggestion"
+msgid "suggestion_status_pending"
 msgstr "⌚ На модерации"
 
-msgid "start_msg"
-msgstr "Добро пожаловать в предложку канала {channel_name}!"
-
-msgid "state_reset"
-msgstr "Состояние сброшено."
-
-msgid "error_media_suggestion"
-msgstr ""
-"То что ты отправил не принимается как предложка!\n"
-"Принимаются только текст/картинки/видео/gif\n"
-"\n"
-"Попробуй снова! Ну или вернись в главное меню 😭"
-
-msgid "on_moderation"
-msgstr "Отправлено на модерацию."
-
-msgid "user_stats"
-msgstr ""
-"<b>📊 Твоя статистика: </b>\n"
-"\n"
-"<b>Всего предложено:</b> {total}\n"
-"\n"
-"✅ Принято: <b>{accepted}</b>\n"
-"⛔ Отклонено: <b>{declined}</b>"
-
-msgid "notify_admin_new_suggestion"
+msgid "suggestion_notify_admin_new"
 msgstr ""
 "🛑 Новая предложка! ID {id}\n"
-"<b>Автор</b> {author[name]} @{author[username]} ({author[user_id]})\n"
-"\n"
-"Что бы просмотреть введите команду {command}"
+"<b>Автор</b> {author[name]} @{author[username]} ({author[user_id]})"
 
-msgid "error_user_immune"
-msgstr "Этот пользователь неуязвим к этой команде."
-
-msgid "answer_admin_role_changed"
-msgstr "Пользователю @{username} ({user_id}) изменена роль на {role}."
-
-msgid "user_not_found"
-msgstr "Пользователь с id {user_id} не найден."
-
-msgid "error_suggestion_not_found"
-msgstr "Предложки с ID {suggestion_id} не найдено 😢"
-
-msgid "admin_get_suggestion_caption"
+msgid "suggestion_admin_viewer_info"
 msgstr ""
-"{admin_caption}<b>Информация о авторе:</b>\n"
+"{caption}\n"
+"\n"
+"<b>Информация о авторе:</b>\n"
 "<b>Name</b> <code>{author[name]}</code>\n"
 "<b>Username</b> @{author[username]}\n"
 "<b>UserID</b> <code>{author[user_id]}</code>\n"
@@ -85,12 +48,7 @@ msgstr ""
 "<b>Источник</b> <code><b>{forwarded_from}</b></code>\n"
 "<b>Статус</b> <b>{verdict}</b>\n"
 
-msgid "admin_suggestion_original_caption"
-msgstr ""
-"{caption}\n"
-"\n"
-
-msgid "no_active_suggestions"
+msgid "suggestion_no_active"
 msgstr "Нет активной предложки 😢"
 
 msgid "suggestion_wait_media"
@@ -104,13 +62,50 @@ msgstr ""
 msgid "start_review_suggestions"
 msgstr "Начинаем просмотр предложки..."
 
+msgid "suggestion_not_found"
+msgstr "Предложки с ID {suggestion_id} не найдено 😢"
+
+msgid "suggestion_verdict_exists"
+msgstr "Предложке с ID {id} уже вынесен вердикт: {verdict}."
+
+msgid "suggestion_error_media"
+msgstr ""
+"То что ты отправил не принимается как предложка!\n"
+"Принимаются только текст/картинки/видео/gif\n"
+"\n"
+"Попробуй снова! Ну или вернись в главное меню 😭"
+
+msgid "suggestion_sent_to_moderation"
+msgstr "Отправлено на модерацию."
+
+msgid "start_msg"
+msgstr "Добро пожаловать в предложку канала {channel_name}!"
+
+msgid "state_reset"
+msgstr "Состояние сброшено."
+
+msgid "user_stats"
+msgstr ""
+"<b>📊 Твоя статистика: </b>\n"
+"\n"
+"<b>Всего предложено:</b> {total}\n"
+"\n"
+"✅ Принято: <b>{accepted}</b>\n"
+"⛔ Отклонено: <b>{declined}</b>"
+
+msgid "error_user_immune"
+msgstr "Этот пользователь неуязвим к этой команде."
+
+msgid "answer_admin_role_changed"
+msgstr "Пользователю @{username} ({user_id}) изменена роль на {role}."
+
+msgid "user_not_found"
+msgstr "Пользователь с id {user_id} не найден."
+
 msgid "command_syntax_error"
 msgstr ""
 "Проверьте введена ли команда правильно.\n"
 "{hint}"
-
-msgid "suggestion_verdict_exists"
-msgstr "Предложке с ID {id} уже вынесен вердикт: {verdict}."
 
 msgid "verdict_rewrite"
 msgstr "Статус изменен."

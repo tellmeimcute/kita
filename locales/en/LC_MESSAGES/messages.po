@@ -18,60 +18,21 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "bool_suggestion_true"
+msgid "suggestion_status_accepted"
 msgstr "🟢 Accepted"
 
-msgid "bool_suggestion_false"
+msgid "suggestion_status_declined"
 msgstr "🔴 Declined"
 
-msgid "none_suggestion"
+msgid "suggestion_status_pending"
 msgstr "⌚ Under moderation"
 
-msgid "start_msg"
-msgstr "Welcome to the suggestions bot of the channel {channel_name}!"
-
-msgid "state_reset"
-msgstr "State has been reset."
-
-msgid "error_media_suggestion"
-msgstr ""
-"What you sent isn't accepted as a suggestion!\n"
-"Only text/images/videos/gifs are accepted.\n"
-"\n"
-"Try again! Or return to the main menu 😭"
-
-msgid "on_moderation"
-msgstr "Sent for moderation."
-
-msgid "user_stats"
-msgstr ""
-"<b>📊 Your statistics: </b>\n"
-"\n"
-"<b>Total suggestions:</b> {total}\n"
-"\n"
-"✅ Accepted: <b>{accepted}</b>\n"
-"⛔ Declined: <b>{declined}</b>"
-
-msgid "notify_admin_new_suggestion"
+msgid "suggestion_notify_admin_new"
 msgstr ""
 "🛑 New suggestion! ID {id}\n"
-"<b>Author</b> {author[name]} @{author[username]} ({author[user_id]})\n"
-"\n"
-"To view it, enter the command {command}"
+"<b>Author</b> {author[name]} @{author[username]} ({author[user_id]})"
 
-msgid "error_user_immune"
-msgstr "This user is immune to this command."
-
-msgid "answer_admin_role_changed"
-msgstr "User @{username} ({user_id}) has had their role changed to {role}."
-
-msgid "user_not_found"
-msgstr "User with id {user_id} not found."
-
-msgid "error_suggestion_not_found"
-msgstr "Suggestion with ID {suggestion_id} not found 😢"
-
-msgid "admin_get_suggestion_caption"
+msgid "suggestion_admin_viewer_info"
 msgstr ""
 "{admin_caption}<b>Author info:</b>\n"
 "<b>Name</b> <code>{author[name]}</code>\n"
@@ -84,12 +45,7 @@ msgstr ""
 "<b>Source</b> <code><b>{forwarded_from}</b></code>\n"
 "<b>Status</b> <b>{verdict}</b>\n"
 
-msgid "admin_suggestion_original_caption"
-msgstr ""
-"Original caption:\n"
-"{caption}"
-
-msgid "no_active_suggestions"
+msgid "suggestion_no_active"
 msgstr "No active suggestion 😢"
 
 msgid "suggestion_wait_media"
@@ -102,13 +58,50 @@ msgstr ""
 msgid "start_review_suggestions"
 msgstr "Starting review of suggestions..."
 
+msgid "suggestion_not_found"
+msgstr "Suggestion with ID {suggestion_id} not found 😢"
+
+msgid "suggestion_verdict_exists"
+msgstr "Suggestion with ID {id} already has a verdict: {verdict}."
+
+msgid "suggestion_error_media"
+msgstr ""
+"What you sent isn't accepted as a suggestion!\n"
+"Only text/images/videos/gifs are accepted.\n"
+"\n"
+"Try again! Or return to the main menu 😭"
+
+msgid "suggestion_sent_to_moderation"
+msgstr "Sent to moderation."
+
+msgid "start_msg"
+msgstr "Welcome to the suggestions bot of the channel {channel_name}!"
+
+msgid "state_reset"
+msgstr "State has been reset."
+
+msgid "user_stats"
+msgstr ""
+"<b>📊 Your statistics: </b>\n"
+"\n"
+"<b>Total suggestions:</b> {total}\n"
+"\n"
+"✅ Accepted: <b>{accepted}</b>\n"
+"⛔ Declined: <b>{declined}</b>"
+
+msgid "error_user_immune"
+msgstr "This user is immune to this command."
+
+msgid "answer_admin_role_changed"
+msgstr "User @{username} ({user_id}) has had their role changed to {role}."
+
+msgid "user_not_found"
+msgstr "User with id {user_id} not found."
+
 msgid "command_syntax_error"
 msgstr ""
 "Check that the command was entered correctly.\n"
 "{hint}"
-
-msgid "suggestion_verdict_exists"
-msgstr "Suggestion with ID {id} already has a verdict: {verdict}."
 
 msgid "verdict_rewrite"
 msgstr "Status changed."

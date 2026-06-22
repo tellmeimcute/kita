@@ -99,13 +99,13 @@ make_suggestion_window = Window(
 )
 
 on_moderation_window = Window(
-    I18nText("on_moderation"),
+    I18nText("suggestion_sent_to_moderation"),
     back_or_suggest_again,
     state=UserMenuSG.suggestion_on_moderation,
 )
 
 suggestion_error_window = Window(
-    I18nText("error_media_suggestion"),
+    I18nText("suggestion_error_media"),
     back_or_suggest_again,
     state=UserMenuSG.suggestion_media_error,
 )

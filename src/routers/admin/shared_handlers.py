@@ -28,7 +28,7 @@ async def enter_suggestion_viewer(
 
     new_suggestion = await queue_manager.pop_next(dump_into_state=False)
     if not new_suggestion:
-        text = translator.get_translated_text("no_active_suggestions")
+        text = translator.get_translated_text("suggestion_no_active")
         return await callback.answer(text)
 
     await manager.done()

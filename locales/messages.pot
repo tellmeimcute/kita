@@ -17,13 +17,40 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-msgid "bool_suggestion_true"
+msgid "suggestion_status_accepted"
 msgstr ""
 
-msgid "bool_suggestion_false"
+msgid "suggestion_status_declined"
 msgstr ""
 
-msgid "none_suggestion"
+msgid "suggestion_status_pending"
+msgstr ""
+
+msgid "suggestion_notify_admin_new"
+msgstr ""
+
+msgid "suggestion_admin_viewer_info"
+msgstr ""
+
+msgid "suggestion_no_active"
+msgstr ""
+
+msgid "suggestion_wait_media"
+msgstr ""
+
+msgid "start_review_suggestions"
+msgstr ""
+
+msgid "suggestion_not_found"
+msgstr ""
+
+msgid "suggestion_verdict_exists"
+msgstr ""
+
+msgid "suggestion_error_media"
+msgstr ""
+
+msgid "suggestion_sent_to_moderation"
 msgstr ""
 
 msgid "start_msg"
@@ -32,16 +59,7 @@ msgstr ""
 msgid "state_reset"
 msgstr ""
 
-msgid "error_media_suggestion"
-msgstr ""
-
-msgid "on_moderation"
-msgstr ""
-
 msgid "user_stats"
-msgstr ""
-
-msgid "notify_admin_new_suggestion"
 msgstr ""
 
 msgid "error_user_immune"
@@ -53,28 +71,7 @@ msgstr ""
 msgid "user_not_found"
 msgstr ""
 
-msgid "error_suggestion_not_found"
-msgstr ""
-
-msgid "admin_get_suggestion_caption"
-msgstr ""
-
-msgid "admin_suggestion_original_caption"
-msgstr ""
-
-msgid "no_active_suggestions"
-msgstr ""
-
-msgid "suggestion_wait_media"
-msgstr ""
-
-msgid "start_review_suggestions"
-msgstr ""
-
 msgid "command_syntax_error"
-msgstr ""
-
-msgid "suggestion_verdict_exists"
 msgstr ""
 
 msgid "verdict_rewrite"

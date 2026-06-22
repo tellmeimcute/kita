@@ -80,7 +80,7 @@ async def on_album_received(
 
     admins = await user_service.get_admins()
     i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
-    payload = MessagePayload(i18n_key="notify_admin_new_suggestion", i18n_kwargs=i18n_kwargs)
+    payload = MessagePayload(i18n_key="suggestion_notify_admin_new", i18n_kwargs=i18n_kwargs)
     asyncio.create_task(notifier.notify_many(admins, payload))
 
 
