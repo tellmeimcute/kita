@@ -24,16 +24,6 @@ class SuggestionBaseDTO(TrackableDto):
     created_at: datetime
     updated_at: datetime
 
-    def to_i18n_kwargs(self) -> dict:
-        data = self.model_dump(mode="json")
-        updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
-        created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
-
-        data.update(
-            updated_at=updated_at,
-            created_at=created_at,
-        )
-        return data
 
 class SuggestionFullDTO(SuggestionBaseDTO):
     author: UserDTO
@@ -45,3 +35,16 @@ class SuggestionFullDTO(SuggestionBaseDTO):
         if not self.media and self.caption:
             return RenderType.MESSAGE
         return RenderType.MEDIAGROUP
+    
+    def to_i18n_kwargs(self) -> dict:
+        data = self.model_dump(mode="json")
+        author = self.author.to_i18n_kwargs()
+        updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
+        created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
+
+        data.update(
+            author=author,
+            updated_at=updated_at,
+            created_at=created_at,
+        )
+        return data
