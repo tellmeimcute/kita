@@ -15,6 +15,7 @@ from middlewares import (
 from routers import admin_suggestion_router
 from routers.admin_menu.dialog import dialog as admin_menu_dialog
 from routers.banner_menu.dialog import dialog as admin_banner_dialog
+from routers.broadcast_menu.dialog import dialog as admin_broadcast_dialog
 
 from routers.main_menu.dialog import dialog as main_menu_dialog
 from routers.main_menu.handlers import router as main_menu_router
@@ -55,6 +56,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
         admin_suggestion_router,
         admin_menu_dialog,
         admin_banner_dialog,
+        admin_broadcast_dialog,
     )
 
     admin_middleware = await container.get(AdminMiddleware)

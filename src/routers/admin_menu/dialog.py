@@ -1,26 +1,23 @@
 
 from aiogram_dialog import Window, Dialog, StartMode, ShowMode
-from aiogram_dialog.widgets.style import Style
-from aiogram_dialog.widgets.kbd import SwitchTo, Row, Button, Start
+from aiogram_dialog.widgets.kbd import SwitchTo, Row, Start, Button
 from aiogram_dialog.widgets.input import MessageInput
 
 from database.enums import UserRole
 from ui.widgets.i18n_text import I18nText
-from ui.state_groups import AdminMenuSG, UserMenuSG, BannerMenuSG
+from ui.state_groups import AdminMenuSG, UserMenuSG, BannerMenuSG, BroadcastMenuSG
 
 from routers.shared_getters import role_condition
 
-from .getters import get_app_stats, get_broadcast_info
+from .getters import get_app_stats
 from .handlers import (
     select_user,
     user_change_role,
-    prepare_broadcast,
-    execute_broadcast,
 )
 
 main_window = Window(
     I18nText("admin_menu_text"),
-    SwitchTo(I18nText("broadcast_btn"), id="broadcast", state=AdminMenuSG.wait_broadcast_content),
+    Start(I18nText("broadcast_btn"), id="broadcast", state=BroadcastMenuSG.wait_broadcast_content),
     SwitchTo(I18nText("user_moderation_btn"), id="user_select", state=AdminMenuSG.user_select),
     Row(
         SwitchTo(I18nText("app_stats_btn"), id="app_stats", state=AdminMenuSG.app_stats),
@@ -88,29 +85,10 @@ bot_stats_window = Window(
     getter=get_app_stats,
 )
 
-wait_broadcast_window = Window(
-    I18nText("broadcast_wait_message_text"),
-    MessageInput(prepare_broadcast),
-    SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main),
-    state=AdminMenuSG.wait_broadcast_content,
-)
-
-confirm_broadcast = Window(
-    I18nText("mass_message_confirm"),
-    Row(
-        SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, style=Style("danger")),
-        Button(I18nText("confirm"), id="confirm", on_click=execute_broadcast, style=Style("success")),
-    ),
-    state=AdminMenuSG.broadcast_confirm,
-    getter=get_broadcast_info,
-)
-
 dialog = Dialog(
     main_window,
     user_select_window,
     user_select_again_window,
     user_moderation_window,
     bot_stats_window,
-    wait_broadcast_window,
-    confirm_broadcast,
 )

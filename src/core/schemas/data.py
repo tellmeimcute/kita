@@ -1,6 +1,5 @@
 from pydantic import computed_field
 
-
 from database.dto.user import UserDTO
 from database.dto.suggestion import SuggestionFullDTO
 

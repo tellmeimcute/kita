@@ -22,10 +22,12 @@ class AdminMenuSG(StatesGroup):
 
     app_stats = State()
 
-    wait_broadcast_content = State()
-    broadcast_confirm = State()
-
 
 class BannerMenuSG(StatesGroup):
     prepare_banner = State()
     something_wrong = State()
+
+
+class BroadcastMenuSG(StatesGroup):
+    wait_broadcast_content = State()
+    broadcast_confirm = State()
