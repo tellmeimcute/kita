@@ -10,7 +10,7 @@ from dishka.integrations.aiogram_dialog import inject
 from core.i18n_translator import Translator
 from database.dto import UserDTO
 from services.suggestion_queue import SuggestionQueueManager
-from routers.state import SuggestionViewerState
+from ui.state_groups import SuggestionViewerSG
 from ui.suggestion_renderer import SuggestionRenderer
 
 
@@ -31,9 +31,9 @@ async def enter_suggestion_viewer(
         text = translator.get_translated_text("suggestion_no_active")
         return await callback.answer(text)
 
-    await manager.done()
+    await manager.reset_stack()
 
-    await state.set_state(SuggestionViewerState.in_viewer)
+    await state.set_state(SuggestionViewerSG.in_viewer)
     await queue_manager.dump_into_state()
     await renderer.start_review(user_dto)
     await renderer.suggestion(user_dto, new_suggestion)

@@ -23,7 +23,7 @@ from services.suggestion_queue import SuggestionQueueManager
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 from usecases.change_role import ChangeRoleUseCase
 
-from routers.state import SuggestionViewerState
+from ui.state_groups import SuggestionViewerSG
 
 from ui.suggestion_renderer import SuggestionRenderer
 from ui.state_groups import UserMenuSG
@@ -47,7 +47,7 @@ async def solo_suggestion(
     if not suggestion_dto:
         return await renderer.not_found(user_dto, command.target_id)
 
-    await state.set_state(SuggestionViewerState.in_solo_view)
+    await state.set_state(SuggestionViewerSG.in_solo_view)
 
     viewer_data = SuggestionViewerData(user_dto=user_dto, suggestion_dto=suggestion_dto)
     queue_manager = SuggestionQueueManager(session, suggestion_service, state, viewer_data)
@@ -57,8 +57,8 @@ async def solo_suggestion(
     await renderer.wait_verdict(user_dto)
 
 
-@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
-@router.message(SuggestionViewerState.in_solo_view, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
+@router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
+@router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
 async def solo_suggestion_verdict(
     message: Message,
     user_dto: UserDTO,
@@ -85,7 +85,7 @@ async def enter_suggestion_viewer(
     queue_manager: FromDishka[SuggestionQueueManager],
     renderer: FromDishka[SuggestionRenderer],
 ):
-    await state.set_state(SuggestionViewerState.in_viewer)
+    await state.set_state(SuggestionViewerSG.in_viewer)
 
     if new_suggestion := await queue_manager.pop_next():
         await renderer.start_review(user_dto)
@@ -94,8 +94,8 @@ async def enter_suggestion_viewer(
     await state.clear()
     await renderer.empty_queue(user_dto)
 
-@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
-@router.message(SuggestionViewerState.in_viewer, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
+@router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
+@router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
 async def viewer_apply_verdict(
     message: Message,
     state: FSMContext,
@@ -129,8 +129,8 @@ async def viewer_apply_verdict(
 
 
 VIEWER_BAN_FILTER = I18nTextFilter("ban_btn")
-@router.message(SuggestionViewerState.in_solo_view, VIEWER_BAN_FILTER)
-@router.message(SuggestionViewerState.in_viewer, VIEWER_BAN_FILTER)
+@router.message(SuggestionViewerSG.in_solo_view, VIEWER_BAN_FILTER)
+@router.message(SuggestionViewerSG.in_viewer, VIEWER_BAN_FILTER)
 async def ban_suggestion_author(
     message: Message,
     state: FSMContext,
@@ -160,7 +160,7 @@ async def ban_suggestion_author(
 
     #
     current_state = await state.get_state()
-    if current_state != SuggestionViewerState.in_solo_view.state:
+    if current_state != SuggestionViewerSG.in_solo_view.state:
         queue_manager.data.suggestion_dtos = None
         if new_suggestion := await queue_manager.pop_next():
             return await renderer.suggestion(user_dto, new_suggestion)

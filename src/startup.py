@@ -1,3 +1,4 @@
+
 import logging
 
 from aiogram import Dispatcher, Router
@@ -12,16 +13,19 @@ from middlewares import (
     UserMiddleware,
     RateLimitMiddleware,
 )
-from routers import admin_suggestion_router
-from routers.admin_menu.dialog import dialog as admin_menu_dialog
-from routers.banner_menu.dialog import dialog as admin_banner_dialog
-from routers.broadcast_menu.dialog import dialog as admin_broadcast_dialog
-from routers.user_moderation_menu.dialog import dialog as admin_user_moderation_dialog
 
-from routers.main_menu.dialog import dialog as main_menu_dialog
-from routers.main_menu.handlers import router as main_menu_router
-from routers.system.chat_member import router as chat_member_router
-from routers.system.errors import router as errors_router
+from routers.admin import suggestion_router as admin_suggestion_router
+from routers.admin import menu_dialog as admin_menu_dialog
+from routers.admin import banner_dialog as admin_banner_dialog
+from routers.admin import broadcast_dialog as admin_broadcast_dialog
+from routers.admin import user_moderation_dialog as admin_user_moderation_dialog
+
+from routers.user import menu_dialog as user_menu_dialog
+from routers.user import menu_router as user_menu_router
+from routers.user import suggestion_dialog as user_suggestion_dialog
+
+from routers.system import chat_member_router
+from routers.system import errors_router
 
 
 logger = logging.getLogger("kita.startup")
@@ -47,9 +51,10 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     # Order is important!!
 
     user_routers = Router(name="user_root")
-    main_menu_router.include_routers(main_menu_dialog)
     user_routers.include_routers(
-        main_menu_router,
+        user_menu_router,
+        user_menu_dialog,
+        user_suggestion_dialog
     )
 
     admin_routers = Router(name="admin_root")

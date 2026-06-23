@@ -8,9 +8,11 @@ class UserMenuSG(StatesGroup):
     language = State()
     statistics = State()
 
+
+class SuggestionSG(StatesGroup):
     make_suggestion = State()
-    suggestion_on_moderation = State()
-    suggestion_media_error = State()
+    on_moderation = State()
+    media_error = State()
 
 
 class AdminMenuSG(StatesGroup):
@@ -33,3 +35,9 @@ class BannerMenuSG(StatesGroup):
 class BroadcastMenuSG(StatesGroup):
     wait_broadcast_content = State()
     broadcast_confirm = State()
+
+
+class SuggestionViewerSG(StatesGroup):
+    in_viewer = State()
+    in_solo_view = State()
+    

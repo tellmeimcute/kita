@@ -11,7 +11,6 @@ from database.repository import SuggestionRepository, UserRepository, MediaRepos
 @inject
 async def get_app_stats(
     dialog_manager: DialogManager,
-    session: FromDishka[AsyncSession],
     s_repo: FromDishka[SuggestionRepository],
     u_repo: FromDishka[UserRepository],
     m_repo: FromDishka[MediaRepository],
