@@ -1,6 +1,6 @@
 
 
-from aiogram_dialog import Window, Dialog, StartMode, ShowMode
+from aiogram_dialog import Window, Dialog, StartMode, LaunchMode
 from aiogram_dialog.widgets.kbd import SwitchTo, Row, Start
 
 from ui.widgets.i18n_text import I18nText
@@ -35,4 +35,5 @@ bot_stats_window = Window(
 dialog = Dialog(
     main_window,
     bot_stats_window,
+    launch_mode=LaunchMode.ROOT,
 )

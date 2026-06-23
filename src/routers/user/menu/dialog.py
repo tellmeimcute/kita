@@ -1,6 +1,6 @@
 
 
-from aiogram_dialog import Window, Dialog, StartMode
+from aiogram_dialog import Window, Dialog, StartMode, LaunchMode
 from aiogram_dialog.widgets.kbd import SwitchTo, Cancel, Button, Start
 from aiogram_dialog.widgets.style import Style
 from aiogram_dialog.widgets.text import Format
@@ -85,4 +85,5 @@ dialog = Dialog(
     settings_window,
     language_window,
     statistic_window,
+    launch_mode=LaunchMode.ROOT,
 )
