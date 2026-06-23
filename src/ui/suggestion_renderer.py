@@ -37,10 +37,15 @@ class SuggestionRenderer:
         await self.notifier.notify_user(user_dto, payload)
 
     async def suggestion(self, user_dto: UserDTO, suggestion_dto: SuggestionFullDTO):
-        i18n_key = "suggestion_admin_viewer_info"
+        i18n_key = "suggestion_caption"
         kb = ReplyKeyboard.viewer_admin_action()
         payload = self.utils.payload_factory(suggestion_dto, i18n_key, kb)
-        return await self.notifier.notify_user(user_dto, payload)
+        await self.notifier.notify_user(user_dto, payload)
+
+        i18n_key = "suggestion_admin_viewer_info"
+        i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_dto)
+        payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
+        await self.notifier.notify_user(user_dto, payload)
 
     async def empty_queue(self, user_dto: UserDTO):
         payload = MessagePayload(

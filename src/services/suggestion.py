@@ -6,6 +6,7 @@ from aiogram.types import Message
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 
@@ -68,8 +69,8 @@ class SuggestionService:
 
     async def create(self, author_dto: UserDTO, album: list[Message]) -> SuggestionFullDTO:
         first_msg = album[0]
-        media_group_id = first_msg.media_group_id
         caption = first_msg.caption or first_msg.text
+        media_group_id = first_msg.media_group_id
         forwarded_from = self.parser.parse_forward_origin(first_msg)
         media_info = [
             info for msg in album 
@@ -77,7 +78,11 @@ class SuggestionService:
         ]
 
         if not caption and not media_info:
-            raise UnsupportedPayload()
+            raise UnsupportedPayload
+        if caption and media_info and len(caption) > SUGGESTION_CAPTION_LIMIT:
+            raise UnsupportedPayload
+        if caption and not media_info and len(caption) > SUGGESTION_TEXT_LIMIT:
+            raise UnsupportedPayload
 
         return await self.repo.create(
             author_id=author_dto.user_id,

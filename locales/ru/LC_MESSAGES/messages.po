@@ -35,8 +35,6 @@ msgstr ""
 
 msgid "suggestion_admin_viewer_info"
 msgstr ""
-"{caption}\n"
-"\n"
 "<b>Информация о авторе:</b>\n"
 "<b>Name</b> <code>{author[name]}</code>\n"
 "<b>Username</b> @{author[username]}\n"
@@ -47,6 +45,9 @@ msgstr ""
 "<b>Anonymous</b> <code>{anonymous}</code>\n"
 "<b>Источник</b> <code><b>{forwarded_from}</b></code>\n"
 "<b>Статус</b> <b>{verdict}</b>\n"
+
+msgid "suggestion_caption"
+msgstr "{caption}"
 
 msgid "suggestion_no_active"
 msgstr "Нет активной предложки 😢"
@@ -70,8 +71,9 @@ msgstr "Предложке с ID {id} уже вынесен вердикт: {ver
 
 msgid "suggestion_error_media"
 msgstr ""
-"То что ты отправил не принимается как предложка!\n"
+"<b>То что ты отправил не принимается как предложка!</b>\n"
 "Принимаются только текст/картинки/видео/gif\n"
+"Текст не должен превышать лимит символов\n"
 "\n"
 "Попробуй снова! Ну или вернись в главное меню 😭"
 

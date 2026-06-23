@@ -32,6 +32,9 @@ msgstr ""
 msgid "suggestion_admin_viewer_info"
 msgstr ""
 
+msgid "suggestion_caption"
+msgstr ""
+
 msgid "suggestion_no_active"
 msgstr ""
 
