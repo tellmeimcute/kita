@@ -296,6 +296,11 @@ msgstr ""
 msgid "rate_limited_warning"
 msgstr "RateLimited. Подождите пару секунд 😴"
 
+msgid "warning_unknown_intent"
+msgstr ""
+"<b>Сообщение слишком старое</b>\n"
+"Пропишите /start для обновления"
+
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
 

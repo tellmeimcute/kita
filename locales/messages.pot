@@ -222,7 +222,10 @@ msgid "admin_moderation_user_profile"
 msgstr ""
 
 msgid "rate_limited_warning"
-msgstr "RateLimited. Wait a few seconds."
+msgstr ""
+
+msgid "warning_unknown_intent"
+msgstr ""
 
 msgid "locale_ru_string"
 msgstr ""
