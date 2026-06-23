@@ -1,16 +1,13 @@
+
+
 from pydantic import computed_field
 
 from database.dto.user import UserDTO
-from database.dto.suggestion import SuggestionFullDTO
 
 from .base import BaseData
 
-class SuggestionViewerData(BaseData):
-    suggestion_dtos: list[SuggestionFullDTO] | None = None
-    suggestion_dto: SuggestionFullDTO | None = None
-    user_dto: UserDTO
 
-class MassMessageData(BaseData):
+class BroadcastData(BaseData):
     users: list[UserDTO] | None = None
 
     is_forwarded: bool = False
@@ -28,5 +25,5 @@ class MassMessageData(BaseData):
 
     @computed_field
     @property
-    def status(self) -> bool:
-        return True if self.progress == self.users_count else False
+    def is_completed(self) -> bool:
+        return self.progress == self.users_count

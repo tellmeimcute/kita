@@ -12,7 +12,7 @@ from dishka.integrations.aiogram_dialog import inject
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.i18n_translator import Translator
-from core.schemas.data import MassMessageData
+from core.schemas.broadcast import BroadcastData
 from core.schemas.message_payload import MessagePayload
 
 from database.dto import UserDTO
@@ -55,11 +55,11 @@ async def execute_broadcast(
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
     raw_data: dict = manager.dialog_data.get("broadcast_data")
-    broadcast_data = MassMessageData.model_validate(raw_data)
+    broadcast_data = BroadcastData.model_validate(raw_data)
 
     i18n_kwargs = broadcast_data.model_dump()
     i18n_kwargs["status"] = translator.translate(
-        i18n_key="completed" if broadcast_data.status else "in_process"
+        i18n_key="completed" if broadcast_data.is_completed else "in_process"
     )
     payload = MessagePayload(i18n_key="broadcast_status_text", i18n_kwargs=i18n_kwargs)
     status_message = await notifier.notify_user(user_dto, payload)

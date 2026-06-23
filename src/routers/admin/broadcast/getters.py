@@ -4,7 +4,7 @@ from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.schemas.data import MassMessageData
+from core.schemas.broadcast import BroadcastData
 from usecases.broadcast import BroadcastUseCase
 
 
@@ -15,7 +15,7 @@ async def get_broadcast_info(
     **kwargs
 ):
     data_raw = dialog_manager.dialog_data.get("broadcast_data")
-    broadcast_data = MassMessageData.model_validate(data_raw)
+    broadcast_data = BroadcastData.model_validate(data_raw)
 
     estimated_time = broadcast.estimate_time(broadcast_data)
     return {

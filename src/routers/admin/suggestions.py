@@ -13,7 +13,7 @@ from dishka import FromDishka
 from core.filters import I18nTextFilter, TextArgsFilter
 from core.exceptions import UserImmuneError
 from core.schemas.message_payload import MessagePayload
-from core.schemas.data import SuggestionViewerData
+from core.schemas.viewer import SuggestionViewerData
 from core.schemas import IDCommand
 
 from database.dto import UserDTO

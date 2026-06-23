@@ -5,7 +5,7 @@ from itertools import batched
 from aiogram.types import Message, MessageOriginChannel
 
 from core.i18n_translator import Translator
-from core.schemas.data import MassMessageData
+from core.schemas.broadcast import BroadcastData
 from services import NotifierService, UserService
 
 
@@ -27,23 +27,23 @@ class BroadcastUseCase:
         self._notifier = notifier
         self._translator = translator
 
-    async def prepare(self, message: Message, album: tuple[Message, ...]) -> MassMessageData:
+    async def prepare(self, message: Message, album: tuple[Message, ...]) -> BroadcastData:
         active = await self._user_service.get_active()
 
         is_forwarded = isinstance(message.forward_origin, MessageOriginChannel)
-        return MassMessageData(
+        return BroadcastData(
             users=active,
             is_forwarded=is_forwarded,
             source_chat_id=message.chat.id,
             source_message_ids=[m.message_id for m in album],
         )
 
-    def estimate_time(self, data: MassMessageData) -> float:
+    def estimate_time(self, data: BroadcastData) -> float:
         return (data.users_count / self._notifier.chunk_size) * self._notifier.chunk_delay
 
     async def execute(
         self,
-        data: MassMessageData,
+        data: BroadcastData,
         status_message: Message,
     ):
         send_func = (
@@ -71,7 +71,7 @@ class BroadcastUseCase:
             if data.progress % 10 == 0 or data.progress == data.users_count:
                 i18n_kwargs = data.model_dump()
                 i18n_kwargs["status"] = self._translator.translate(
-                    i18n_key="completed" if data.status else "in_process"
+                    i18n_key="completed" if data.is_completed else "in_process"
                 )
                 new_status = self._translator.i18n_text("broadcast_status_text", i18n_kwargs)
                 await self._notifier.edit_message_text(status_message, new_status)
