@@ -19,7 +19,7 @@ class SuggestionUtils:
     def _get_verdict(self, suggestion_dto: SuggestionFullDTO):
         status = suggestion_dto.status.value
         i18n_key = f"suggestion_status_{status}".lower()
-        return self.translator.get_translated_text(i18n_key)
+        return self.translator.translate(i18n_key)
 
     def _get_author_plus_origin(self, dto: SuggestionFullDTO):
         author = dto.author
@@ -27,7 +27,7 @@ class SuggestionUtils:
         author_name = "Anonymous" if is_anon else author.name
 
         i18n_kwargs = dict(author_name=author_name, forwarded_from=dto.forwarded_from)
-        return self.translator.get_i18n_text(
+        return self.translator.i18n_text(
             i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs
         )
 
@@ -77,5 +77,5 @@ class SuggestionUtils:
 
         if dto.render_type == RenderType.MEDIAGROUP:
             media_group: MediaGroupBuilder = self._get_media_group(dto)
-            media_group.caption = self.translator.get_i18n_text(i18n_key, i18n_kwargs)
+            media_group.caption = self.translator.i18n_text(i18n_key, i18n_kwargs)
             return MessagePayload(mediagroup=media_group.build(), suggestion_id=dto.id)

@@ -50,7 +50,7 @@ class RateLimitMiddleware(KitaMiddleware):
         translator: Translator = await container.get(Translator)
         
         with i18n.use_locale(user_dto.language_code):
-            msg = translator.get_translated_text("rate_limited_warning")
+            msg = translator.translate("rate_limited_warning")
 
         await limiter.mark_warned(user_dto)
         await event.answer(msg)

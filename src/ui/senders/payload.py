@@ -31,7 +31,7 @@ class TextSender(MessageSender):
         if not self.translator:
             raise ValueError("Translator is required for TextSender")
         
-        content = self.translator.get_i18n_text(self.payload.i18n_key, self.payload.i18n_kwargs)
+        content = self.translator.i18n_text(self.payload.i18n_key, self.payload.i18n_kwargs)
         return await self.bot.send_message(
             chat_id=self.target_id,
             text=content,

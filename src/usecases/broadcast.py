@@ -70,10 +70,10 @@ class BroadcastUseCase:
 
             if data.progress % 10 == 0 or data.progress == data.users_count:
                 i18n_kwargs = data.model_dump()
-                i18n_kwargs["status"] = self._translator.get_translated_text(
+                i18n_kwargs["status"] = self._translator.translate(
                     i18n_key="completed" if data.status else "in_process"
                 )
-                new_status = self._translator.get_i18n_text("broadcast_status_text", i18n_kwargs)
+                new_status = self._translator.i18n_text("broadcast_status_text", i18n_kwargs)
                 await self._notifier.edit_message_text(status_message, new_status)
 
             await asyncio.sleep(self._notifier.chunk_delay)

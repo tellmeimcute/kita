@@ -22,7 +22,7 @@ async def get_banner_text(
     runtime_config: FromDishka[RuntimeConfig]
 ):
     builder = InlineKeyboardBuilder()
-    btn_text = translator.get_translated_text("channel_banner_btn")
+    btn_text = translator.translate("channel_banner_btn")
     builder.button(text=btn_text, url=runtime_config.bot_url)
     markup = builder.as_markup()
 

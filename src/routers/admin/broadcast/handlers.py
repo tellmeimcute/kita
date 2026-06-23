@@ -58,7 +58,7 @@ async def execute_broadcast(
     broadcast_data = MassMessageData.model_validate(raw_data)
 
     i18n_kwargs = broadcast_data.model_dump()
-    i18n_kwargs["status"] = translator.get_translated_text(
+    i18n_kwargs["status"] = translator.translate(
         i18n_key="completed" if broadcast_data.status else "in_process"
     )
     payload = MessagePayload(i18n_key="broadcast_status_text", i18n_kwargs=i18n_kwargs)

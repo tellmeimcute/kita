@@ -25,7 +25,6 @@ from routers.user import menu_router as user_menu_router
 from routers.user import suggestion_dialog as user_suggestion_dialog
 
 from routers.system import chat_member_router
-from routers.system import errors_router
 
 
 logger = logging.getLogger("kita.startup")
@@ -71,7 +70,6 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
 
     setup_dialogs(dp)
     dp.include_routers(
-        errors_router,
         chat_member_router,
         user_routers,
         admin_routers,

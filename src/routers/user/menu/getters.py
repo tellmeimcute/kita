@@ -23,7 +23,7 @@ async def get_statistic(
     user_dto: UserDTO = dialog_manager.middleware_data.get("user_dto")
 
     stats = await suggestion_service.get_user_stats(user_dto)
-    stats_text = translator.get_i18n_text(i18n_key="user_stats", i18n_kwargs=stats.model_dump())
+    stats_text = translator.i18n_text(i18n_key="user_stats", i18n_kwargs=stats.model_dump())
     return {"stats_text": stats_text}
 
 @inject

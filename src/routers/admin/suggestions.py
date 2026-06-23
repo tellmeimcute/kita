@@ -11,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from dishka import FromDishka
 
 from core.filters import I18nTextFilter, TextArgsFilter
+from core.exceptions import UserImmuneError
 from core.schemas.message_payload import MessagePayload
-from core.schemas import IDCommand
 from core.schemas.data import SuggestionViewerData
+from core.schemas import IDCommand
 
 from database.dto import UserDTO
 from database.enums import UserRole, SuggestionStatus
@@ -99,12 +100,12 @@ async def enter_suggestion_viewer(
 async def viewer_apply_verdict(
     message: Message,
     state: FSMContext,
+    dialog_manager: DialogManager,
     user_dto: UserDTO,
     session: FromDishka[AsyncSession],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
-    dialog_manager: DialogManager,
     verdict: SuggestionStatus,
 ):
     async with session.begin():
@@ -134,6 +135,7 @@ VIEWER_BAN_FILTER = I18nTextFilter("ban_btn")
 async def ban_suggestion_author(
     message: Message,
     state: FSMContext,
+    dialog_manager: DialogManager,
     user_dto: UserDTO,
     session: FromDishka[AsyncSession],
     notifier: FromDishka[NotifierService],
@@ -145,18 +147,20 @@ async def ban_suggestion_author(
     target_id = queue_manager.data.suggestion_dto.author_id
     target_role = UserRole.BANNED
 
-    async with session.begin():
-        target_dto = await change_role_usecase.execute(
-            target_id,
-            target_role,
-            caller=user_dto,
-        )
+    try:
+        async with session.begin():
+            target_dto = await change_role_usecase.execute(
+                target_id, target_role, caller=user_dto
+            )
 
-    payload = MessagePayload(
-        i18n_key="answer_admin_role_changed",
-        i18n_kwargs=target_dto.model_dump(),
-    )
-    await notifier.notify_user(user_dto, payload)
+        payload = MessagePayload(
+            i18n_key="answer_admin_role_changed",
+            i18n_kwargs=target_dto.to_i18n_kwargs(),
+        )
+        await notifier.notify_user(user_dto, payload)
+    except UserImmuneError:
+        payload = MessagePayload(i18n_key="error_user_immune")
+        return await notifier.notify_user(user_dto, payload)
 
     #
     current_state = await state.get_state()
@@ -164,7 +168,14 @@ async def ban_suggestion_author(
         queue_manager.data.suggestion_dtos = None
         if new_suggestion := await queue_manager.pop_next():
             return await renderer.suggestion(user_dto, new_suggestion)
+        
         await renderer.empty_queue(user_dto)
-            
+        await state.clear()
+        return await dialog_manager.start(
+            UserMenuSG.main,
+            mode=StartMode.RESET_STACK,
+            show_mode=ShowMode.DELETE_AND_SEND,
+        )
+
     await state.clear()
     

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import UserImmuneError
 from core.schemas import IDCommand
+from core.i18n_translator import Translator
 
 from database.dto import UserDTO
 from database.enums import UserRole
@@ -55,6 +56,7 @@ async def user_change_role(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    translator: FromDishka[Translator],
     session: FromDishka[AsyncSession],
     change_role: FromDishka[ChangeRoleUseCase],
 ):
@@ -83,4 +85,5 @@ async def user_change_role(
             "target_dto_i18n": new_target_dto.to_i18n_kwargs(),
         })
     except UserImmuneError:
-        await callback.answer("UserImmuneError")
+        error_msg = translator.translate("error_user_immune")
+        await callback.answer(error_msg)

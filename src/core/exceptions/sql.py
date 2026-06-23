@@ -1,5 +1,6 @@
 
-from .i18n_base import KitaException, KitaExceptionI18nKwargs
+from .base import KitaException
 
 
-class UserImmuneError(KitaException): ...
+class UserImmuneError(KitaException): 
+    ...
