@@ -16,11 +16,13 @@ class UserMenuSG(StatesGroup):
 class AdminMenuSG(StatesGroup):
     main = State()
 
+    app_stats = State()
+
+
+class ModerationMenuSG(StatesGroup):
     user_select = State()
     user_select_again = State()
     user_moderation = State()
-
-    app_stats = State()
 
 
 class BannerMenuSG(StatesGroup):

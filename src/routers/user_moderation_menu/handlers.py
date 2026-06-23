@@ -1,4 +1,5 @@
 
+
 from pydantic import ValidationError
 
 from aiogram.types import CallbackQuery, Message
@@ -17,7 +18,7 @@ from database.dto import UserDTO
 from database.enums import UserRole
 
 from services import UserService
-from ui.state_groups import AdminMenuSG
+from ui.state_groups import ModerationMenuSG
 
 from usecases.change_role import ChangeRoleUseCase
 
@@ -39,14 +40,14 @@ async def select_user(
 
     if not target_dto:
         return await manager.switch_to(
-            AdminMenuSG.user_select_again, show_mode=ShowMode.DELETE_AND_SEND
+            ModerationMenuSG.user_select_again, show_mode=ShowMode.DELETE_AND_SEND
         )
- 
+
     manager.dialog_data.update({
         "target_dto": target_dto.model_dump(mode="json"),
         "target_dto_i18n": target_dto.to_i18n_kwargs(),
     })
-    await manager.switch_to(AdminMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
+    await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
 
 @inject
@@ -83,5 +84,3 @@ async def user_change_role(
         })
     except UserImmuneError:
         await callback.answer("UserImmuneError")
-
-
