@@ -1,6 +1,7 @@
 from collections.abc import Awaitable, Callable
 from logging import getLogger
 from typing import Any
+from datetime import datetime
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as AiogramUser
@@ -79,4 +80,6 @@ class UserMiddleware(KitaMiddleware):
             name=aiogram_user.full_name,
             language_code=language_code,
             role=role,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
