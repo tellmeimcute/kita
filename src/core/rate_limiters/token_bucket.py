@@ -48,7 +48,7 @@ redis.call('EXPIRE', key, math.ceil(max_tokens / refill_rate) + 1)
 return { allowed, math.floor(remaining) }
 """
 
-logger = getLogger("rate_limit")
+logger = getLogger("kita.rate_limit")
 
 @dataclass
 class TokenBucketResult:
