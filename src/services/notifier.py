@@ -57,7 +57,7 @@ class NotifierService:
 
         raise UnsupportedPayload(payload=payload)
 
-    async def send(self, strategy: MessageSender | MessageTransfer):
+    async def send(self, strategy: MessageSender | MessageTransfer) -> list[Message] | Message:
         try:
             return await strategy.send()
         except (TelegramForbiddenError, TelegramBadRequest) as e:

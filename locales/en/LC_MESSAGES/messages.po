@@ -189,7 +189,7 @@ msgstr ""
 "💬 <code><b>{author_string}</b></code>"
 
 msgid "notify_author_suggestion_posted"
-msgstr "🎉 <b>Your suggestion posted!</b>"
+msgstr "🎉 <b>Your <a href="{post_url}">suggestion</a> posted!</b>"
 
 msgid "broadcast_btn"
 msgstr "🚀 Broadcast"

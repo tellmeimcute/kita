@@ -5,7 +5,7 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.utils.i18n import I18n
 
-from core.config import Config
+from core.config import Config, RuntimeConfig
 from core.schemas.message_payload import MessagePayload
 from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent
 
@@ -53,6 +53,7 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent):
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent):
     config = await event.container.get(Config)
+    runtime_config = await event.container.get(RuntimeConfig)
     notifier = await event.container.get(NotifierService)
     suggestion_utils = await event.container.get(SuggestionUtils)
     i18n = await event.container.get(I18n)
@@ -60,8 +61,15 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent):
     with i18n.context():
         channel_payload = suggestion_utils.payload_factory(event.suggestion_dto, "channel_post_message")
         strategy = notifier.send_strategy_factory(config.channel_id, channel_payload)
-        await notifier.send(strategy)
+        channel_post = await notifier.send(strategy)
 
+        if isinstance(channel_post, list):
+            channel_post = channel_post[0]
+        post_url = channel_post.get_url() or runtime_config.bot_url
+        
         with i18n.use_locale(event.suggestion_dto.author.language_code):
-            author_payload = MessagePayload(i18n_key="notify_author_suggestion_posted")
+            author_payload = MessagePayload(
+                i18n_key="notify_author_suggestion_posted", 
+                i18n_kwargs=dict(post_url=post_url),
+            )
             await notifier.notify_user(event.suggestion_dto.author, author_payload)
