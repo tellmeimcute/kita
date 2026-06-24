@@ -10,11 +10,12 @@ from dishka import AsyncContainer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import Config
+from core.events import EventBus, NewUserEvent
 from core.consts import DISHKA_CONTAINER_KEY
 
 from database.dto import UserDTO
 from database.enums import UserRole
-from services.user import UserService
+from services import UserService, NotifierService
 
 from .base import KitaMiddleware
 
@@ -33,22 +34,27 @@ class UserMiddleware(KitaMiddleware):
         data: dict[str, Any],
     ) -> Any:
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        session: AsyncSession = await container.get(AsyncSession)
 
+        event_bus = await container.get(EventBus)
+        session: AsyncSession = await container.get(AsyncSession)
+        user_service: UserService = await container.get(UserService)
         if not session or not event.from_user:
             logger.warning("No user in event. Stop")
             return None
-
-        user_service: UserService = await container.get(UserService)
-
+        
+        is_new_user = False
         user_tg = event.from_user
+
         async with session.begin():
             user_dto = await self._resolve_user(user_service, user_tg)
             if not user_dto:
                 user_dto = await user_service.create(self.dto_from_aiogram(user_tg))
+                is_new_user = True
+        
+        if is_new_user:
+            event_bus.dispatch(NewUserEvent(user_dto=user_dto, container=container))
 
         data.update(user_dto=user_dto)
-
         return await handler(event, data)
 
     async def _resolve_user(

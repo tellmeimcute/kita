@@ -1,5 +1,4 @@
 
-import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dishka import FromDishka
@@ -10,15 +9,13 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
 
 from core.exceptions import UnsupportedPayload
-from core.schemas.message_payload import MessagePayload
+from core.consts import DISHKA_CONTAINER_KEY
+from core.events import EventBus, NewSuggestionEvent
 
 from database.dto import UserDTO
-from services.user import UserService
-from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 
 from ui.state_groups import SuggestionSG
-from ui.suggestion_utils import SuggestionUtils
 
 
 @inject
@@ -28,10 +25,9 @@ async def on_album_received(
     manager: DialogManager,
     session: FromDishka[AsyncSession],
     suggestion_service: FromDishka[SuggestionService],
-    notifier: FromDishka[NotifierService],
-    user_service: FromDishka[UserService],
-    suggestion_utils: FromDishka[SuggestionUtils],
+    event_bus: FromDishka[EventBus],
 ):
+    container = manager.middleware_data.get(DISHKA_CONTAINER_KEY)
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     album = manager.middleware_data.get("album")
 
@@ -47,7 +43,7 @@ async def on_album_received(
 
     await manager.switch_to(SuggestionSG.on_moderation)
 
-    admins = await user_service.get_admins()
-    i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion_dto)
-    payload = MessagePayload(i18n_key="suggestion_notify_admin_new", i18n_kwargs=i18n_kwargs)
-    asyncio.create_task(notifier.notify_many(admins, payload))
+    event_bus.dispatch(NewSuggestionEvent(
+        container=container,
+        suggestion_dto=suggestion_dto,
+    ))

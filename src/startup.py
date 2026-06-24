@@ -5,6 +5,13 @@ from aiogram import Dispatcher, Router
 from aiogram_dialog import setup_dialogs
 from dishka import AsyncContainer
 
+from core.events import (
+    EventBus,
+    NewUserEvent,
+    NewSuggestionEvent,
+    SuggestionAcceptedEvent,
+)
+
 from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
@@ -25,10 +32,23 @@ from routers.user import menu_router as user_menu_router
 from routers.user import suggestion_dialog as user_suggestion_dialog
 
 from routers.system import chat_member_router
-
+from routers.system.listeners import (
+    notify_admin_new_user,
+    notify_admin_new_suggestion,
+    suggestion_accepted,
+)
 
 logger = logging.getLogger("kita.startup")
 
+
+async def register_events(container: AsyncContainer):
+    event_bus = await container.get(EventBus)
+    event_bus.sub(NewUserEvent, notify_admin_new_user)
+    event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
+    event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
+    
+    logger.debug("%s", event_bus.listeners)
+    logger.info("Event Bus successfully registered")
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     user_middleware = await container.get(UserMiddleware)
@@ -84,4 +104,6 @@ async def register_all(
 ):
     await register_middlewares(container, dp)
     await register_routers(container, dp)
+    await register_events(container)
+
     logger.info("Bot fully init")

@@ -227,6 +227,9 @@ msgstr ""
 msgid "warning_unknown_intent"
 msgstr ""
 
+msgid "new_user_registered"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 

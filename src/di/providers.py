@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 
 from core.i18n_translator import Translator
+from core.events import EventBus
 
 from services.user import UserService
 from services.suggestion import SuggestionService
@@ -16,6 +17,8 @@ from database.repository import SuggestionRepository, UserRepository, MediaRepos
 from ui.suggestion_utils import SuggestionUtils
 
 class ServicesProvider(Provider):
+    event_bus = provide(EventBus, scope=Scope.APP)
+
     notifier_service = provide(NotifierService, scope=Scope.APP)
     user_service = provide(UserService, scope=Scope.REQUEST)
     suggestion_service = provide(SuggestionService, scope=Scope.REQUEST)

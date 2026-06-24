@@ -301,6 +301,11 @@ msgstr ""
 "<b>Сообщение слишком старое</b>\n"
 "Пропишите /start для обновления"
 
+msgid "new_user_registered"
+msgstr ""
+"🎉 <b>Новый пользователь в боте!</b>\n"
+"{new_user_dto[name]} @{new_user_dto[username]} <code>{new_user_dto[user_id]}</code>"
+
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
 
