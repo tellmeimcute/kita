@@ -1,11 +1,9 @@
-import asyncio
+
 from logging import getLogger
-from itertools import batched
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 from aiogram.types import Message, InlineKeyboardMarkup
-from aiogram.utils.i18n import I18n
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
@@ -32,14 +30,12 @@ class NotifierService:
         "chunk_delay",
         "chunk_size",
         "translator",
-        "i18n",
     )
 
     def __init__(
         self,
         bot: Bot,
         translator: Translator,
-        i18n: I18n,
     ):
         self.bot: Bot = bot
 
@@ -47,9 +43,8 @@ class NotifierService:
         self.chunk_size = 5
 
         self.translator = translator
-        self.i18n = i18n
 
-    def send_strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
+    def strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
         if payload.i18n_key:
             return TextSender(self.bot, target_id, payload, silent, self.translator)
         if payload.mediagroup:
@@ -64,24 +59,11 @@ class NotifierService:
             logger.warning("Failed to execute strategy %s to target %s: %s", strategy.name, strategy.target_id, e)
 
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
-        """use locale from i18n middleware"""
-        
         if user_dto.is_bot_blocked:
             return logger.info("UserID %s has blocked the bot. Skip.", user_dto.user_id)
         
-        strategy = self.send_strategy_factory(user_dto.user_id, payload)
+        strategy = self.strategy_factory(user_dto.user_id, payload)
         return await self.send(strategy)
-
-    async def notify_user_i18n(self, user_dto: UserDTO, payload: MessagePayload):
-        """use locale from user_dto.language_code"""
-        with self.i18n.use_locale(user_dto.language_code):
-            await self.notify_user(user_dto, payload)
-
-    async def notify_many(self, users_dto: list[UserDTO], payload: MessagePayload):
-        for chunk in batched(users_dto, self.chunk_size):
-            tasks = [self.notify_user_i18n(user_dto, payload) for user_dto in chunk]
-            await asyncio.gather(*tasks)
-            await asyncio.sleep(self.chunk_delay)
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         strategy = ForwardTransfer(

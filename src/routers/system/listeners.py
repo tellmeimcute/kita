@@ -60,7 +60,7 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent):
 
     with i18n.context():
         channel_payload = suggestion_utils.payload_factory(event.suggestion_dto, "channel_post_message")
-        strategy = notifier.send_strategy_factory(config.channel_id, channel_payload)
+        strategy = notifier.strategy_factory(config.channel_id, channel_payload)
         channel_post = await notifier.send(strategy)
 
         if isinstance(channel_post, list):
