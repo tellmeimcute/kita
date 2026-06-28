@@ -21,7 +21,6 @@ logger = getLogger("kita.suggestion_service")
 class SuggestionService:
 
     __slots__ = (
-        "session",
         "redis",
         "redis_key",
         "repo",

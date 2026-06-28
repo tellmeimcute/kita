@@ -1,6 +1,4 @@
 
-from types import TracebackType
-from typing import Self, Type
 from contextlib import asynccontextmanager
 from logging import getLogger
 
