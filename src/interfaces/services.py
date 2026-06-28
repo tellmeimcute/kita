@@ -23,6 +23,12 @@ class UserServiceProtocol(Protocol):
     async def save(self, user_dto: UserDTO) -> None:
         ...
 
+    @abstractmethod
+    async def get_active(self): ...
+
+    @abstractmethod
+    async def get_admins(self): ...
+
 
 class SuggestionServiceProtocol(Protocol):
 
@@ -49,3 +55,4 @@ class SuggestionServiceProtocol(Protocol):
     @abstractmethod
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         ...
+

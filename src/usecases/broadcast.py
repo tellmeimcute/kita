@@ -16,6 +16,8 @@ class BroadcastUseCase:
         "_user_service",
         "_notifier",
         "_translator",
+        "_chunk_size",
+        "_chunk_delay",
     )
 
     def __init__(
@@ -28,7 +30,10 @@ class BroadcastUseCase:
         self._notifier = notifier
         self._translator = translator
 
-    async def prepare(self, message: Message, album: tuple[Message, ...]) -> BroadcastData:
+        self._chunk_size = 5
+        self._chunk_delay = 2.5
+
+    async def prepare(self, message: Message, album: tuple[Message]) -> BroadcastData:
         active = await self._user_service.get_active()
 
         is_forwarded = isinstance(message.forward_origin, MessageOriginChannel)
@@ -40,7 +45,7 @@ class BroadcastUseCase:
         )
 
     def estimate_time(self, data: BroadcastData) -> float:
-        return (data.users_count / self._notifier.chunk_size) * self._notifier.chunk_delay
+        return (data.users_count / self._chunk_size) * self._chunk_delay
 
     async def execute(
         self,
@@ -53,7 +58,7 @@ class BroadcastUseCase:
             else self._notifier.copy_messages
         )
 
-        for chunk in batched(data.users, self._notifier.chunk_size, strict=False):
+        for chunk in batched(data.users, self._chunk_size, strict=False):
             tasks = [
                 send_func(user_dto, data.source_message_ids, data.source_chat_id)
                 for user_dto in chunk
@@ -77,4 +82,4 @@ class BroadcastUseCase:
                 new_status = self._translator.i18n_text("broadcast_status_text", i18n_kwargs)
                 await self._notifier.edit_message_text(status_message, new_status)
 
-            await asyncio.sleep(self._notifier.chunk_delay)
+            await asyncio.sleep(self._chunk_delay)

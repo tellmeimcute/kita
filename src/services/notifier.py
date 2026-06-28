@@ -27,21 +27,11 @@ class NotifierService:
     
     __slots__ = (
         "bot",
-        "chunk_delay",
-        "chunk_size",
         "translator",
     )
 
-    def __init__(
-        self,
-        bot: Bot,
-        translator: Translator,
-    ):
-        self.bot: Bot = bot
-
-        self.chunk_delay = 5.0
-        self.chunk_size = 5
-
+    def __init__(self, bot: Bot, translator: Translator):
+        self.bot = bot
         self.translator = translator
 
     def strategy_factory(self, target_id: int, payload: MessagePayload, silent: bool = True):
