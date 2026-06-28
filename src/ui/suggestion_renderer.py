@@ -24,12 +24,6 @@ class SuggestionRenderer:
         )
         await self.notifier.notify_user(user_dto, payload)
 
-    async def start_review(self, user_dto: UserDTO):
-        payload = MessagePayload(
-            i18n_key="start_review_suggestions", reply_markup=ReplyKeyboard.viewer_admin_action()
-        )
-        await self.notifier.notify_user(user_dto, payload)
-
     async def verdict_rewrite(self, user_dto: UserDTO):
         payload = MessagePayload(
             i18n_key="verdict_rewrite", reply_markup=ReplyKeyboardRemove()
@@ -38,13 +32,13 @@ class SuggestionRenderer:
 
     async def suggestion(self, user_dto: UserDTO, suggestion_dto: SuggestionFullDTO):
         i18n_key = "suggestion_caption"
-        kb = ReplyKeyboard.viewer_admin_action()
-        payload = self.utils.payload_factory(suggestion_dto, i18n_key, kb)
+        payload = self.utils.payload_factory(suggestion_dto, i18n_key)
         await self.notifier.notify_user(user_dto, payload)
 
         i18n_key = "suggestion_admin_viewer_info"
         i18n_kwargs = self.utils.get_i18n_kwargs(suggestion_dto)
-        payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs)
+        kb = ReplyKeyboard.viewer_admin_action()
+        payload = MessagePayload(i18n_key=i18n_key, i18n_kwargs=i18n_kwargs, reply_markup=kb)
         await self.notifier.notify_user(user_dto, payload)
 
     async def empty_queue(self, user_dto: UserDTO):

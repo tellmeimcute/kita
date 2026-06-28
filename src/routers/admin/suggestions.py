@@ -89,7 +89,6 @@ async def enter_suggestion_viewer(
     await state.set_state(SuggestionViewerSG.in_viewer)
 
     if new_suggestion := await queue_manager.pop_next():
-        await renderer.start_review(user_dto)
         return await renderer.suggestion(user_dto, new_suggestion)
 
     await state.clear()
