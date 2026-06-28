@@ -10,6 +10,5 @@ class MessagePayload(BaseData):
     i18n_kwargs: dict[str, Any] = {}
 
     reply_markup: AnyKeyboard | None = None
-    mediagroup: list[MediaType] | None = None
-
-    suggestion_id: int | None = None
+    media: list[MediaType] | None = None
+    

@@ -3,6 +3,7 @@ import asyncio
 from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from dishka import AsyncContainer
 from aiogram.utils.i18n import I18n
 
 from core.config import Config, RuntimeConfig
@@ -14,13 +15,13 @@ from services import NotifierService, UserService
 
 logger = getLogger("kita.event")
 
-async def notify_admin_new_user(event: NewUserEvent):
-    config = await event.container.get(Config)
+async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
+    config = await container.get(Config)
 
-    session = await event.container.get(AsyncSession)
-    user_service = await event.container.get(UserService)
-    notifier = await event.container.get(NotifierService)
-    i18n = await event.container.get(I18n)
+    session = await container.get(AsyncSession)
+    user_service = await container.get(UserService)
+    notifier = await container.get(NotifierService)
+    i18n = await container.get(I18n)
 
     async with session.begin():
         admin = await user_service.get(config.admin_id)
@@ -33,12 +34,12 @@ async def notify_admin_new_user(event: NewUserEvent):
             )
             await notifier.notify_user(admin, payload)
 
-async def notify_admin_new_suggestion(event: NewSuggestionEvent):
-    session = await event.container.get(AsyncSession)
-    user_service = await event.container.get(UserService)
-    notifier = await event.container.get(NotifierService)
-    suggestion_utils = await event.container.get(SuggestionUtils)
-    i18n = await event.container.get(I18n)
+async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
+    session = await container.get(AsyncSession)
+    user_service = await container.get(UserService)
+    notifier = await container.get(NotifierService)
+    suggestion_utils = await container.get(SuggestionUtils)
+    i18n = await container.get(I18n)
 
     async with session.begin():
         admins = await user_service.get_admins()
@@ -51,12 +52,13 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent):
                 await notifier.notify_user(admin, payload)
                 await asyncio.sleep(0.2)
 
-async def suggestion_accepted(event: SuggestionAcceptedEvent):
-    config = await event.container.get(Config)
-    runtime_config = await event.container.get(RuntimeConfig)
-    notifier = await event.container.get(NotifierService)
-    suggestion_utils = await event.container.get(SuggestionUtils)
-    i18n = await event.container.get(I18n)
+async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
+    AsyncContainer.scope
+    config = await container.get(Config)
+    runtime_config = await container.get(RuntimeConfig)
+    notifier = await container.get(NotifierService)
+    suggestion_utils = await container.get(SuggestionUtils)
+    i18n = await container.get(I18n)
 
     with i18n.context():
         channel_payload = suggestion_utils.payload_factory(event.suggestion_dto, "channel_post_message")

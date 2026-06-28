@@ -191,7 +191,7 @@ msgstr ""
 "💬 <code><b>{author_string}</b></code>"
 
 msgid "notify_author_suggestion_posted"
-msgstr "🎉 <b>Твоя <a href="{post_url}">предложка</a> опубликована в канал!</b>"
+msgstr "🎉 <b>Твоя <a href=\"{post_url}\">предложка</a> опубликована в канал!</b>"
 
 msgid "broadcast_btn"
 msgstr "🚀 Рассылка"
@@ -301,10 +301,16 @@ msgstr ""
 "<b>Сообщение слишком старое</b>\n"
 "Пропишите /start для обновления"
 
+msgid "warning_not_enough_permission"
+msgstr ""
+"<b>Не достаточно прав.</b>\n"
+"Пропишите /start чтобы вернутся в главное меню"
+
 msgid "new_user_registered"
 msgstr ""
 "🎉 <b>Новый пользователь в боте!</b>\n"
-"{new_user_dto[name]} @{new_user_dto[username]} <code>{new_user_dto[user_id]}</code>"
+"{new_user_dto[name]} @{new_user_dto[username]} "
+"<code>{new_user_dto[user_id]}</code>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"

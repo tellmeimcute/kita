@@ -3,17 +3,18 @@
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from database.repository import SuggestionRepository, UserRepository, MediaRepository
-
+from interfaces import (
+    UserRepositoryProtocol,
+    MediaRepositoryProtocol,
+    SuggestionRepositoryProtocol
+)
 
 @inject
 async def get_app_stats(
     dialog_manager: DialogManager,
-    s_repo: FromDishka[SuggestionRepository],
-    u_repo: FromDishka[UserRepository],
-    m_repo: FromDishka[MediaRepository],
+    s_repo: FromDishka[SuggestionRepositoryProtocol],
+    u_repo: FromDishka[UserRepositoryProtocol],
+    m_repo: FromDishka[MediaRepositoryProtocol],
     **kwargs
 ):
     user_stats = await u_repo.user_stats()

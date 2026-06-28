@@ -18,18 +18,15 @@ class ModerateSuggestionUseCase:
     __slots__ = (
         "_suggestion_service",
         "_event_bus",
-        "_container"
     )
 
     def __init__(
         self,
         suggestion_service: SuggestionService,
         event_bus: EventBus,
-        container: AsyncContainer,
     ):
         self._suggestion_service = suggestion_service
         self._event_bus = event_bus
-        self._container = container
 
     async def execute(
         self,
@@ -45,8 +42,7 @@ class ModerateSuggestionUseCase:
         await self._suggestion_service.update(suggestion_dto)
 
         if verdict == Status.ACCEPTED:
-            self._event_bus.dispatch(SuggestionAcceptedEvent(
-                container=self._container,
+            await self._event_bus.dispatch(SuggestionAcceptedEvent(
                 suggestion_dto=suggestion_dto,
             ))
 

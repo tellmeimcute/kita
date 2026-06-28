@@ -31,11 +31,12 @@ class SuggestionUtils:
             i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs
         )
 
-    def _get_media_group(self, suggestion_dto: SuggestionFullDTO) -> MediaGroupBuilder:
-        media_group = MediaGroupBuilder()
-        for media in suggestion_dto.media:
-            media_group.add(type=media.filetype, media=media.telegram_file_id)
-        return media_group
+    def _get_input_media(self, dto: SuggestionFullDTO, i18n_key: str, i18n_kwargs: dict):
+        caption = self.translator.i18n_text(i18n_key, i18n_kwargs)
+        mediagroup = MediaGroupBuilder(caption=caption)
+        for media in dto.media:
+            mediagroup.add(type=media.filetype, media=media.telegram_file_id)
+        return mediagroup.build()
 
     def get_i18n_kwargs(self, dto: SuggestionFullDTO):
         verdict = self._get_verdict(dto)
@@ -43,13 +44,10 @@ class SuggestionUtils:
         author_plus_origin = self._get_author_plus_origin(dto)
         author_string = author_plus_origin if dto.forwarded_from else dto.author.name
 
-        caption = dto.caption if dto.caption else ""
-
         i18n_kwargs = dto.to_i18n_kwargs()
         i18n_kwargs.update(
             author_plus_origin=author_plus_origin,
             author_string=author_string,
-            caption=caption,
             verdict=verdict,
             bot_url=self.runtime_config.bot_url,
         )
@@ -66,16 +64,14 @@ class SuggestionUtils:
             raise UnsupportedPayload
 
         i18n_kwargs = self.get_i18n_kwargs(dto)
-
+        
         if dto.render_type == RenderType.MESSAGE:
             return MessagePayload(
                 i18n_key=i18n_key,
                 i18n_kwargs=i18n_kwargs,
-                suggestion_id=dto.id,
                 reply_markup=kb,
             )
 
         if dto.render_type == RenderType.MEDIAGROUP:
-            media_group: MediaGroupBuilder = self._get_media_group(dto)
-            media_group.caption = self.translator.i18n_text(i18n_key, i18n_kwargs)
-            return MessagePayload(mediagroup=media_group.build(), suggestion_id=dto.id)
+            media = self._get_input_media(dto, i18n_key, i18n_kwargs)
+            return MessagePayload(media=media)

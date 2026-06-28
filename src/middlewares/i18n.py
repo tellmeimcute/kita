@@ -47,7 +47,7 @@ class KitaI18nMiddleware(KitaMiddleware):
             return await user_service.get(aiogram_user.id)
 
 
-    async def get_locale(self, event: TelegramObject, data: dict[str, Any]):
+    async def get_locale(self, data: dict[str, Any]):
         user_dto: UserDTO | None = await self.get_user_dto(data)
         if not user_dto:
             return self.i18n.default_locale
@@ -63,7 +63,7 @@ class KitaI18nMiddleware(KitaMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        current_locale = await self.get_locale(event=event, data=data)
+        current_locale = await self.get_locale(data=data)
 
         if self.i18n_key:
             data[self.i18n_key] = self.i18n
@@ -76,13 +76,10 @@ class KitaI18nMiddleware(KitaMiddleware):
 
     def setup(self, router: Router):
         for event_name, observer in router.observers.items():
-            if event_name in self.__event__types__:
-                continue
-            observer.outer_middleware(self)
-            logger.debug(
-                "%s registered to event %s on router: %s",
-                self.__class__.__qualname__,
-                event_name,
-                router.name,
-            )
+            if event_name not in self.__event__types__:
+                observer.outer_middleware(self)
+                logger.debug(
+                    "%s registered to event %s on router: %s",
+                    self.__class__.__name__, event_name, router.name,
+                )
         return self

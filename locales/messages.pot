@@ -227,6 +227,9 @@ msgstr ""
 msgid "warning_unknown_intent"
 msgstr ""
 
+msgid "warning_not_enough_permission"
+msgstr ""
+
 msgid "new_user_registered"
 msgstr ""
 

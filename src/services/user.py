@@ -5,10 +5,10 @@ from logging import getLogger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.repository import UserRepository
 from database.dto import UserDTO
 from database.redis.user import UserRedis
 
+from interfaces.repository import UserRepositoryProtocol
 
 logger = getLogger("kita.user_service")
 
@@ -21,7 +21,7 @@ class UserService:
         "repo",
     )
 
-    def __init__(self, session: AsyncSession, redis: Redis, repo: UserRepository):
+    def __init__(self, session: AsyncSession, redis: Redis, repo: UserRepositoryProtocol):
         self.session = session
         self.redis = redis
 

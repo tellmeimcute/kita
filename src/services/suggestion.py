@@ -10,9 +10,9 @@ from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 
-from database.repository import SuggestionRepository
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from database.redis.userstats import UserStatsRedis
+from interfaces import SuggestionRepositoryProtocol
 
 from services.message_parser import MessageParser
 
@@ -33,7 +33,7 @@ class SuggestionService:
         self,
         session: AsyncSession,
         redis: Redis,
-        repo: SuggestionRepository,
+        repo: SuggestionRepositoryProtocol,
         parser: MessageParser,
     ):
         self.session = session

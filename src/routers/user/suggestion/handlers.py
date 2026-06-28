@@ -43,7 +43,4 @@ async def on_album_received(
 
     await manager.switch_to(SuggestionSG.on_moderation)
 
-    event_bus.dispatch(NewSuggestionEvent(
-        container=container,
-        suggestion_dto=suggestion_dto,
-    ))
+    await event_bus.dispatch(NewSuggestionEvent(suggestion_dto=suggestion_dto))

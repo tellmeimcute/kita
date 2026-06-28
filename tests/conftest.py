@@ -74,8 +74,7 @@ def suggestion_service_mock():
 def notifier_mock():
     return Mock(
         send=AsyncMock(),
-        send_strategy_factory=Mock(),
-        notify_user_i18n=AsyncMock(),
+        strategy_factory=Mock(),
     )
 
 

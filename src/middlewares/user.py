@@ -15,7 +15,7 @@ from core.consts import DISHKA_CONTAINER_KEY
 
 from database.dto import UserDTO
 from database.enums import UserRole
-from services import UserService, NotifierService
+from services import UserService
 
 from .base import KitaMiddleware
 
@@ -52,7 +52,7 @@ class UserMiddleware(KitaMiddleware):
                 is_new_user = True
         
         if is_new_user:
-            event_bus.dispatch(NewUserEvent(user_dto=user_dto, container=container))
+            await event_bus.dispatch(NewUserEvent(user_dto=user_dto))
 
         data.update(user_dto=user_dto)
         return await handler(event, data)
