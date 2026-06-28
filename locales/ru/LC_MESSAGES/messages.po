@@ -271,6 +271,12 @@ msgstr "👤 Модерация пользователя"
 msgid "close_btn"
 msgstr "❌ Закрыть"
 
+msgid "unban_user_btn"
+msgstr "😏 Разбанить"
+
+msgid "ban_user_btn"
+msgstr "💥 Забанить"
+
 msgid "demote_user_btn"
 msgstr "😭 Понизить до пользователя"
 
@@ -279,6 +285,22 @@ msgstr "😎 Повысить до админа"
 
 msgid "prefer_anon_toggle_btn"
 msgstr "🎭 Анонимность : {user_dto[prefer_anonymous]}"
+
+msgid "message_user_btn"
+msgstr "📧 Отправить сообщение"
+
+msgid "wait_message_text"
+msgstr ""
+"Отправьте сообщение.\n"
+"\n"
+"Принимается любое сообщение.\n"
+"Также можно репостнуть сообщение с канала."
+
+msgid "message_delivered"
+msgstr "😎 <b>Сообщение доставлено!</b>"
+
+msgid "message_not_delivered"
+msgstr "😭 <b>Сообщение не доставлено :(</b>"
 
 msgid "command_open_menu"
 msgstr "Меню"

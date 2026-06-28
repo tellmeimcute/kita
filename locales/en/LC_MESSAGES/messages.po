@@ -268,6 +268,12 @@ msgstr "👤 User Moderation"
 msgid "close_btn"
 msgstr "❌ Close"
 
+msgid "unban_user_btn"
+msgstr "😏 Unban"
+
+msgid "ban_user_btn"
+msgstr "💥 Ban"
+
 msgid "demote_user_btn"
 msgstr "😭 Demote to user"
 
@@ -276,6 +282,22 @@ msgstr "😎 Promote to admin"
 
 msgid "prefer_anon_toggle_btn"
 msgstr "🎭 Anonymous : {user_dto[prefer_anonymous]}"
+
+msgid "message_user_btn"
+msgstr "📧 Send message"
+
+msgid "wait_message_text"
+msgstr ""
+"Send a message.\n"
+"\n"
+"Any message is accepted.\n"
+"You can also repost a message from channel."
+
+msgid "message_delivered"
+msgstr "😎 <b>Message delivered!</b>"
+
+msgid "message_not_delivered"
+msgstr "😭 <b>Message not delivered :(</b>"
 
 msgid "command_open_menu"
 msgstr "Menu"

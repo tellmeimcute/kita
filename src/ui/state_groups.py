@@ -26,6 +26,8 @@ class ModerationMenuSG(StatesGroup):
     user_select_again = State()
     user_moderation = State()
 
+    user_message = State()
+
 
 class BannerMenuSG(StatesGroup):
     prepare_banner = State()

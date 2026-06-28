@@ -206,6 +206,12 @@ msgstr ""
 msgid "close_btn"
 msgstr ""
 
+msgid "unban_user_btn"
+msgstr ""
+
+msgid "ban_user_btn"
+msgstr ""
+
 msgid "demote_user_btn"
 msgstr ""
 
@@ -213,6 +219,18 @@ msgid "promote_admin_btn"
 msgstr ""
 
 msgid "prefer_anon_toggle_btn"
+msgstr ""
+
+msgid "message_user_btn"
+msgstr ""
+
+msgid "wait_message_text"
+msgstr ""
+
+msgid "message_delivered"
+msgstr ""
+
+msgid "message_not_delivered"
 msgstr ""
 
 msgid "command_open_menu"
