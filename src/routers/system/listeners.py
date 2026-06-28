@@ -2,28 +2,28 @@
 import asyncio
 from logging import getLogger
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from dishka import AsyncContainer
 from aiogram.utils.i18n import I18n
 
 from core.config import Config, RuntimeConfig
 from core.schemas.message_payload import MessagePayload
 from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 
 from ui.suggestion_utils import SuggestionUtils
-from services import NotifierService, UserService
+from services import NotifierService
 
 logger = getLogger("kita.event")
 
 async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
     config = await container.get(Config)
 
-    session = await container.get(AsyncSession)
-    user_service = await container.get(UserService)
+    uow = await container.get(UnitOfWorkProtocol)
+    user_service = await container.get(UserServiceProtocol)
     notifier = await container.get(NotifierService)
     i18n = await container.get(I18n)
 
-    async with session.begin():
+    async with uow.transaction():
         admin = await user_service.get(config.admin_id)
 
     with i18n.context():
@@ -35,13 +35,13 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
             await notifier.notify_user(admin, payload)
 
 async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
-    session = await container.get(AsyncSession)
-    user_service = await container.get(UserService)
+    uow = await container.get(UnitOfWorkProtocol)
+    user_service = await container.get(UserServiceProtocol)
     notifier = await container.get(NotifierService)
     suggestion_utils = await container.get(SuggestionUtils)
     i18n = await container.get(I18n)
 
-    async with session.begin():
+    async with uow.transaction():
         admins = await user_service.get_admins()
 
     with i18n.context():
@@ -53,7 +53,6 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
                 await asyncio.sleep(0.2)
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
-    AsyncContainer.scope
     config = await container.get(Config)
     runtime_config = await container.get(RuntimeConfig)
     notifier = await container.get(NotifierService)

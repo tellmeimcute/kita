@@ -1,7 +1,7 @@
 
 
 from itertools import chain
-from typing import Any
+from typing import Any, Sequence
 
 from dishka import AsyncContainer
 
@@ -27,16 +27,14 @@ class LocaleGroup(Group):
         self.width = width
         self.on_click = on_click
 
-    async def get_buttons(self, manager: DialogManager) -> tuple[Keyboard]:
+    async def get_buttons(self, manager: DialogManager) -> Sequence[Keyboard]:
         container: AsyncContainer = manager.middleware_data[DISHKA_CONTAINER_KEY]
         i18n: I18n = await container.get(I18n)
 
-        locale_btns = (
+        return (
             Button(I18nText(f"locale_{locale}_string"), id=locale, on_click=self.on_click)
             for locale in i18n.available_locales
         )
-
-        return locale_btns
 
     async def _render_keyboard(
         self,

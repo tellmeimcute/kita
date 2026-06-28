@@ -1,12 +1,10 @@
 
 
 from dataclasses import dataclass
-from dishka import AsyncContainer
-
 from core.events import EventBus, SuggestionAcceptedEvent
 from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
-from services import SuggestionService
+from interfaces import SuggestionServiceProtocol
 
 @dataclass
 class ModerationResult:
@@ -21,9 +19,7 @@ class ModerateSuggestionUseCase:
     )
 
     def __init__(
-        self,
-        suggestion_service: SuggestionService,
-        event_bus: EventBus,
+        self, suggestion_service: SuggestionServiceProtocol, event_bus: EventBus
     ):
         self._suggestion_service = suggestion_service
         self._event_bus = event_bus

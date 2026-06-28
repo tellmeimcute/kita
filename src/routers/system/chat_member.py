@@ -7,13 +7,12 @@ from aiogram.types import ChatMemberUpdated, CallbackQuery, ErrorEvent
 from aiogram_dialog.api.exceptions import UnknownIntent
 
 from dishka import FromDishka
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
 from ui.senders.payload import TextSender
 
-from services import UserService, NotifierService
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
+from services import NotifierService
 
 
 router = Router(name="chat_member")
@@ -23,11 +22,11 @@ logger = getLogger("kita.chat_member")
 @router.my_chat_member(ChatMemberUpdatedFilter(IS_MEMBER >> IS_NOT_MEMBER))
 async def on_user_block_bot(
     event: ChatMemberUpdated,
-    session: FromDishka[AsyncSession],
-    user_service: FromDishka[UserService],
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
 ):
     user_id = event.from_user.id
-    async with session.begin():
+    async with uow.transaction():
         await user_service.update(user_id, is_bot_blocked=True)
 
     logger.info("UserID %s blocked the bot.", user_id)

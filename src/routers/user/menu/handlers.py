@@ -1,7 +1,4 @@
 
-import asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
@@ -18,8 +15,8 @@ from aiogram_dialog.widgets.kbd import Button
 from core.schemas.message_payload import MessagePayload
 from core.filters import I18nTextFilter
 
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 from database.dto import UserDTO
-from services.user import UserService
 from services.notifier import NotifierService
 
 from ui.state_groups import UserMenuSG
@@ -32,8 +29,8 @@ async def on_language_selected(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
-    user_service: FromDishka[UserService],
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     i18n: I18n = manager.middleware_data.get("i18n")
@@ -42,7 +39,7 @@ async def on_language_selected(
         return await callback.answer(f"Your locale already {button.widget_id}!")
 
     user_dto.language_code = button.widget_id
-    async with session.begin():
+    async with uow.transaction():
         await user_service.save(user_dto)
 
     i18n.ctx_locale.set(user_dto.language_code)
@@ -55,13 +52,13 @@ async def prefer_anon_toggle(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
-    session: FromDishka[AsyncSession],
-    user_service: FromDishka[UserService]
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol]
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
     user_dto.prefer_anonymous = not user_dto.prefer_anonymous
-    async with session.begin():
+    async with uow.transaction():
         await user_service.save(user_dto)
 
     await callback.answer(text="Success")

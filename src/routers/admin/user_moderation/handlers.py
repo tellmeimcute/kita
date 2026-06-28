@@ -9,16 +9,14 @@ from aiogram_dialog.widgets.kbd import Button
 
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.exceptions import UserImmuneError
 from core.schemas import IDCommand
 from core.i18n_translator import Translator
 
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 from database.dto import UserDTO
 from database.enums import UserRole
-
-from services import UserService
 from ui.state_groups import ModerationMenuSG
 
 from usecases.change_role import ChangeRoleUseCase
@@ -29,12 +27,12 @@ async def select_user(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    session: FromDishka[AsyncSession],
-    user_service: FromDishka[UserService],
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
 ):
     try:
         id_command = IDCommand(target_id=message.text)
-        async with session.begin():
+        async with uow.transaction():
             target_dto = await user_service.get(id_command.target_id)
     except ValidationError:
         target_dto = None
@@ -57,7 +55,7 @@ async def user_change_role(
     button: Button,
     manager: DialogManager,
     translator: FromDishka[Translator],
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
     change_role: FromDishka[ChangeRoleUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
@@ -72,7 +70,7 @@ async def user_change_role(
         target_role = UserRole.ADMIN
 
     try:
-        async with session.begin():
+        async with uow.transaction():
             new_target_dto = await change_role.execute(
                 target_dto.user_id,
                 target_role,

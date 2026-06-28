@@ -9,12 +9,12 @@ from aiogram_dialog.widgets.kbd import Button
 
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
 from core.schemas.message_payload import MessagePayload
 
+from interfaces import UnitOfWorkProtocol
 from database.dto import UserDTO
 
 from services import NotifierService
@@ -29,13 +29,13 @@ async def prepare_broadcast(
     message_input: MessageInput,
     manager: DialogManager,
     broadcast: FromDishka[BroadcastUseCase],
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
 ):
     album = manager.middleware_data.get("album")
     if not album:
         album = (message,)
 
-    async with session.begin():
+    async with uow.transaction():
         broadcast_data = await broadcast.prepare(message, album)
 
     manager.dialog_data.update({"broadcast_data": broadcast_data.model_dump(mode="json")})

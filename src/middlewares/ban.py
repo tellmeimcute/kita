@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import Any, Awaitable, Callable, Dict, Union
+from typing import Any, Awaitable, Callable, Dict
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
@@ -14,11 +14,14 @@ class BanCheckMiddleware(KitaMiddleware):
     async def __call__(
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event: Union[Message, CallbackQuery],
+        event: Message | CallbackQuery,
         data: Dict[str, Any],
     ) -> Any:
         user_dto: UserDTO = data.get("user_dto")
-        if not user_dto or user_dto.is_banned:
-            logger.debug("Stop banned user")
-            return
-        return await handler(event, data)
+
+        if user_dto and not user_dto.is_banned:
+            return await handler(event, data)
+
+        logger.debug("Stop banned user")
+        if isinstance(event, CallbackQuery):
+            await event.answer()

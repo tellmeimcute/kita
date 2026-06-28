@@ -6,9 +6,7 @@ from core.exceptions import UserImmuneError
 
 from database.dto import UserDTO
 from database.enums import UserRole
-
-from services import UserService
-
+from interfaces import UserServiceProtocol
 
 class ChangeRoleUseCase:
 
@@ -17,11 +15,7 @@ class ChangeRoleUseCase:
         "_user_service",
     )
 
-    def __init__(
-        self,
-        config: Config,
-        user_service: UserService,
-    ):
+    def __init__(self, config: Config, user_service: UserServiceProtocol):
         self._config = config
         self._user_service = user_service
 

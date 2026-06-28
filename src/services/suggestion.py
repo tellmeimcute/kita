@@ -4,7 +4,6 @@ from logging import getLogger
 
 from aiogram.types import Message
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
@@ -31,12 +30,10 @@ class SuggestionService:
 
     def __init__(
         self,
-        session: AsyncSession,
         redis: Redis,
         repo: SuggestionRepositoryProtocol,
         parser: MessageParser,
     ):
-        self.session = session
         self.redis = redis
         self.redis_key = lambda x: f"user_stats:{x}"
         self.repo = repo

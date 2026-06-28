@@ -36,6 +36,5 @@ class I18nText(Text):
         i18n_kwargs.update(runtime_config.model_dump())
         i18n_kwargs.update(additional_data)
         
-        text = translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
-        return text
+        return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
     

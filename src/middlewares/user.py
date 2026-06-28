@@ -7,7 +7,6 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import Config
 from core.events import EventBus, NewUserEvent
@@ -15,7 +14,7 @@ from core.consts import DISHKA_CONTAINER_KEY
 
 from database.dto import UserDTO
 from database.enums import UserRole
-from services import UserService
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 
 from .base import KitaMiddleware
 
@@ -36,16 +35,15 @@ class UserMiddleware(KitaMiddleware):
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
 
         event_bus = await container.get(EventBus)
-        session: AsyncSession = await container.get(AsyncSession)
-        user_service: UserService = await container.get(UserService)
-        if not session or not event.from_user:
-            logger.warning("No user in event. Stop")
-            return None
+        uow = await container.get(UnitOfWorkProtocol)
+        user_service = await container.get(UserServiceProtocol)
+        if not event.from_user:
+            return logger.warning("No user in event. Stop")
         
         is_new_user = False
         user_tg = event.from_user
 
-        async with session.begin():
+        async with uow.transaction():
             user_dto = await self._resolve_user(user_service, user_tg)
             if not user_dto:
                 user_dto = await user_service.create(self.dto_from_aiogram(user_tg))
@@ -59,7 +57,7 @@ class UserMiddleware(KitaMiddleware):
 
     async def _resolve_user(
         self,
-        user_service: UserService,
+        user_service: UserServiceProtocol,
         user_tg: AiogramUser,
     ) -> UserDTO | None:
         user_dto = await user_service.get(user_tg.id)

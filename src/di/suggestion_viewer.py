@@ -1,19 +1,15 @@
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from dishka import Provider, Scope, provide
 from dishka.integrations.aiogram import AiogramMiddlewareData
-
 from aiogram.fsm.context import FSMContext
 
 from core.schemas import SuggestionViewerData
 from services.suggestion_queue import SuggestionQueueManager
-from services.suggestion import SuggestionService
 from ui.suggestion_renderer import SuggestionRenderer
-
 
 class SuggestionViewerProvider(Provider):
     suggestion_renderer = provide(SuggestionRenderer, scope=Scope.APP)
+    suggestion_queue = provide(SuggestionQueueManager, scope=Scope.REQUEST)
 
     @provide(scope=Scope.REQUEST)
     async def viewer_data(
@@ -30,18 +26,3 @@ class SuggestionViewerProvider(Provider):
         
         viewer_data = SuggestionViewerData.model_validate(raw_viewer_data)
         return viewer_data
-    
-    @provide(scope=Scope.REQUEST)
-    async def suggestion_queue(
-        self,
-        session: AsyncSession,
-        suggestion_service: SuggestionService,
-        state: FSMContext,
-        viewer_data: SuggestionViewerData,
-    ) -> SuggestionQueueManager:
-        return SuggestionQueueManager(
-            session=session,
-            suggestion_service=suggestion_service,
-            state=state,
-            data=viewer_data,
-        )

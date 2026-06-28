@@ -4,10 +4,7 @@ from logging import getLogger
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-
 from aiogram_dialog import DialogManager, StartMode, ShowMode
-
-from sqlalchemy.ext.asyncio import AsyncSession
 from dishka import FromDishka
 
 from core.filters import I18nTextFilter, TextArgsFilter
@@ -18,14 +15,14 @@ from core.schemas import IDCommand
 
 from database.dto import UserDTO
 from database.enums import UserRole, SuggestionStatus
+from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
 
-from services import NotifierService, SuggestionService
+from services import NotifierService
 from services.suggestion_queue import SuggestionQueueManager
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 from usecases.change_role import ChangeRoleUseCase
 
 from ui.state_groups import SuggestionViewerSG
-
 from ui.suggestion_renderer import SuggestionRenderer
 from ui.state_groups import UserMenuSG
 
@@ -38,8 +35,8 @@ logger = getLogger("kita.admin_suggestions")
 async def solo_suggestion(
     message: Message,
     user_dto: UserDTO,
-    session: FromDishka[AsyncSession],
-    suggestion_service: FromDishka[SuggestionService],
+    uow: FromDishka[UnitOfWorkProtocol],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
     renderer: FromDishka[SuggestionRenderer],
     state: FSMContext,
     command: IDCommand,
@@ -51,7 +48,7 @@ async def solo_suggestion(
     await state.set_state(SuggestionViewerSG.in_solo_view)
 
     viewer_data = SuggestionViewerData(user_dto=user_dto, suggestion_dto=suggestion_dto)
-    queue_manager = SuggestionQueueManager(session, suggestion_service, state, viewer_data)
+    queue_manager = SuggestionQueueManager(uow, suggestion_service, state, viewer_data)
 
     await renderer.suggestion(user_dto, suggestion_dto)
     await queue_manager.dump_into_state()
@@ -64,14 +61,14 @@ async def solo_suggestion_verdict(
     message: Message,
     user_dto: UserDTO,
     state: FSMContext,
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     renderer: FromDishka[SuggestionRenderer],
     verdict: SuggestionStatus,
 ):
     suggestion_dto = queue_manager.data.suggestion_dto
-    async with session.begin():
+    async with uow.transaction():
         await moderation_usecase.execute(suggestion_dto, verdict, force_update=True)
 
     await renderer.verdict_rewrite(user_dto)
@@ -101,13 +98,13 @@ async def viewer_apply_verdict(
     state: FSMContext,
     dialog_manager: DialogManager,
     user_dto: UserDTO,
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     verdict: SuggestionStatus,
 ):
-    async with session.begin():
+    async with uow.transaction():
         updated_dto = await queue_manager.get_updated_dto()
         result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict)
 
@@ -136,7 +133,7 @@ async def ban_suggestion_author(
     state: FSMContext,
     dialog_manager: DialogManager,
     user_dto: UserDTO,
-    session: FromDishka[AsyncSession],
+    uow: FromDishka[UnitOfWorkProtocol],
     notifier: FromDishka[NotifierService],
     renderer: FromDishka[SuggestionRenderer],
     queue_manager: FromDishka[SuggestionQueueManager],
@@ -147,7 +144,7 @@ async def ban_suggestion_author(
     target_role = UserRole.BANNED
 
     try:
-        async with session.begin():
+        async with uow.transaction():
             target_dto = await change_role_usecase.execute(
                 target_id, target_role, caller=user_dto
             )

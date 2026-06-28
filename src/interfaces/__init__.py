@@ -8,3 +8,5 @@ from .services import (
     UserServiceProtocol,
     SuggestionServiceProtocol,
 )
+
+from .uow import UnitOfWorkProtocol

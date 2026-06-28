@@ -34,6 +34,8 @@ ignore = [
     "RUF003", # Игнорирование похожих символов с разными ASCII
     "S110",  # try-except-pass
     "PLR0917", # too-many-positional-arguments (Telegram API design)
+    "RET503", # Ignore Missing explicit `return`
+    "PLR0913", # Ignore Too many arguments in function definition
 ]
 
 fixable = [

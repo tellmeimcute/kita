@@ -16,10 +16,14 @@ from services.notifier import NotifierService
 from services.message_parser import MessageParser
 
 from database.repository import SuggestionRepository, UserRepository, MediaRepository
+from database.uow import UnitOfWork
 from interfaces import (
     UserRepositoryProtocol,
     SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
+    UnitOfWorkProtocol,
+    UserServiceProtocol,
+    SuggestionServiceProtocol,
 )
 
 from ui.suggestion_utils import SuggestionUtils
@@ -28,12 +32,14 @@ class ServicesProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
 
     notifier_service = provide(NotifierService, scope=Scope.APP)
-    user_service = provide(UserService, scope=Scope.REQUEST)
-    suggestion_service = provide(SuggestionService, scope=Scope.REQUEST)
+    user_service = provide(source=UserService, provides=UserServiceProtocol, scope=Scope.REQUEST)
+    suggestion_service = provide(source=SuggestionService, provides=SuggestionServiceProtocol, scope=Scope.REQUEST)
     
     suggestion_repo = provide(source=SuggestionRepository, provides=SuggestionRepositoryProtocol, scope=Scope.REQUEST)
     user_repo = provide(source=UserRepository, provides=UserRepositoryProtocol, scope=Scope.REQUEST)
     media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol, scope=Scope.REQUEST)
+
+    uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol, scope=Scope.REQUEST)
 
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)

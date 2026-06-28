@@ -7,11 +7,10 @@ from aiogram.types import TelegramObject
 from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.consts import DISHKA_CONTAINER_KEY
 from database.dto import UserDTO
-from services.user import UserService
+from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 
 from .base import KitaMiddleware
 
@@ -38,14 +37,12 @@ class KitaI18nMiddleware(KitaMiddleware):
             return user_dto
 
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        session: AsyncSession = await container.get(AsyncSession)
-        user_service: UserService = await container.get(UserService)
-
         aiogram_user: AiogramUser = data.get("event_from_user")
 
-        async with session.begin():
+        uow = await container.get(UnitOfWorkProtocol)
+        user_service = await container.get(UserServiceProtocol)
+        async with uow.transaction():
             return await user_service.get(aiogram_user.id)
-
 
     async def get_locale(self, data: dict[str, Any]):
         user_dto: UserDTO | None = await self.get_user_dto(data)

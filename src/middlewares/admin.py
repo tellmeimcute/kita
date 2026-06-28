@@ -27,8 +27,8 @@ class AdminMiddleware(KitaMiddleware):
             await event.answer()
 
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        notifier: NotifierService = await container.get(NotifierService)
-        translator: Translator = await container.get(Translator)
+        notifier = await container.get(NotifierService)
+        translator = await container.get(Translator)
 
         payload = MessagePayload(i18n_key="warning_not_enough_permission")
         strategy = TextSender(

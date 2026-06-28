@@ -8,15 +8,14 @@ from aiogram_dialog import DialogManager
 
 from core.config import RuntimeConfig
 from core.i18n_translator import Translator
-
+from interfaces import SuggestionServiceProtocol
 from database.dto import UserDTO
-from services.suggestion import SuggestionService
 
 
 @inject
 async def get_statistic(
     dialog_manager: DialogManager,
-    suggestion_service: FromDishka[SuggestionService],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
     translator: FromDishka[Translator],
     **kwargs
 ):

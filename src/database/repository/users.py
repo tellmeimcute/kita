@@ -37,7 +37,6 @@ class UserRepository:
         orm = UserAlchemy(**dto.model_dump())
         self._session.add(orm)
         await self._session.flush()
-        await self._session.refresh(orm)
         return UserDTO.model_validate(orm)
 
     async def get_active(self) -> Sequence[UserDTO]:

@@ -1,17 +1,14 @@
 
-
-from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
 
 from core.schemas import SuggestionViewerData
 from database.dto import SuggestionFullDTO
-from services import SuggestionService
-
+from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
 
 class SuggestionQueueManager:
 
     __slots__ = (
-        "session",
+        "uow",
         "suggestion_service",
         "state",
         "data",
@@ -19,12 +16,12 @@ class SuggestionQueueManager:
 
     def __init__(
         self,
-        session: AsyncSession,
-        suggestion_service: SuggestionService,
+        uow: UnitOfWorkProtocol,
+        suggestion_service: SuggestionServiceProtocol,
         state: FSMContext,
         data: SuggestionViewerData,
     ):
-        self.session = session
+        self.uow = uow
         self.suggestion_service = suggestion_service
         self.state = state
         self.data = data
@@ -41,7 +38,7 @@ class SuggestionQueueManager:
 
     async def pop_next(self, dump_into_state=True) -> SuggestionFullDTO | None:
         if not self.data.suggestion_dtos:
-            async with self.session.begin():
+            async with self.uow.transaction():
                 self.data.suggestion_dtos = await self.suggestion_service.get_active()
 
         if not self.data.suggestion_dtos:

@@ -3,26 +3,22 @@ from typing import Any
 from logging import getLogger
 
 from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from database.dto import UserDTO
 from database.redis.user import UserRedis
 
-from interfaces.repository import UserRepositoryProtocol
+from interfaces import UserRepositoryProtocol
 
 logger = getLogger("kita.user_service")
 
 class UserService:
 
     __slots__ = (
-        "session",
         "redis",
         "redis_key",
         "repo",
     )
 
-    def __init__(self, session: AsyncSession, redis: Redis, repo: UserRepositoryProtocol):
-        self.session = session
+    def __init__(self, redis: Redis, repo: UserRepositoryProtocol):
         self.redis = redis
 
         self.redis_key = lambda x: f"user:{x}"

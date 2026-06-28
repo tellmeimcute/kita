@@ -1,5 +1,4 @@
 
-from aiogram import html
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
@@ -60,7 +59,7 @@ class SuggestionUtils:
         i18n_key: str,
         kb: ReplyKeyboardMarkup | None = None,
     ):
-        if dto.render_type not in (RenderType.MESSAGE, RenderType.MEDIAGROUP):
+        if dto.render_type not in {RenderType.MESSAGE, RenderType.MEDIAGROUP}:
             raise UnsupportedPayload
 
         i18n_kwargs = self.get_i18n_kwargs(dto)
