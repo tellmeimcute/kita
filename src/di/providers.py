@@ -15,8 +15,19 @@ from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 from services.message_parser import MessageParser
 
-from database.repository import SuggestionRepository, UserRepository, MediaRepository
 from database.uow import UnitOfWork
+from database.repository import (
+    SuggestionRepository,
+    UserRepository,
+    MediaRepository
+)
+
+from usecases import (
+    BroadcastUseCase,
+    ChangeRoleUseCase,
+    ModerateSuggestionUseCase,
+)
+
 from interfaces import (
     UserRepositoryProtocol,
     SuggestionRepositoryProtocol,
@@ -28,7 +39,7 @@ from interfaces import (
 
 from ui.suggestion_utils import SuggestionUtils
 
-class ServicesProvider(Provider):
+class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
 
     notifier_service = provide(NotifierService, scope=Scope.APP)
@@ -40,6 +51,11 @@ class ServicesProvider(Provider):
     media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol, scope=Scope.REQUEST)
 
     uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol, scope=Scope.REQUEST)
+
+    moderate_suggestion = provide(ModerateSuggestionUseCase, scope=Scope.REQUEST)
+    change_role = provide(ChangeRoleUseCase, scope=Scope.REQUEST)
+    broadcast = provide(BroadcastUseCase, scope=Scope.REQUEST)
+
 
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)

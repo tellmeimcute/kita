@@ -5,17 +5,20 @@ from aiogram import Bot, Dispatcher
 from dishka import make_async_container
 from dishka.integrations.aiogram import AiogramProvider, setup_dishka
 
-from di.config import ConfigProvider
-from di.database import DatabaseProvider
-from di.providers import ServicesProvider, UtilsProvider, FSMProvider
-from di.redis import RedisProvider
-from di.suggestion_viewer import SuggestionViewerProvider
-from di.middleware import MiddlewareProvider
-from di.bot import BotProvider
-from di.usecases import UsecasesProvider
 
 from core.config import RuntimeConfig
 from core.logging_config import setup_logging
+from di import (
+    ConfigProvider,
+    DatabaseProvider,
+    InfraProvider,
+    UtilsProvider,
+    FSMProvider,
+    RedisProvider,
+    SuggestionViewerProvider,
+    MiddlewareProvider,
+    BotProvider,
+)
 
 from startup import register_all
 
@@ -31,12 +34,11 @@ async def main():
         BotProvider(),
         DatabaseProvider(),
         RedisProvider(),
-        ServicesProvider(),
+        InfraProvider(),
         FSMProvider(),
         SuggestionViewerProvider(),
         MiddlewareProvider(),
         AiogramProvider(),
-        UsecasesProvider(),
     )
 
     bot = await container.get(Bot)
