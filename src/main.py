@@ -15,7 +15,6 @@ from di import (
     UtilsProvider,
     FSMProvider,
     RedisProvider,
-    SuggestionViewerProvider,
     MiddlewareProvider,
     BotProvider,
 )
@@ -36,7 +35,6 @@ async def main():
         RedisProvider(),
         InfraProvider(),
         FSMProvider(),
-        SuggestionViewerProvider(),
         MiddlewareProvider(),
         AiogramProvider(),
     )

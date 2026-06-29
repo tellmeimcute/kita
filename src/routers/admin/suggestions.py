@@ -18,7 +18,6 @@ from database.enums import UserRole, SuggestionStatus
 from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
 
 from services import NotifierService
-from services.suggestion_queue import SuggestionQueueManager
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 from usecases.change_role import ChangeRoleUseCase
 
@@ -32,9 +31,10 @@ logger = getLogger("kita.admin_suggestions")
 
 
 @router.message(TextArgsFilter("command_open_solo_view", IDCommand))
-async def solo_suggestion(
+async def enter_soloview(
     message: Message,
     user_dto: UserDTO,
+    viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     renderer: FromDishka[SuggestionRenderer],
@@ -46,28 +46,26 @@ async def solo_suggestion(
         return await renderer.not_found(user_dto, command.target_id)
 
     await state.set_state(SuggestionViewerSG.in_solo_view)
-
-    viewer_data = SuggestionViewerData(user_dto=user_dto, suggestion_dto=suggestion_dto)
-    queue_manager = SuggestionQueueManager(uow, suggestion_service, state, viewer_data)
+    viewer_data.suggestion_dto = suggestion_dto
+    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
     await renderer.suggestion(user_dto, suggestion_dto)
-    await queue_manager.dump_into_state()
     await renderer.wait_verdict(user_dto)
 
 
 @router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
 @router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
-async def solo_suggestion_verdict(
+async def soloview_verdict(
     message: Message,
     user_dto: UserDTO,
     state: FSMContext,
     uow: FromDishka[UnitOfWorkProtocol],
-    queue_manager: FromDishka[SuggestionQueueManager],
+    viewer_data: FromDishka[SuggestionViewerData],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     renderer: FromDishka[SuggestionRenderer],
     verdict: SuggestionStatus,
 ):
-    suggestion_dto = queue_manager.data.suggestion_dto
+    suggestion_dto = viewer_data.suggestion_dto
     async with uow.transaction():
         await moderation_usecase.execute(suggestion_dto, verdict, force_update=True)
 
@@ -75,103 +73,110 @@ async def solo_suggestion_verdict(
     await state.clear()
 
 
-@router.message(I18nTextFilter("command_enter_viewer"))
-async def enter_suggestion_viewer(
+@router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("ban_btn"))
+async def soloview_ban_author(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    queue_manager: FromDishka[SuggestionQueueManager],
+    viewer_data: FromDishka[SuggestionViewerData],
+    uow: FromDishka[UnitOfWorkProtocol],
+    notifier: FromDishka[NotifierService],
     renderer: FromDishka[SuggestionRenderer],
+    change_role_usecase: FromDishka[ChangeRoleUseCase],
 ):
-    await state.set_state(SuggestionViewerSG.in_viewer)
+    target_id = viewer_data.suggestion_dto.author_id
+    target_role = UserRole.BANNED
 
-    if new_suggestion := await queue_manager.pop_next():
-        return await renderer.suggestion(user_dto, new_suggestion)
+    try:
+        async with uow.transaction():
+            await change_role_usecase.execute(
+                target_id, target_role, caller=user_dto
+            )
+    except UserImmuneError:
+        payload = MessagePayload(i18n_key="error_user_immune")
+        return await notifier.notify_user(user_dto, payload)
 
     await state.clear()
-    await renderer.empty_queue(user_dto)
+    await renderer.verdict_rewrite(user_dto)
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_decline", verdict=SuggestionStatus.DECLINED))
-async def viewer_apply_verdict(
+async def viewer_verdict(
     message: Message,
     state: FSMContext,
     dialog_manager: DialogManager,
     user_dto: UserDTO,
+    viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
     renderer: FromDishka[SuggestionRenderer],
-    queue_manager: FromDishka[SuggestionQueueManager],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     verdict: SuggestionStatus,
 ):
     async with uow.transaction():
-        updated_dto = await queue_manager.get_updated_dto()
+        updated_dto = await suggestion_service.get(viewer_data.suggestion_dto.id)
         result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict)
 
     if result.verdict_exists:
         await renderer.verdict_exists(user_dto, result.suggestion_dto)
 
-    # ПОЛУЧАЕМ НОВУЮ ПРЕДЛОЖКУ
-    if new_suggestion := await queue_manager.pop_next():
-        await renderer.suggestion(user_dto, new_suggestion)
-    else:
+    if not viewer_data.suggestion_dtos:
         await state.clear()
         await renderer.empty_queue(user_dto)
-
-        await dialog_manager.start(
-            UserMenuSG.main,
-            mode=StartMode.RESET_STACK,
-            show_mode=ShowMode.DELETE_AND_SEND,
-        )
-
-
-VIEWER_BAN_FILTER = I18nTextFilter("ban_btn")
-@router.message(SuggestionViewerSG.in_solo_view, VIEWER_BAN_FILTER)
-@router.message(SuggestionViewerSG.in_viewer, VIEWER_BAN_FILTER)
-async def ban_suggestion_author(
-    message: Message,
-    state: FSMContext,
-    dialog_manager: DialogManager,
-    user_dto: UserDTO,
-    uow: FromDishka[UnitOfWorkProtocol],
-    notifier: FromDishka[NotifierService],
-    renderer: FromDishka[SuggestionRenderer],
-    queue_manager: FromDishka[SuggestionQueueManager],
-    change_role_usecase: FromDishka[ChangeRoleUseCase],
-):
-
-    target_id = queue_manager.data.suggestion_dto.author_id
-    target_role = UserRole.BANNED
-
-    try:
-        async with uow.transaction():
-            target_dto = await change_role_usecase.execute(
-                target_id, target_role, caller=user_dto
-            )
-
-        payload = MessagePayload(
-            i18n_key="answer_admin_role_changed",
-            i18n_kwargs=target_dto.to_i18n_kwargs(),
-        )
-        await notifier.notify_user(user_dto, payload)
-    except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
-        return await notifier.notify_user(user_dto, payload)
-
-    #
-    current_state = await state.get_state()
-    if current_state != SuggestionViewerSG.in_solo_view.state:
-        queue_manager.data.suggestion_dtos = None
-        if new_suggestion := await queue_manager.pop_next():
-            return await renderer.suggestion(user_dto, new_suggestion)
-        
-        await renderer.empty_queue(user_dto)
-        await state.clear()
         return await dialog_manager.start(
             UserMenuSG.main,
             mode=StartMode.RESET_STACK,
             show_mode=ShowMode.DELETE_AND_SEND,
         )
 
-    await state.clear()
+    new_suggestion = viewer_data.suggestion_dtos.pop(0)
+    viewer_data.suggestion_dto = new_suggestion
+    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
+
+    return await renderer.suggestion(user_dto, new_suggestion)
+
+
+@router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("ban_btn"))
+async def viewer_ban_author(
+    message: Message,
+    state: FSMContext,
+    dialog_manager: DialogManager,
+    user_dto: UserDTO,
+    viewer_data: FromDishka[SuggestionViewerData],
+    uow: FromDishka[UnitOfWorkProtocol],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
+    notifier: FromDishka[NotifierService],
+    renderer: FromDishka[SuggestionRenderer],
+    change_role_usecase: FromDishka[ChangeRoleUseCase],
+):
+    target_id = viewer_data.suggestion_dto.author_id
+    target_role = UserRole.BANNED
+
+    try:
+        async with uow.transaction():
+            await change_role_usecase.execute(
+                target_id, target_role, caller=user_dto
+            )
+    except UserImmuneError:
+        payload = MessagePayload(i18n_key="error_user_immune")
+        return await notifier.notify_user(user_dto, payload)
     
+    viewer_data.suggestion_dtos = None
+    async with uow.transaction():
+        new_suggestions: list | None = await suggestion_service.get_active()
+
+    if not new_suggestions:
+        await state.clear()
+        await renderer.empty_queue(user_dto)
+        return await dialog_manager.start(
+            UserMenuSG.main,
+            mode=StartMode.RESET_STACK,
+            show_mode=ShowMode.DELETE_AND_SEND,
+        )
+
+    cur_suggestion = new_suggestions.pop(0)
+    viewer_data.suggestion_dtos = new_suggestions
+    viewer_data.suggestion_dto = cur_suggestion
+
+    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
+    return await renderer.suggestion(user_dto, cur_suggestion)

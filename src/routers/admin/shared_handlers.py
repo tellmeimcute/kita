@@ -8,8 +8,9 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.i18n_translator import Translator
+from core.schemas import SuggestionViewerData
 from database.dto import UserDTO
-from services.suggestion_queue import SuggestionQueueManager
+from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
 from ui.state_groups import SuggestionViewerSG
 from ui.suggestion_renderer import SuggestionRenderer
 
@@ -19,20 +20,28 @@ async def enter_suggestion_viewer(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
-    queue_manager: FromDishka[SuggestionQueueManager],
+    uow: FromDishka[UnitOfWorkProtocol],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
+    viewer_data: FromDishka[SuggestionViewerData],
     renderer: FromDishka[SuggestionRenderer],
     translator: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     state: FSMContext = manager.middleware_data.get("state")
 
-    new_suggestion = await queue_manager.pop_next(dump_into_state=False)
-    if not new_suggestion:
-        text = translator.translate("suggestion_no_active")
-        return await callback.answer(text)
+    async with uow.transaction():
+        new_suggestions: list | None = await suggestion_service.get_active()
+
+    if not new_suggestions:
+        warning = translator.translate("suggestion_no_active")
+        return await callback.answer(warning)
+    
+    cur_suggestion = new_suggestions.pop(0)
+
+    viewer_data.suggestion_dtos = new_suggestions
+    viewer_data.suggestion_dto = cur_suggestion
 
     await manager.reset_stack()
-
     await state.set_state(SuggestionViewerSG.in_viewer)
-    await queue_manager.dump_into_state()
-    await renderer.suggestion(user_dto, new_suggestion)
+    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
+    await renderer.suggestion(user_dto, cur_suggestion)

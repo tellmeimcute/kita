@@ -7,6 +7,7 @@ from aiogram.utils.i18n import I18n
 from aiogram_dialog import BgManagerFactory
 from aiogram_dialog.manager.bg_manager import BgManager
 
+from core.schemas import SuggestionViewerData
 from core.i18n_translator import Translator
 from core.events import EventBus
 
@@ -38,6 +39,7 @@ from interfaces import (
 )
 
 from ui.suggestion_utils import SuggestionUtils
+from ui.suggestion_renderer import SuggestionRenderer
 
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
@@ -60,6 +62,7 @@ class InfraProvider(Provider):
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
     suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
+    suggestion_renderer = provide(SuggestionRenderer, scope=Scope.APP)
     message_parser = provide(MessageParser, scope=Scope.APP)
 
     @provide(scope=Scope.APP)
@@ -79,3 +82,18 @@ class FSMProvider(Provider):
         chat = middleware_data.get("event_chat")
         bot = middleware_data.get("bot")
         return bg_factory.bg(bot, from_user.id, chat.id)
+
+    @provide(scope=Scope.REQUEST)
+    async def viewer_data(
+        self,
+        fsm: FSMContext,
+        middleware_data: AiogramMiddlewareData,
+    ) -> SuggestionViewerData:
+        data = await fsm.get_data()
+        raw_viewer_data = data.get("viewer_data")
+
+        if not raw_viewer_data:
+            user_dto = middleware_data.get("user_dto")
+            return SuggestionViewerData(user_dto=user_dto)
+        
+        return SuggestionViewerData.model_validate(raw_viewer_data)
