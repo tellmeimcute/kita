@@ -30,10 +30,8 @@ async def get_banner_text(
     media = message.video or message.photo or message.animation
 
     if not banner_text:
-        return await manager.switch_to(
-            BannerMenuSG.something_wrong,
-            show_mode=ShowMode.DELETE_AND_SEND,
-        )
+        manager.dialog_data["something_wrong"] = True
+        return
 
     if isinstance(media, list):
         media = media[0]

@@ -23,7 +23,6 @@ class AdminMenuSG(StatesGroup):
 
 class ModerationMenuSG(StatesGroup):
     user_select = State()
-    user_select_again = State()
     user_moderation = State()
 
     user_message = State()
@@ -31,7 +30,6 @@ class ModerationMenuSG(StatesGroup):
 
 class BannerMenuSG(StatesGroup):
     prepare_banner = State()
-    something_wrong = State()
 
 
 class BroadcastMenuSG(StatesGroup):

@@ -40,11 +40,11 @@ async def select_user(
         target_dto = None
 
     if not target_dto:
-        return await manager.switch_to(
-            ModerationMenuSG.user_select_again, show_mode=ShowMode.DELETE_AND_SEND
-        )
+        manager.dialog_data["user_not_found"] = True
+        return
 
     manager.dialog_data.update({
+        "user_not_found": False,
         "target_dto": target_dto.model_dump(mode="json"),
         "target_dto_i18n": target_dto.to_i18n_kwargs(),
     })

@@ -1,6 +1,7 @@
 
 
 from aiogram_dialog import Window, Dialog, ShowMode
+from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import SwitchTo, Button, Start
 from aiogram_dialog.widgets.input import MessageInput
 
@@ -11,19 +12,15 @@ from ui.state_groups import AdminMenuSG, ModerationMenuSG
 from routers.shared_getters import role_condition
 
 from .handlers import select_user, user_change_role, message_to_user
+from .getters import user_select_getter
+
 
 user_select_window = Window(
-    I18nText("wait_user_id_text"),
+    Format("{user_select_text}"),
     MessageInput(select_user),
     Start(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, show_mode=ShowMode.AUTO),
     state=ModerationMenuSG.user_select,
-)
-
-user_select_again_window = Window(
-    I18nText("user_not_found_wait_next_id"),
-    MessageInput(select_user),
-    Start(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, show_mode=ShowMode.AUTO),
-    state=ModerationMenuSG.user_select_again,
+    getter=user_select_getter,
 )
 
 user_moderation_window = Window(
@@ -70,7 +67,6 @@ user_message_window = Window(
 
 dialog = Dialog(
     user_select_window,
-    user_select_again_window,
     user_moderation_window,
     user_message_window,
 )
