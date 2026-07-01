@@ -32,17 +32,17 @@ class EventBus:
 
         logger.debug("Event %s unsub %s listener", event_name, listener.__name__)
 
-    async def _run_listener(self, listener: Callable, event: KitaEvent, container: AsyncContainer):
+    async def _run_listener(self, listener: Callable, event: KitaEvent):
         try:
-            await listener(event, container)
+            async with self._container() as container:
+                await listener(event, container)
         except Exception as e:
             logger.error("Listener %s failed: %s", listener.__name__, e, exc_info=True)
 
     async def _dispatch(self, listeners: Sequence, event: KitaEvent):
-        async with self._container() as container:
-            async with asyncio.TaskGroup() as tg:
-                for listener in listeners:
-                    tg.create_task(self._run_listener(listener, event, container))
+        async with asyncio.TaskGroup() as tg:
+            for listener in listeners:
+                tg.create_task(self._run_listener(listener, event))
 
     def dispatch(self, event: KitaEvent):
         event_name = event.__class__.__name__
