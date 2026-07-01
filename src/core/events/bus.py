@@ -13,6 +13,8 @@ class EventBus:
         self._container = container
         self.listeners = {}
 
+        self.background_tasks = set()
+
     def sub(self, event: type[KitaEvent], listener: Callable):
         event_name = event.__name__
 
@@ -26,7 +28,7 @@ class EventBus:
     def unsub(self, event: type[KitaEvent], listener: Callable):
         event_name = event.__name__
 
-        self.listeners[event_name].remove(listener)
+        self.listeners[event_name].discard(listener)
         if len(self.listeners[event_name]) == 0:
             del self.listeners[event_name]
 
@@ -48,6 +50,9 @@ class EventBus:
         event_name = event.__class__.__name__
         listeners = self.listeners.get(event_name, [])
 
-        asyncio.create_task(self._dispatch(listeners, event))
+        task = asyncio.create_task(self._dispatch(listeners, event))
+        self.background_tasks.add(task)
+        task.add_done_callback(self.background_tasks.discard)
+
         logger.debug("Event %s dispatched to %s listeners", event_name, len(listeners))
         
