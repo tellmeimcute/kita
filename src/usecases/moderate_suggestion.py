@@ -38,8 +38,9 @@ class ModerateSuggestionUseCase:
         await self._suggestion_service.update(suggestion_dto)
 
         if verdict == Status.ACCEPTED:
-            await self._event_bus.dispatch(SuggestionAcceptedEvent(
+            self._event_bus.dispatch(SuggestionAcceptedEvent(
                 suggestion_dto=suggestion_dto,
             ))
 
         return ModerationResult(suggestion_dto, False)
+    

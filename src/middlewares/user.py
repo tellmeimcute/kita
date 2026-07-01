@@ -50,7 +50,7 @@ class UserMiddleware(KitaMiddleware):
                 is_new_user = True
         
         if is_new_user:
-            await event_bus.dispatch(NewUserEvent(user_dto=user_dto))
+            event_bus.dispatch(NewUserEvent(user_dto=user_dto))
 
         data.update(user_dto=user_dto)
         return await handler(event, data)

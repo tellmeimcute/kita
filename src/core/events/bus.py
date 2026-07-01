@@ -2,7 +2,7 @@
 
 import asyncio
 from logging import getLogger
-from typing import Callable
+from typing import Callable, Sequence
 from dishka import AsyncContainer
 from .base import KitaEvent
 
@@ -16,7 +16,7 @@ class EventBus:
     def sub(self, event: type[KitaEvent], listener: Callable):
         event_name = event.__name__
 
-        if not self.listeners.get(event):
+        if not self.listeners.get(event_name):
             self.listeners[event_name] = {listener}
         else:
             self.listeners[event_name].add(listener)
@@ -32,18 +32,22 @@ class EventBus:
 
         logger.debug("Event %s unsub %s listener", event_name, listener.__name__)
 
-    async def _run_listener(self, listener: Callable, event: KitaEvent):
+    async def _run_listener(self, listener: Callable, event: KitaEvent, container: AsyncContainer):
         try:
-            async with self._container() as container:
-                await listener(event, container)
+            await listener(event, container)
         except Exception as e:
             logger.error("Listener %s failed: %s", listener.__name__, e, exc_info=True)
 
-    async def dispatch(self, event: KitaEvent):
-        event_name = event.__class__.__name__
+    async def _dispatch(self, listeners: Sequence, event: KitaEvent):
+        async with self._container() as container:
+            async with asyncio.TaskGroup() as tg:
+                for listener in listeners:
+                    tg.create_task(self._run_listener(listener, event, container))
 
+    def dispatch(self, event: KitaEvent):
+        event_name = event.__class__.__name__
         listeners = self.listeners.get(event_name, [])
-        for listener in listeners:
-            asyncio.create_task(self._run_listener(listener, event))
-        
+
+        asyncio.create_task(self._dispatch(listeners, event))
         logger.debug("Event %s dispatched to %s listeners", event_name, len(listeners))
+        
