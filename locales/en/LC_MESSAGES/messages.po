@@ -59,9 +59,6 @@ msgstr ""
 "\n"
 "To cancel, return to the main menu."
 
-msgid "start_review_suggestions"
-msgstr "Starting review of suggestions..."
-
 msgid "suggestion_not_found"
 msgstr "Suggestion with ID {suggestion_id} not found 😢"
 
@@ -96,17 +93,6 @@ msgstr ""
 
 msgid "error_user_immune"
 msgstr "This user is immune to this command."
-
-msgid "answer_admin_role_changed"
-msgstr "User @{username} ({user_id}) has had their role changed to {role}."
-
-msgid "user_not_found"
-msgstr "User with id {user_id} not found."
-
-msgid "command_syntax_error"
-msgstr ""
-"Check that the command was entered correctly.\n"
-"{hint}"
 
 msgid "verdict_rewrite"
 msgstr "Status changed."
@@ -169,12 +155,6 @@ msgid "banner_wait_for_text_again"
 msgstr ""
 "<b>Text not found!</b>\n"
 "Try again! Or return to the admin menu 😭"
-
-msgid "channel_banner_sent"
-msgstr "Banner sent to the channel."
-
-msgid "channel_banner"
-msgstr "{text}"
 
 msgid "channel_banner_btn"
 msgstr "😏 Suggestions"
@@ -249,6 +229,9 @@ msgstr "Choose language"
 
 msgid "locale_changed_msg"
 msgstr "Your locale changed!"
+
+msgid "same_locale_warning"
+msgstr "Your locale is already set to this!"
 
 msgid "menu_btn"
 msgstr "⬅ To main menu"

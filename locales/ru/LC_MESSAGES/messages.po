@@ -61,9 +61,6 @@ msgstr ""
 "\n"
 "Чтобы отменить действие - вернитесь в главное меню."
 
-msgid "start_review_suggestions"
-msgstr "Начинаем просмотр предложки..."
-
 msgid "suggestion_not_found"
 msgstr "Предложки с ID {suggestion_id} не найдено 😢"
 
@@ -98,17 +95,6 @@ msgstr ""
 
 msgid "error_user_immune"
 msgstr "Этот пользователь неуязвим к этой команде."
-
-msgid "answer_admin_role_changed"
-msgstr "Пользователю @{username} ({user_id}) изменена роль на {role}."
-
-msgid "user_not_found"
-msgstr "Пользователь с id {user_id} не найден."
-
-msgid "command_syntax_error"
-msgstr ""
-"Проверьте введена ли команда правильно.\n"
-"{hint}"
 
 msgid "verdict_rewrite"
 msgstr "Статус изменен."
@@ -171,12 +157,6 @@ msgid "banner_wait_for_text_again"
 msgstr ""
 "<b>Текст не обнаружен!</b>\n"
 "Попробуй снова! Ну или вернись в админ меню 😭"
-
-msgid "channel_banner_sent"
-msgstr "Баннер отправлен в канал."
-
-msgid "channel_banner"
-msgstr "{text}"
 
 msgid "channel_banner_btn"
 msgstr "😏 Предложка"
@@ -252,6 +232,9 @@ msgstr "Выберите язык"
 
 msgid "locale_changed_msg"
 msgstr "Язык изменен!"
+
+msgid "same_locale_warning"
+msgstr "У тебя и так установлен этот язык!"
 
 msgid "menu_btn"
 msgstr "⬅ В главное меню"

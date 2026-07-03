@@ -41,9 +41,6 @@ msgstr ""
 msgid "suggestion_wait_media"
 msgstr ""
 
-msgid "start_review_suggestions"
-msgstr ""
-
 msgid "suggestion_not_found"
 msgstr ""
 
@@ -66,15 +63,6 @@ msgid "user_stats"
 msgstr ""
 
 msgid "error_user_immune"
-msgstr ""
-
-msgid "answer_admin_role_changed"
-msgstr ""
-
-msgid "user_not_found"
-msgstr ""
-
-msgid "command_syntax_error"
 msgstr ""
 
 msgid "verdict_rewrite"
@@ -131,12 +119,6 @@ msgstr ""
 msgid "banner_wait_for_text_again"
 msgstr ""
 
-msgid "channel_banner_sent"
-msgstr ""
-
-msgid "channel_banner"
-msgstr ""
-
 msgid "channel_banner_btn"
 msgstr ""
 
@@ -186,6 +168,9 @@ msgid "locale_menu_text"
 msgstr ""
 
 msgid "locale_changed_msg"
+msgstr ""
+
+msgid "same_locale_warning"
 msgstr ""
 
 msgid "menu_btn"

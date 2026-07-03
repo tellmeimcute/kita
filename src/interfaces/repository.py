@@ -5,7 +5,7 @@ from typing import Protocol, Sequence, Any
 
 from core.schemas.objects import UserStats
 from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO
-from services.message_parser import MediaInfo
+
 
 class UserRepositoryProtocol(Protocol):
 
@@ -76,7 +76,7 @@ class SuggestionRepositoryProtocol(Protocol):
         self,
         author_id: int,
         anonymous: bool,
-        mediainfo: list[MediaInfo],
+        mediainfo: list[Any],
         caption: str | None,
         media_group_id: str | None,
         forwarded_from: str | None,
