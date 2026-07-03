@@ -17,7 +17,7 @@ class MessageTransfer(BaseSender):
         self.message_ids = message_ids
 
 class CopyTransfer(MessageTransfer):
-    async def send(self):
+    async def _send(self):
         return await self.bot.copy_messages(
             chat_id=self.target_id,
             from_chat_id=self.from_chat_id,
@@ -25,7 +25,7 @@ class CopyTransfer(MessageTransfer):
         )
     
 class ForwardTransfer(MessageTransfer):
-    async def send(self):
+    async def _send(self):
         return await self.bot.forward_messages(
             chat_id=self.target_id,
             from_chat_id=self.from_chat_id,

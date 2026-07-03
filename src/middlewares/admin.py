@@ -7,7 +7,6 @@ from core.consts import DISHKA_CONTAINER_KEY
 from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
 from database.dto import UserDTO
-from services import NotifierService
 from ui.senders.payload import TextSender
 from .base import KitaMiddleware
 
@@ -27,7 +26,6 @@ class AdminMiddleware(KitaMiddleware):
             await event.answer()
 
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        notifier = await container.get(NotifierService)
         translator = await container.get(Translator)
 
         payload = MessagePayload(i18n_key="warning_not_enough_permission")
@@ -37,4 +35,5 @@ class AdminMiddleware(KitaMiddleware):
             payload=payload,
             translator=translator,
         )
-        await notifier.send(strategy)
+        await strategy.send()
+        

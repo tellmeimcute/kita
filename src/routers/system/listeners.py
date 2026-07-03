@@ -62,11 +62,14 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
     with i18n.context():
         channel_payload = suggestion_utils.payload_factory(event.suggestion_dto, "channel_post_message")
         strategy = notifier.strategy_factory(config.channel_id, channel_payload)
-        channel_post = await notifier.send(strategy)
+        channel_post = await strategy.send()
 
         if isinstance(channel_post, list):
             channel_post = channel_post[0]
-        post_url = channel_post.get_url() or runtime_config.bot_url
+        
+        post_url = runtime_config.bot_url
+        if channel_post:
+            post_url = channel_post.get_url()
         
         with i18n.use_locale(event.suggestion_dto.author.language_code):
             author_payload = MessagePayload(

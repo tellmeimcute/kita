@@ -23,11 +23,11 @@ class MessageSender(BaseSender):
         self.translator = translator
 
 class MediaGroupSender(MessageSender):
-    async def send(self) -> list[Message]:
+    async def _send(self) -> list[Message]:
         return await self.bot.send_media_group(self.target_id, self.payload.media, disable_notification=self.silent)
 
 class TextSender(MessageSender):
-    async def send(self) -> Message:
+    async def _send(self) -> Message:
         if not self.translator:
             raise ValueError("Translator is required for TextSender")
         

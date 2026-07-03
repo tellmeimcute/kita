@@ -36,7 +36,6 @@ async def unknown_intent(
     event: ErrorEvent,
     callback: CallbackQuery,
     translator: FromDishka[Translator],
-    notifier: FromDishka[NotifierService],
 ):
     await callback.answer()
 
@@ -48,5 +47,5 @@ async def unknown_intent(
         translator=translator,
     )
 
-    await notifier.send(strategy)
+    await strategy.send()
 
