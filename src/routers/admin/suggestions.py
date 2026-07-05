@@ -121,13 +121,19 @@ async def viewer_verdict(
         await renderer.verdict_exists(user_dto, result.suggestion_dto)
 
     if not viewer_data.suggestion_dtos:
-        await state.clear()
-        await renderer.empty_queue(user_dto)
-        return await dialog_manager.start(
-            UserMenuSG.main,
-            mode=StartMode.RESET_STACK,
-            show_mode=ShowMode.DELETE_AND_SEND,
-        )
+        async with uow.transaction():
+            new_suggestions: list | None = await suggestion_service.get_active()
+            
+        if not new_suggestions:
+            await state.clear()
+            await renderer.empty_queue(user_dto)
+            return await dialog_manager.start(
+                UserMenuSG.main,
+                mode=StartMode.RESET_STACK,
+                show_mode=ShowMode.DELETE_AND_SEND,
+            )
+        
+        viewer_data.suggestion_dtos = new_suggestions
 
     new_suggestion = viewer_data.suggestion_dtos.pop(0)
     viewer_data.suggestion_dto = new_suggestion
