@@ -50,7 +50,7 @@ class UserRepositoryProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def user_stats(self) -> Any:
+    async def global_user_stats(self) -> Any:
         ...
 
     @abstractmethod
@@ -88,7 +88,7 @@ class SuggestionRepositoryProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def get_user_stats(self, user_id: int) -> UserStats | None:
+    async def user_stats(self, user_id: int) -> UserStats | None:
         ...
 
     @abstractmethod

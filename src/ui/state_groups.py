@@ -6,7 +6,6 @@ class UserMenuSG(StatesGroup):
     main = State()
     settings = State()
     language = State()
-    statistics = State()
 
 
 class SuggestionSG(StatesGroup):

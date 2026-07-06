@@ -45,7 +45,7 @@ class SuggestionService:
         if stats_row:
             return stats_row
         
-        user_stats = await self.repo.get_user_stats(user_dto.user_id)
+        user_stats = await self.repo.user_stats(user_dto.user_id)
         await UserStatsRedis.set(self.redis, key, user_stats)
         return user_stats
 

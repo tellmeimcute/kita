@@ -81,7 +81,7 @@ class SuggestionRepository:
         orm_models = result.scalars().all()
         return SuggestionFullDTO.from_model_list(orm_models)
 
-    async def get_user_stats(self, user_id: int) -> UserStats | None:
+    async def user_stats(self, user_id: int) -> UserStats | None:
         stmt = select(
             func.count(Suggestion.id).label("total"),
             func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.ACCEPTED).label("accepted"),

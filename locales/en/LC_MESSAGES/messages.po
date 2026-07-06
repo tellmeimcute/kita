@@ -77,7 +77,12 @@ msgid "suggestion_sent_to_moderation"
 msgstr "Sent to moderation."
 
 msgid "start_msg"
-msgstr "Welcome to the suggestions bot of the channel {channel_name}!"
+msgstr ""
+"✨ <b>{channel_name} suggestions bot!</b> ✨\n\n"
+"😎 <b>You suggested</b>: <code>{user_stats[total]}</code> posts!\n"
+"\n"
+"<b>Your signature:</b> <i>{signature}</i>\n"
+"<i>You can on/off anonymity in settings menu.</i>"
 
 msgid "state_reset"
 msgstr "State has been reset."

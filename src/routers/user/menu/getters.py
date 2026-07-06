@@ -13,24 +13,24 @@ from database.dto import UserDTO
 
 
 @inject
-async def get_statistic(
+async def get_menu_i18n_kwargs(
     dialog_manager: DialogManager,
     suggestion_service: FromDishka[SuggestionServiceProtocol],
+    runtime_config: FromDishka[RuntimeConfig],
     translator: FromDishka[Translator],
     **kwargs
 ):
     user_dto: UserDTO = dialog_manager.middleware_data.get("user_dto")
 
     stats = await suggestion_service.get_user_stats(user_dto)
-    stats_text = translator.i18n_text(i18n_key="user_stats", i18n_kwargs=stats.model_dump())
-    return {"stats_text": stats_text}
+    i18n_kwargs = stats.model_dump()
 
-@inject
-async def get_runtime_config(
-    dialog_manager: DialogManager,
-    runtime_config: FromDishka[RuntimeConfig],
-    **kwargs
-):
-    i18n_kwargs = runtime_config.model_dump()
-    i18n_kwargs.update({"channel_name": html.bold(runtime_config.channel_name)})
-    return i18n_kwargs
+    stats_text = translator.i18n_text(i18n_key="user_stats", i18n_kwargs=i18n_kwargs)
+    signature = "Anonymous" if user_dto.prefer_anonymous else user_dto.name
+
+    return {
+        "stats_text": stats_text,
+        "user_stats": i18n_kwargs,
+        "signature": signature,
+        "channel_name": runtime_config.channel_name,
+    }

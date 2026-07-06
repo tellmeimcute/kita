@@ -3,7 +3,6 @@
 from aiogram_dialog import Window, Dialog, StartMode, LaunchMode
 from aiogram_dialog.widgets.kbd import SwitchTo, Cancel, Button, Start
 from aiogram_dialog.widgets.style import Style
-from aiogram_dialog.widgets.text import Format
 
 from ui.widgets.locale_group import LocaleGroup
 from ui.widgets.i18n_text import I18nText
@@ -14,10 +13,7 @@ from ui.state_groups import UserMenuSG, AdminMenuSG, SuggestionSG
 from routers.shared_getters import is_admin
 from routers.admin.suggestions import enter_viewer_callback
 
-from .getters import(
-    get_runtime_config,
-    get_statistic,
-)
+from .getters import get_menu_i18n_kwargs
 
 from .handlers import (
     on_language_selected,
@@ -39,11 +35,6 @@ main_window = Window(
         style=Style("primary"),
         when=is_admin,
     ),
-    SwitchTo(
-        I18nText("statistic_btn"),
-        id="statistic",
-        state=UserMenuSG.statistics,
-    ),
     ProtectedStart(
         I18nText("admin_menu_btn"),
         id="admin_menu",
@@ -53,7 +44,7 @@ main_window = Window(
     ),
     SwitchTo(I18nText("settings_menu_btn"), id="settings", state=UserMenuSG.settings),
     Cancel(I18nText("close_btn"), when=is_admin),
-    getter=get_runtime_config,
+    getter=get_menu_i18n_kwargs,
     state=UserMenuSG.main,
 )
 
@@ -73,17 +64,9 @@ language_window = Window(
     state=UserMenuSG.language,
 )
 
-statistic_window = Window(
-    Format("{stats_text}"),
-    SwitchTo(I18nText("menu_btn"), id="menu", state=UserMenuSG.main),
-    getter=[get_statistic],
-    state=UserMenuSG.statistics,
-)
-
 dialog = Dialog(
     main_window,
     settings_window,
     language_window,
-    statistic_window,
     launch_mode=LaunchMode.ROOT,
 )

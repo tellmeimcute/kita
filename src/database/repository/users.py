@@ -92,7 +92,7 @@ class UserRepository:
         count = await self._session.scalar(stmt)
         return count or 0
     
-    async def user_stats(self):
+    async def global_user_stats(self):
         stmt = select(
             func.count(UserAlchemy.id).label("users_total"),
             func.count(UserAlchemy.id).filter(UserAlchemy.role == UserRole.USER).label("users"),
