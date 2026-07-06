@@ -37,7 +37,7 @@ class UserMiddleware(KitaMiddleware):
         event_bus = await container.get(EventBus)
         uow = await container.get(UnitOfWorkProtocol)
         user_service = await container.get(UserServiceProtocol)
-        if not event.from_user:
+        if not event.from_user or event.from_user.is_bot:
             return logger.warning("No user in event. Stop")
         
         is_new_user = False
