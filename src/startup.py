@@ -10,6 +10,7 @@ from core.events import (
     NewUserEvent,
     NewSuggestionEvent,
     SuggestionAcceptedEvent,
+    CopyMessagesToUserEvent,
 )
 
 from middlewares import (
@@ -36,6 +37,7 @@ from routers.system.listeners import (
     notify_admin_new_user,
     notify_admin_new_suggestion,
     suggestion_accepted,
+    copy_to_user_notify_both,
 )
 
 logger = logging.getLogger("kita.startup")
@@ -46,6 +48,7 @@ async def register_events(container: AsyncContainer):
     event_bus.sub(NewUserEvent, notify_admin_new_user)
     event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
     event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
+    event_bus.sub(CopyMessagesToUserEvent, copy_to_user_notify_both)
     
     logger.debug("%s", event_bus.listeners)
     logger.info("Event Bus successfully registered")

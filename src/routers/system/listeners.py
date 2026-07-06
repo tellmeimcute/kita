@@ -7,7 +7,7 @@ from aiogram.utils.i18n import I18n
 
 from core.config import Config, RuntimeConfig
 from core.schemas.message_payload import MessagePayload
-from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent
+from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent, CopyMessagesToUserEvent
 from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
@@ -80,3 +80,21 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
                 i18n_kwargs=dict(post_url=post_url),
             )
             await notifier.notify_user(event.suggestion_dto.author, author_payload)
+
+async def copy_to_user_notify_both(
+    event: CopyMessagesToUserEvent, container: AsyncContainer
+):
+        notifier = await container.get(NotifierServiceProtocol)
+
+        sent = await notifier.copy_messages(
+            user_dto=event.user_dto, 
+            messages=event.album_ids, 
+            source=event.source_chat_id
+        )
+        
+        payload_target = MessagePayload(i18n_key="notify_you_receive_message")
+        await notifier.notify_user(event.user_dto, payload_target)
+        
+        i18n_key = "message_delivered" if sent else "message_not_delivered"
+        payload_caller = MessagePayload(i18n_key=i18n_key)
+        await notifier.notify_user(event.caller_dto, payload_caller)

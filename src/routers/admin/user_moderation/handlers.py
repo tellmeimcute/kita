@@ -1,5 +1,5 @@
 
-
+import asyncio
 from pydantic import ValidationError
 
 from aiogram.types import CallbackQuery, Message
@@ -12,13 +12,12 @@ from dishka.integrations.aiogram_dialog import inject
 
 from core.exceptions import UserImmuneError
 from core.schemas import IDCommand
-from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
+from core.events import EventBus, CopyMessagesToUserEvent
 
 from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
-    NotifierServiceProtocol,
 )
 
 from database.dto import UserDTO
@@ -98,7 +97,7 @@ async def message_to_user(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    notifier: FromDishka[NotifierServiceProtocol],
+    event_bus: FromDishka[EventBus],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     target_dto_raw = manager.dialog_data.get("target_dto")
@@ -109,15 +108,14 @@ async def message_to_user(
         album = (message,)
 
     album_ids = [m.message_id for m in album]
-    sent = await notifier.copy_messages(
-        target_dto, album_ids, source=message.chat.id
+    event_bus.dispatch(
+        CopyMessagesToUserEvent(
+            user_dto=target_dto,
+            caller_dto=user_dto,
+            source_chat_id=message.chat.id,
+            album_ids=album_ids,
+        )
     )
-    payload = MessagePayload(i18n_key="notify_you_receive_message")
-    await notifier.notify_user(target_dto, payload)
-
-    i18n_key = "message_delivered" if sent else "message_not_delivered"
-    payload = MessagePayload(i18n_key=i18n_key)
-    await notifier.notify_user(user_dto, payload)
 
     await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
     

@@ -1,4 +1,5 @@
 
+import asyncio
 from logging import getLogger
 
 from aiogram import Router
@@ -15,6 +16,7 @@ from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
 from core.schemas.viewer import SuggestionViewerData
 from core.schemas import SuggestionViewerData
+from core.events import EventBus, CopyMessagesToUserEvent
 
 from database.dto import UserDTO
 from database.enums import UserRole, SuggestionStatus
@@ -25,7 +27,7 @@ from interfaces import (
 )
 
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
-from usecases.change_role import ChangeRoleUseCase
+from usecases import ChangeRoleUseCase
 
 from ui.state_groups import SuggestionViewerSG
 from ui.suggestion_renderer import SuggestionRenderer
@@ -184,7 +186,6 @@ async def viewer_back(
     )
     await notifier.notify_user(user_dto, payload)
 
-
 @router.message(SuggestionViewerSG.message_user, ~I18nTextFilter("viewer_back_btn"))
 async def message_to_user(
     message: Message,
@@ -192,6 +193,7 @@ async def message_to_user(
     user_dto: UserDTO,
     viewer_data: FromDishka[SuggestionViewerData],
     notifier: FromDishka[NotifierServiceProtocol],
+    event_bus: FromDishka[EventBus],
     album: list[Message] | None = None,
 ):
     target_dto = viewer_data.suggestion_dto.author
@@ -199,15 +201,15 @@ async def message_to_user(
         album = (message,)
     
     album_ids = [m.message_id for m in album]
-    sent = await notifier.copy_messages(
-        target_dto, album_ids, source=message.chat.id
+    
+    event_bus.dispatch(
+        CopyMessagesToUserEvent(
+            user_dto=target_dto,
+            caller_dto=user_dto,
+            source_chat_id=message.chat.id,
+            album_ids=album_ids,
+        )
     )
-    payload = MessagePayload(i18n_key="notify_you_receive_message")
-    await notifier.notify_user(target_dto, payload)
-
-    i18n_key = "message_delivered" if sent else "message_not_delivered"
-    payload = MessagePayload(i18n_key=i18n_key)
-    await notifier.notify_user(user_dto, payload)
 
     await state.set_state(SuggestionViewerSG.in_viewer)
 
