@@ -15,8 +15,12 @@ from core.schemas import IDCommand
 from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
 
-from interfaces import UnitOfWorkProtocol, UserServiceProtocol
-from services import NotifierService
+from interfaces import (
+    UnitOfWorkProtocol,
+    UserServiceProtocol,
+    NotifierServiceProtocol,
+)
+
 from database.dto import UserDTO
 from database.enums import UserRole
 from ui.state_groups import ModerationMenuSG
@@ -94,7 +98,7 @@ async def message_to_user(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    notifier: FromDishka[NotifierService],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     target_dto_raw = manager.dialog_data.get("target_dto")

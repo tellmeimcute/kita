@@ -8,10 +8,13 @@ from aiogram.utils.i18n import I18n
 from core.config import Config, RuntimeConfig
 from core.schemas.message_payload import MessagePayload
 from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent
-from interfaces import UnitOfWorkProtocol, UserServiceProtocol
-
+from interfaces import (
+    UnitOfWorkProtocol,
+    UserServiceProtocol,
+    NotifierServiceProtocol,
+)
 from ui.suggestion_utils import SuggestionUtils
-from services import NotifierService
+
 
 logger = getLogger("kita.event")
 
@@ -20,7 +23,7 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
 
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
-    notifier = await container.get(NotifierService)
+    notifier = await container.get(NotifierServiceProtocol)
     i18n = await container.get(I18n)
 
     async with uow.transaction():
@@ -37,7 +40,7 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
 async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
-    notifier = await container.get(NotifierService)
+    notifier = await container.get(NotifierServiceProtocol)
     suggestion_utils = await container.get(SuggestionUtils)
     i18n = await container.get(I18n)
 
@@ -55,7 +58,7 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
     config = await container.get(Config)
     runtime_config = await container.get(RuntimeConfig)
-    notifier = await container.get(NotifierService)
+    notifier = await container.get(NotifierServiceProtocol)
     suggestion_utils = await container.get(SuggestionUtils)
     i18n = await container.get(I18n)
 

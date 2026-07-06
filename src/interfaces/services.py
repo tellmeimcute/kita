@@ -1,9 +1,12 @@
 from abc import abstractmethod
 from typing import Protocol, Sequence, Any
 
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup
 from core.schemas.objects import UserStats
+from core.schemas.message_payload import MessagePayload
 from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO
+from ui.senders.base import BaseSender
+
 
 class UserServiceProtocol(Protocol):
 
@@ -56,3 +59,27 @@ class SuggestionServiceProtocol(Protocol):
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         ...
 
+
+class NotifierServiceProtocol:
+
+    @abstractmethod
+    def strategy_factory(
+        self, target_id: int, payload: MessagePayload, silent: bool = True
+    ) -> BaseSender: ...
+
+    @abstractmethod
+    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload): ...
+
+    @abstractmethod
+    async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int): ...
+
+    @abstractmethod
+    async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int): ...
+
+    @abstractmethod
+    async def edit_message_text(
+        self,
+        message: Message,
+        text: str,
+        reply_markup: InlineKeyboardMarkup | None = None,
+    ): ...

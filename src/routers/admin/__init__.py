@@ -4,7 +4,7 @@ from .banner.dialog import dialog as banner_dialog
 from .broadcast.dialog import dialog as broadcast_dialog
 from .user_moderation.dialog import dialog as user_moderation_dialog
 
-from .suggestions import router as suggestion_router
+from .suggestions import suggestion_router
 
 __all__ = (
     "menu_dialog",

@@ -14,12 +14,9 @@ from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
 from core.schemas.message_payload import MessagePayload
 
-from interfaces import UnitOfWorkProtocol
+from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol
 from database.dto import UserDTO
-
-from services import NotifierService
 from ui.state_groups import AdminMenuSG, BroadcastMenuSG
-
 from usecases.broadcast import BroadcastUseCase
 
 
@@ -49,7 +46,7 @@ async def execute_broadcast(
     button: Button,
     manager: DialogManager,
     broadcast: FromDishka[BroadcastUseCase],
-    notifier: FromDishka[NotifierService],
+    notifier: FromDishka[NotifierServiceProtocol],
     translator: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")

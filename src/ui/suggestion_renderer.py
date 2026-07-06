@@ -6,13 +6,13 @@ from database.dto import SuggestionFullDTO, UserDTO
 
 from core.schemas.message_payload import MessagePayload
 from ui.suggestion_utils import SuggestionUtils
-from services import NotifierService
+from interfaces import NotifierServiceProtocol
 
 class SuggestionRenderer:
 
     def __init__(
         self,
-        notifier: NotifierService,
+        notifier: NotifierServiceProtocol,
         suggestion_utils: SuggestionUtils,
     ):
         self.notifier = notifier

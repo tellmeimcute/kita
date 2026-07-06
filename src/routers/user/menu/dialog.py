@@ -12,7 +12,7 @@ from ui.widgets.protected_start import ProtectedStart
 from ui.state_groups import UserMenuSG, AdminMenuSG, SuggestionSG
 
 from routers.shared_getters import is_admin
-from routers.admin.shared_handlers import enter_suggestion_viewer
+from routers.admin.suggestions import enter_viewer_callback
 
 from .getters import(
     get_runtime_config,
@@ -35,7 +35,7 @@ main_window = Window(
     Button(
         I18nText("enter_viewer_btn"),
         id="suggestion_viewer",
-        on_click=enter_suggestion_viewer,
+        on_click=enter_viewer_callback,
         style=Style("primary"),
         when=is_admin,
     ),

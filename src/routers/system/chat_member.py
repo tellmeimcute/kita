@@ -12,7 +12,6 @@ from core.i18n_translator import Translator
 from ui.senders.payload import TextSender
 
 from interfaces import UnitOfWorkProtocol, UserServiceProtocol
-from services import NotifierService
 
 
 router = Router(name="chat_member")

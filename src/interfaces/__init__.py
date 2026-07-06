@@ -7,6 +7,7 @@ from .repository import (
 from .services import (
     UserServiceProtocol,
     SuggestionServiceProtocol,
+    NotifierServiceProtocol,
 )
 
 from .uow import UnitOfWorkProtocol

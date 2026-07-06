@@ -16,10 +16,13 @@ from core.schemas.message_payload import MessagePayload
 from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 
-from interfaces import UnitOfWorkProtocol, UserServiceProtocol
-from database.dto import UserDTO
-from services.notifier import NotifierService
+from interfaces import (
+    UnitOfWorkProtocol,
+    UserServiceProtocol,
+    NotifierServiceProtocol,
+)
 
+from database.dto import UserDTO
 from ui.state_groups import UserMenuSG
 
 router = Router(name="main_menu")
@@ -89,7 +92,7 @@ async def cancel(
     user_dto: UserDTO,
     state: FSMContext,
     dialog_manager: DialogManager,
-    notifier: FromDishka[NotifierService],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
     payload = MessagePayload(i18n_key="state_reset", reply_markup=ReplyKeyboardRemove())
     await notifier.notify_user(user_dto, payload=payload)

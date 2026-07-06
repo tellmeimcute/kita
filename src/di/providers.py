@@ -36,6 +36,7 @@ from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
     SuggestionServiceProtocol,
+    NotifierServiceProtocol,
 )
 
 from ui.suggestion_utils import SuggestionUtils
@@ -44,7 +45,7 @@ from ui.suggestion_renderer import SuggestionRenderer
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
 
-    notifier_service = provide(NotifierService, scope=Scope.APP)
+    notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol, scope=Scope.APP)
     user_service = provide(source=UserService, provides=UserServiceProtocol, scope=Scope.REQUEST)
     suggestion_service = provide(source=SuggestionService, provides=SuggestionServiceProtocol, scope=Scope.REQUEST)
     

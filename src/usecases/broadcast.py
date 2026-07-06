@@ -6,8 +6,7 @@ from aiogram.types import Message, MessageOriginChannel
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
-from interfaces import UserServiceProtocol
-from services import NotifierService
+from interfaces import UserServiceProtocol, NotifierServiceProtocol
 
 
 class BroadcastUseCase:
@@ -23,7 +22,7 @@ class BroadcastUseCase:
     def __init__(
         self,
         user_service: UserServiceProtocol,
-        notifier: NotifierService,
+        notifier: NotifierServiceProtocol,
         translator: Translator,
     ):
         self._user_service = user_service
