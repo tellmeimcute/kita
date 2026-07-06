@@ -40,12 +40,12 @@ class SuggestionUtils:
     def get_i18n_kwargs(self, dto: SuggestionFullDTO):
         verdict = self._get_verdict(dto)
 
-        author_plus_origin = self._get_author_plus_origin(dto)
-        author_string = author_plus_origin if dto.forwarded_from else dto.author.name
+        author_string = "Anonymous" if dto.anonymous else dto.author.name
+        if dto.forwarded_from:
+            author_string = self._get_author_plus_origin(dto)
 
         i18n_kwargs = dto.to_i18n_kwargs()
         i18n_kwargs.update(
-            author_plus_origin=author_plus_origin,
             author_string=author_string,
             verdict=verdict,
             bot_url=self.runtime_config.bot_url,
