@@ -14,6 +14,10 @@ class ReplyKeyboard:
     def viewer_admin_action(cls):
         return cls.build(
             [KeyboardButton(text=_("viewer_accept")), KeyboardButton(text=_("viewer_decline"))],
-            [KeyboardButton(text=_("ban_btn"))],
+            [KeyboardButton(text=_("viewer_message_to_user_btn")), KeyboardButton(text=_("ban_btn"))],
             [KeyboardButton(text=_("command_cancel"))],
         )
+    
+    @classmethod
+    def viewer_back(cls):
+        return cls.build([KeyboardButton(text=_("viewer_back_btn"))])

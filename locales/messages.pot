@@ -95,6 +95,12 @@ msgstr ""
 msgid "enter_viewer_btn"
 msgstr ""
 
+msgid "viewer_message_to_user_btn"
+msgstr ""
+
+msgid "viewer_back_btn"
+msgstr ""
+
 msgid "command_open_solo_view"
 msgstr ""
 
@@ -216,6 +222,9 @@ msgid "message_delivered"
 msgstr ""
 
 msgid "message_not_delivered"
+msgstr ""
+
+msgid "notify_you_receive_message"
 msgstr ""
 
 msgid "command_open_menu"

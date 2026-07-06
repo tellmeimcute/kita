@@ -126,6 +126,12 @@ msgstr "Decline"
 msgid "enter_viewer_btn"
 msgstr "View suggestions"
 
+msgid "viewer_message_to_user_btn"
+msgstr "Send message"
+
+msgid "viewer_back_btn"
+msgstr "Back"
+
 msgid "command_open_solo_view"
 msgstr "suggestion"
 
@@ -281,6 +287,9 @@ msgstr "😎 <b>Message delivered!</b>"
 
 msgid "message_not_delivered"
 msgstr "😭 <b>Message not delivered :(</b>"
+
+msgid "notify_you_receive_message"
+msgstr "📧 <b>You have a new message!</b>"
 
 msgid "command_open_menu"
 msgstr "Menu"

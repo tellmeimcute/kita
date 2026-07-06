@@ -30,10 +30,42 @@ from usecases.change_role import ChangeRoleUseCase
 from ui.state_groups import SuggestionViewerSG
 from ui.suggestion_renderer import SuggestionRenderer
 from ui.state_groups import UserMenuSG
+from ui.keyboards import ReplyKeyboard
 
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")
+
+@inject
+async def enter_suggestion_viewer(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+    uow: FromDishka[UnitOfWorkProtocol],
+    suggestion_service: FromDishka[SuggestionServiceProtocol],
+    viewer_data: FromDishka[SuggestionViewerData],
+    renderer: FromDishka[SuggestionRenderer],
+    tl: FromDishka[Translator],
+):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    state: FSMContext = manager.middleware_data.get("state")
+
+    async with uow.transaction():
+        new_suggestions: list | None = await suggestion_service.get_active()
+
+    if not new_suggestions:
+        warning = tl.translate("suggestion_no_active")
+        return await callback.answer(warning)
+
+    cur_suggestion = new_suggestions.pop(0)
+
+    viewer_data.suggestion_dtos = new_suggestions
+    viewer_data.suggestion_dto = cur_suggestion
+
+    await manager.reset_stack()
+    await state.set_state(SuggestionViewerSG.in_viewer)
+    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
+    await renderer.suggestion(user_dto, cur_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
@@ -125,33 +157,62 @@ async def viewer_ban_author(
     return await renderer.suggestion(user_dto, cur_suggestion)
 
 
-@inject
-async def enter_suggestion_viewer(
-    callback: CallbackQuery,
-    button: Button,
-    manager: DialogManager,
-    uow: FromDishka[UnitOfWorkProtocol],
-    suggestion_service: FromDishka[SuggestionServiceProtocol],
-    viewer_data: FromDishka[SuggestionViewerData],
-    renderer: FromDishka[SuggestionRenderer],
-    tl: FromDishka[Translator],
+@router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_message_to_user_btn"))
+async def enter_message_to_user(
+    message: Message,
+    state: FSMContext,
+    user_dto: UserDTO,
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    state: FSMContext = manager.middleware_data.get("state")
+    await state.set_state(SuggestionViewerSG.message_user)
 
-    async with uow.transaction():
-        new_suggestions: list | None = await suggestion_service.get_active()
+    payload = MessagePayload(i18n_key="wait_message_text", reply_markup=ReplyKeyboard.viewer_back())
+    await notifier.notify_user(user_dto, payload)
 
-    if not new_suggestions:
-        warning = tl.translate("suggestion_no_active")
-        return await callback.answer(warning)
 
-    cur_suggestion = new_suggestions.pop(0)
-
-    viewer_data.suggestion_dtos = new_suggestions
-    viewer_data.suggestion_dto = cur_suggestion
-
-    await manager.reset_stack()
+@router.message(SuggestionViewerSG.message_user, I18nTextFilter("viewer_back_btn"))
+async def viewer_back(
+    message: Message,
+    state: FSMContext,
+    user_dto: UserDTO,
+    notifier: FromDishka[NotifierServiceProtocol],
+):
     await state.set_state(SuggestionViewerSG.in_viewer)
-    await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    await renderer.suggestion(user_dto, cur_suggestion)
+    payload = MessagePayload(
+        i18n_key="wait_verdict_text",
+        reply_markup=ReplyKeyboard.viewer_admin_action(),
+    )
+    await notifier.notify_user(user_dto, payload)
+
+
+@router.message(SuggestionViewerSG.message_user, ~I18nTextFilter("viewer_back_btn"))
+async def message_to_user(
+    message: Message,
+    state: FSMContext,
+    user_dto: UserDTO,
+    viewer_data: FromDishka[SuggestionViewerData],
+    notifier: FromDishka[NotifierServiceProtocol],
+    album: list[Message] | None = None,
+):
+    target_dto = viewer_data.suggestion_dto.author
+    if not album:
+        album = (message,)
+    
+    album_ids = [m.message_id for m in album]
+    sent = await notifier.copy_messages(
+        target_dto, album_ids, source=message.chat.id
+    )
+    payload = MessagePayload(i18n_key="notify_you_receive_message")
+    await notifier.notify_user(target_dto, payload)
+
+    i18n_key = "message_delivered" if sent else "message_not_delivered"
+    payload = MessagePayload(i18n_key=i18n_key)
+    await notifier.notify_user(user_dto, payload)
+
+    await state.set_state(SuggestionViewerSG.in_viewer)
+
+    payload = MessagePayload(
+        i18n_key="wait_verdict_text",
+        reply_markup=ReplyKeyboard.viewer_admin_action(),
+    )
+    await notifier.notify_user(user_dto, payload)

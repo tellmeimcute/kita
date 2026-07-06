@@ -104,9 +104,16 @@ async def message_to_user(
     target_dto_raw = manager.dialog_data.get("target_dto")
     target_dto = UserDTO.model_validate(target_dto_raw)
 
+    album: list[Message] | None = manager.middleware_data.get("album")
+    if not album:
+        album = (message,)
+
+    album_ids = [m.message_id for m in album]
     sent = await notifier.copy_messages(
-        target_dto, [message.message_id], source=message.chat.id
+        target_dto, album_ids, source=message.chat.id
     )
+    payload = MessagePayload(i18n_key="notify_you_receive_message")
+    await notifier.notify_user(target_dto, payload)
 
     i18n_key = "message_delivered" if sent else "message_not_delivered"
     payload = MessagePayload(i18n_key=i18n_key)

@@ -128,6 +128,12 @@ msgstr "Отклонить"
 msgid "enter_viewer_btn"
 msgstr "Смотреть предложку"
 
+msgid "viewer_message_to_user_btn"
+msgstr "Отправить сообщение"
+
+msgid "viewer_back_btn"
+msgstr "Назад"
+
 msgid "command_open_solo_view"
 msgstr "предложка"
 
@@ -183,7 +189,7 @@ msgstr ""
 
 msgid "broadcast_wait_message_text"
 msgstr ""
-"Отправьте сообщение.\n"
+"<b>Отправьте сообщение.</b>\n"
 "\n"
 "Принимается любое сообщение.\n"
 "Также можно репостнуть сообщение с канала."
@@ -274,7 +280,7 @@ msgstr "📧 Отправить сообщение"
 
 msgid "wait_message_text"
 msgstr ""
-"Отправьте сообщение.\n"
+"<b>Отправьте сообщение.</b>\n"
 "\n"
 "Принимается любое сообщение.\n"
 "Также можно репостнуть сообщение с канала."
@@ -284,6 +290,9 @@ msgstr "😎 <b>Сообщение доставлено!</b>"
 
 msgid "message_not_delivered"
 msgstr "😭 <b>Сообщение не доставлено :(</b>"
+
+msgid "notify_you_receive_message"
+msgstr "📧 <b>Вы получили сообщение!</b>"
 
 msgid "command_open_menu"
 msgstr "Меню"
