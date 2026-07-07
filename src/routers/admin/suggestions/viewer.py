@@ -64,7 +64,7 @@ async def enter_suggestion_viewer(
     await state.set_state(SuggestionViewerSG.in_viewer)
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    await notifier.send_suggestion(user_dto.user_id, cur_suggestion)
+    await notifier.send_suggestion(user_dto, cur_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))

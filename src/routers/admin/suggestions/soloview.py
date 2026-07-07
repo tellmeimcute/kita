@@ -47,7 +47,7 @@ async def enter_soloview(
     viewer_data.suggestion_dto = suggestion_dto
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    await notifier.send_suggestion(user_dto.user_id, suggestion_dto)
+    await notifier.send_suggestion(user_dto, suggestion_dto)
     await notifier.send_text(
         user_dto, "wait_verdict_text",
         kb=ReplyKeyboard.viewer_admin_action(),
