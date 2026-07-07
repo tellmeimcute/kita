@@ -6,7 +6,6 @@ from dishka import AsyncContainer
 from aiogram.utils.i18n import I18n
 
 from core.config import Config, RuntimeConfig
-from core.schemas.message_payload import MessagePayload
 from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent, CopyMessagesToUserEvent
 from interfaces import (
     UnitOfWorkProtocol,
@@ -31,11 +30,11 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
 
     with i18n.context():
         with i18n.use_locale(admin.language_code):
-            payload = MessagePayload(
-                i18n_key="new_user_registered", 
-                i18n_kwargs=dict(new_user_dto=event.user_dto.to_i18n_kwargs()),
+            i18n_kwargs=dict(new_user_dto=event.user_dto.to_i18n_kwargs())
+            await notifier.send_text(
+                admin, "new_user_registered",
+                i18n_kwargs=i18n_kwargs
             )
-            await notifier.notify_user(admin, payload)
 
 async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
     uow = await container.get(UnitOfWorkProtocol)
@@ -51,21 +50,22 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
         for admin in admins:
             with i18n.use_locale(admin.language_code):
                 i18n_kwargs = suggestion_utils.get_i18n_kwargs(event.suggestion_dto)
-                payload = MessagePayload(i18n_key="suggestion_notify_admin_new", i18n_kwargs=i18n_kwargs)
-                await notifier.notify_user(admin, payload)
+                await notifier.send_text(
+                    admin, "suggestion_notify_admin_new",
+                    i18n_kwargs=i18n_kwargs,
+                )
                 await asyncio.sleep(0.2)
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
     config = await container.get(Config)
     runtime_config = await container.get(RuntimeConfig)
     notifier = await container.get(NotifierServiceProtocol)
-    suggestion_utils = await container.get(SuggestionUtils)
     i18n = await container.get(I18n)
 
     with i18n.context():
-        channel_payload = suggestion_utils.payload_factory(event.suggestion_dto, "channel_post_message")
-        strategy = notifier.strategy_factory(config.channel_id, channel_payload)
-        channel_post = await strategy.send()
+        channel_post = await notifier.send_suggestion(
+            config.channel_id, event.suggestion_dto, mode="channel_post"
+        )
 
         if isinstance(channel_post, list):
             channel_post = channel_post[0]
@@ -75,11 +75,10 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
             post_url = channel_post.get_url()
         
         with i18n.use_locale(event.suggestion_dto.author.language_code):
-            author_payload = MessagePayload(
-                i18n_key="notify_author_suggestion_posted", 
+            await notifier.send_text(
+                event.suggestion_dto.author, "notify_author_suggestion_posted",
                 i18n_kwargs=dict(post_url=post_url),
             )
-            await notifier.notify_user(event.suggestion_dto.author, author_payload)
 
 async def copy_to_user_notify_both(
     event: CopyMessagesToUserEvent, container: AsyncContainer
@@ -92,9 +91,7 @@ async def copy_to_user_notify_both(
             source=event.source_chat_id
         )
         
-        payload_target = MessagePayload(i18n_key="notify_you_receive_message")
-        await notifier.notify_user(event.user_dto, payload_target)
-        
+        await notifier.send_text(event.user_dto, "notify_you_receive_message")
+
         i18n_key = "message_delivered" if sent else "message_not_delivered"
-        payload_caller = MessagePayload(i18n_key=i18n_key)
-        await notifier.notify_user(event.caller_dto, payload_caller)
+        await notifier.send_text(event.caller_dto, i18n_key)

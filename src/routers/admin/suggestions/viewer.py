@@ -1,10 +1,9 @@
 
-import asyncio
 from logging import getLogger
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram_dialog import DialogManager, StartMode, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
@@ -13,8 +12,6 @@ from dishka.integrations.aiogram_dialog import inject
 from core.filters import I18nTextFilter
 from core.exceptions import UserImmuneError
 from core.i18n_translator import Translator
-from core.schemas.message_payload import MessagePayload
-from core.schemas.viewer import SuggestionViewerData
 from core.schemas import SuggestionViewerData
 from core.events import EventBus, CopyMessagesToUserEvent
 
@@ -30,7 +27,6 @@ from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationRe
 from usecases import ChangeRoleUseCase
 
 from ui.state_groups import SuggestionViewerSG
-from ui.suggestion_renderer import SuggestionRenderer
 from ui.state_groups import UserMenuSG
 from ui.keyboards import ReplyKeyboard
 
@@ -46,7 +42,7 @@ async def enter_suggestion_viewer(
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     viewer_data: FromDishka[SuggestionViewerData],
-    renderer: FromDishka[SuggestionRenderer],
+    notifier: FromDishka[NotifierServiceProtocol],
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
@@ -67,7 +63,8 @@ async def enter_suggestion_viewer(
     await manager.reset_stack()
     await state.set_state(SuggestionViewerSG.in_viewer)
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    await renderer.suggestion(user_dto, cur_suggestion)
+
+    await notifier.send_suggestion(user_dto.user_id, cur_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
@@ -80,7 +77,7 @@ async def viewer_verdict(
     viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    renderer: FromDishka[SuggestionRenderer],
+    notifier: FromDishka[NotifierServiceProtocol],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     verdict: SuggestionStatus,
 ):
@@ -89,7 +86,11 @@ async def viewer_verdict(
         result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict)
 
     if result.verdict_exists:
-        await renderer.verdict_exists(user_dto, result.suggestion_dto)
+        await notifier.send_text(
+            user_dto, 
+            "suggestion_verdict_exists",
+            i18n_kwargs=dict(id=result.suggestion_dto.id, verdict=updated_dto.status),
+        )
 
     if not viewer_data.suggestion_dtos:
         async with uow.transaction():
@@ -97,7 +98,9 @@ async def viewer_verdict(
             
         if not new_suggestions:
             await state.clear()
-            await renderer.empty_queue(user_dto)
+            await notifier.send_text(
+                user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove()
+            )
             return await dialog_manager.start(
                 UserMenuSG.main,
                 mode=StartMode.RESET_STACK,
@@ -110,7 +113,7 @@ async def viewer_verdict(
     viewer_data.suggestion_dto = new_suggestion
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    return await renderer.suggestion(user_dto, new_suggestion)
+    return await notifier.send_suggestion(user_dto.user_id, new_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("ban_btn"))
@@ -123,7 +126,6 @@ async def viewer_ban_author(
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
-    renderer: FromDishka[SuggestionRenderer],
     change_role_usecase: FromDishka[ChangeRoleUseCase],
 ):
     target_id = viewer_data.suggestion_dto.author_id
@@ -135,16 +137,18 @@ async def viewer_ban_author(
                 target_id, target_role, caller=user_dto
             )
     except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
-        return await notifier.notify_user(user_dto, payload)
-    
+        return await notifier.send_text(user_dto, "error_user_immune")
+
     viewer_data.suggestion_dtos = None
     async with uow.transaction():
         new_suggestions: list | None = await suggestion_service.get_active()
 
     if not new_suggestions:
         await state.clear()
-        await renderer.empty_queue(user_dto)
+        await notifier.send_text(
+            user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove()
+        )
+
         return await dialog_manager.start(
             UserMenuSG.main,
             mode=StartMode.RESET_STACK,
@@ -156,7 +160,7 @@ async def viewer_ban_author(
     viewer_data.suggestion_dto = cur_suggestion
 
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    return await renderer.suggestion(user_dto, cur_suggestion)
+    return await notifier.send_suggestion(user_dto.user_id, cur_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_message_to_user_btn"))
@@ -167,9 +171,10 @@ async def enter_message_to_user(
     notifier: FromDishka[NotifierServiceProtocol],
 ):
     await state.set_state(SuggestionViewerSG.message_user)
-
-    payload = MessagePayload(i18n_key="wait_message_text", reply_markup=ReplyKeyboard.viewer_back())
-    await notifier.notify_user(user_dto, payload)
+    await notifier.send_text(
+        user_dto, "wait_message_text",
+        kb=ReplyKeyboard.viewer_back(),
+    )
 
 
 @router.message(SuggestionViewerSG.message_user, I18nTextFilter("viewer_back_btn"))
@@ -180,11 +185,11 @@ async def viewer_back(
     notifier: FromDishka[NotifierServiceProtocol],
 ):
     await state.set_state(SuggestionViewerSG.in_viewer)
-    payload = MessagePayload(
-        i18n_key="wait_verdict_text",
-        reply_markup=ReplyKeyboard.viewer_admin_action(),
+    await notifier.send_text(
+        user_dto, "wait_verdict_text",
+        kb=ReplyKeyboard.viewer_admin_action(),
     )
-    await notifier.notify_user(user_dto, payload)
+
 
 @router.message(SuggestionViewerSG.message_user, ~I18nTextFilter("viewer_back_btn"))
 async def message_to_user(
@@ -212,9 +217,7 @@ async def message_to_user(
     )
 
     await state.set_state(SuggestionViewerSG.in_viewer)
-
-    payload = MessagePayload(
-        i18n_key="wait_verdict_text",
-        reply_markup=ReplyKeyboard.viewer_admin_action(),
+    await notifier.send_text(
+        user_dto, "wait_verdict_text",
+        kb=ReplyKeyboard.viewer_admin_action(),
     )
-    await notifier.notify_user(user_dto, payload)

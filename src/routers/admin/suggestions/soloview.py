@@ -1,12 +1,11 @@
 
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from dishka import FromDishka
 
 from core.filters import I18nTextFilter, TextArgsFilter
 from core.exceptions import UserImmuneError
-from core.schemas.message_payload import MessagePayload
 from core.schemas.viewer import SuggestionViewerData
 from core.schemas import IDCommand
 
@@ -22,8 +21,7 @@ from usecases.moderate_suggestion import ModerateSuggestionUseCase
 from usecases.change_role import ChangeRoleUseCase
 
 from ui.state_groups import SuggestionViewerSG
-from ui.suggestion_renderer import SuggestionRenderer
-
+from ui.keyboards import ReplyKeyboard
 
 router = Router(name="admin_suggesions_soloview")
 
@@ -33,22 +31,27 @@ async def enter_soloview(
     message: Message,
     user_dto: UserDTO,
     viewer_data: FromDishka[SuggestionViewerData],
-    uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    renderer: FromDishka[SuggestionRenderer],
+    notifier: FromDishka[NotifierServiceProtocol],
     state: FSMContext,
     command: IDCommand,
 ):
     suggestion_dto = await suggestion_service.get(command.target_id)
     if not suggestion_dto:
-        return await renderer.not_found(user_dto, command.target_id)
-
+        return await notifier.send_text(
+            user_dto, "suggestion_not_found",
+            i18n_kwargs=dict(suggestion_id=command.target_id)
+        )
+    
     await state.set_state(SuggestionViewerSG.in_solo_view)
     viewer_data.suggestion_dto = suggestion_dto
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    await renderer.suggestion(user_dto, suggestion_dto)
-    await renderer.wait_verdict(user_dto)
+    await notifier.send_suggestion(user_dto.user_id, suggestion_dto)
+    await notifier.send_text(
+        user_dto, "wait_verdict_text",
+        kb=ReplyKeyboard.viewer_admin_action(),
+    )
 
 
 @router.message(SuggestionViewerSG.in_solo_view, I18nTextFilter("viewer_accept", verdict=SuggestionStatus.ACCEPTED))
@@ -60,14 +63,17 @@ async def soloview_verdict(
     uow: FromDishka[UnitOfWorkProtocol],
     viewer_data: FromDishka[SuggestionViewerData],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
-    renderer: FromDishka[SuggestionRenderer],
+    notifier: FromDishka[NotifierServiceProtocol],
     verdict: SuggestionStatus,
 ):
     suggestion_dto = viewer_data.suggestion_dto
     async with uow.transaction():
         await moderation_usecase.execute(suggestion_dto, verdict, force_update=True)
 
-    await renderer.verdict_rewrite(user_dto)
+    await notifier.send_text(
+        user_dto, "verdict_rewrite",
+        kb=ReplyKeyboardRemove(),
+    )
     await state.clear()
 
 
@@ -79,7 +85,6 @@ async def soloview_ban_author(
     viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
-    renderer: FromDishka[SuggestionRenderer],
     change_role_usecase: FromDishka[ChangeRoleUseCase],
 ):
     target_id = viewer_data.suggestion_dto.author_id
@@ -91,8 +96,10 @@ async def soloview_ban_author(
                 target_id, target_role, caller=user_dto
             )
     except UserImmuneError:
-        payload = MessagePayload(i18n_key="error_user_immune")
-        return await notifier.notify_user(user_dto, payload)
+        return await notifier.send_text(user_dto, "error_user_immune")
 
     await state.clear()
-    await renderer.verdict_rewrite(user_dto)
+    await notifier.send_text(
+        user_dto, "verdict_rewrite",
+        kb=ReplyKeyboardRemove(),
+    )

@@ -12,7 +12,6 @@ from dishka.integrations.aiogram_dialog import inject
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
-from core.schemas.message_payload import MessagePayload
 
 from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol
 from database.dto import UserDTO
@@ -58,8 +57,8 @@ async def execute_broadcast(
     i18n_kwargs["status"] = translator.translate(
         i18n_key="completed" if broadcast_data.is_completed else "in_process"
     )
-    payload = MessagePayload(i18n_key="broadcast_status_text", i18n_kwargs=i18n_kwargs)
-    status_message = await notifier.notify_user(user_dto, payload)
+    status_message = await notifier.send_text(
+        user_dto, "broadcast_status_text", i18n_kwargs=i18n_kwargs
+    )
     asyncio.create_task(broadcast.execute(broadcast_data, status_message))
-
     await manager.start(AdminMenuSG.main, show_mode=ShowMode.DELETE_AND_SEND)

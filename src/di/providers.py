@@ -40,7 +40,6 @@ from interfaces import (
 )
 
 from ui.suggestion_utils import SuggestionUtils
-from ui.suggestion_renderer import SuggestionRenderer
 
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
@@ -63,7 +62,6 @@ class InfraProvider(Provider):
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
     suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
-    suggestion_renderer = provide(SuggestionRenderer, scope=Scope.APP)
     message_parser = provide(MessageParser, scope=Scope.APP)
 
     @provide(scope=Scope.APP)

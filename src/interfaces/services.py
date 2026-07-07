@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Protocol, Sequence, Any
+from typing import Protocol, Sequence, Any, Literal
 
 from aiogram.types import Message, InlineKeyboardMarkup
 from core.schemas.objects import UserStats
@@ -27,10 +27,10 @@ class UserServiceProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def get_active(self): ...
+    async def get_active(self) -> Sequence[UserDTO]: ...
 
     @abstractmethod
-    async def get_admins(self): ...
+    async def get_admins(self) -> Sequence[UserDTO]: ...
 
 
 class SuggestionServiceProtocol(Protocol):
@@ -66,6 +66,23 @@ class NotifierServiceProtocol:
     def strategy_factory(
         self, target_id: int, payload: MessagePayload, silent: bool = True
     ) -> BaseSender: ...
+
+    @abstractmethod
+    async def send_suggestion(
+        self,
+        target: UserDTO | int,
+        dto: SuggestionFullDTO,
+        mode: Literal["admin_viewer", "channel_post"] = "admin_viewer",
+    ): ...
+
+    @abstractmethod
+    async def send_text(
+        self,
+        target: UserDTO | int,
+        i18n_key: str,
+        i18n_kwargs: dict | None = None,
+        kb: Any | None = None,
+    ): ...
 
     @abstractmethod
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload): ...

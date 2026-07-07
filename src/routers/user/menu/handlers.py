@@ -11,8 +11,6 @@ from aiogram.utils.i18n import I18n
 
 from aiogram_dialog import DialogManager, StartMode, ShowMode
 from aiogram_dialog.widgets.kbd import Button
-
-from core.schemas.message_payload import MessagePayload
 from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 
@@ -94,6 +92,5 @@ async def cancel(
     dialog_manager: DialogManager,
     notifier: FromDishka[NotifierServiceProtocol],
 ):
-    payload = MessagePayload(i18n_key="state_reset", reply_markup=ReplyKeyboardRemove())
-    await notifier.notify_user(user_dto, payload=payload)
+    await notifier.send_text(user_dto, "state_reset", kb=ReplyKeyboardRemove())
     await start_main_menu(message, state, dialog_manager)
