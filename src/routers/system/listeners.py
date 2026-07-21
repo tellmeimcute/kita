@@ -5,7 +5,8 @@ from logging import getLogger
 from dishka import AsyncContainer
 from aiogram.utils.i18n import I18n
 
-from core.config import Config, RuntimeConfig
+from core.config import Config
+from core.schemas import BotInfo
 from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent, CopyMessagesToUserEvent
 from interfaces import (
     UnitOfWorkProtocol,
@@ -58,7 +59,7 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
     config = await container.get(Config)
-    runtime_config = await container.get(RuntimeConfig)
+    bot_info = await container.get(BotInfo)
     notifier = await container.get(NotifierServiceProtocol)
     i18n = await container.get(I18n)
 
@@ -70,7 +71,7 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
         if isinstance(channel_post, list):
             channel_post = channel_post[0]
         
-        post_url = runtime_config.bot_url
+        post_url = bot_info.bot_url
         if channel_post:
             post_url = channel_post.get_url()
         

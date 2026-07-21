@@ -17,7 +17,6 @@ from core.config import Config
 from core.logging_config import setup_logging
 from interfaces import BotRegistryProtocol
 from di import (
-    ConfigProvider,
     DatabaseProvider,
     InfraProvider,
     UtilsProvider,
@@ -36,12 +35,11 @@ async def main():
     setup_logging()
 
     container = make_async_container(
-        ConfigProvider(),
+        InfraProvider(),
         UtilsProvider(),
         BotProvider(),
         DatabaseProvider(),
         RedisProvider(),
-        InfraProvider(),
         FSMProvider(),
         MiddlewareProvider(),
         AiogramProvider(),

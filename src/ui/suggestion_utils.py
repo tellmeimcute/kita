@@ -4,7 +4,7 @@ from typing import Literal
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from core.config import RuntimeConfig
+from core.schemas import BotInfo
 from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
@@ -14,14 +14,16 @@ from database.dto import SuggestionFullDTO
 class SuggestionUtils:
 
     __slots__ = (
-        "_runtime_config",
+        "_bot_info",
         "_translator",
     )
 
     def __init__(
-        self, runtime_config: RuntimeConfig, translator: Translator
+        self,
+        bot_info: BotInfo,
+        translator: Translator,
     ):
-        self._runtime_config = runtime_config
+        self._bot_info = bot_info
         self._translator = translator
 
     def _get_verdict(self, suggestion_dto: SuggestionFullDTO):
@@ -57,7 +59,7 @@ class SuggestionUtils:
         i18n_kwargs.update(
             author_string=author_string,
             verdict=verdict,
-            bot_url=self._runtime_config.bot_url,
+            bot_url=self._bot_info.bot_url,
         )
 
         return i18n_kwargs

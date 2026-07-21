@@ -1,12 +1,9 @@
 
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-
-from aiogram import html
-
 from aiogram_dialog import DialogManager
 
-from core.config import RuntimeConfig
+from core.schemas import BotInfo
 from core.i18n_translator import Translator
 from interfaces import SuggestionServiceProtocol
 from database.dto import UserDTO
@@ -16,7 +13,7 @@ from database.dto import UserDTO
 async def get_menu_i18n_kwargs(
     dialog_manager: DialogManager,
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    runtime_config: FromDishka[RuntimeConfig],
+    bot_info: FromDishka[BotInfo],
     translator: FromDishka[Translator],
     **kwargs
 ):
@@ -32,5 +29,5 @@ async def get_menu_i18n_kwargs(
         "stats_text": stats_text,
         "user_stats": i18n_kwargs,
         "signature": signature,
-        "channel_name": runtime_config.channel_name,
+        "channel_name": bot_info.channel_name,
     }

@@ -4,7 +4,7 @@ from .commands import IDCommand
 from .viewer import SuggestionViewerData
 from .broadcast import BroadcastData
 from .message_payload import MessagePayload
-from .objects import UserStats
+from .objects import UserStats, BotInfo
 
 __all__ = (
     "IDCommand",
@@ -12,4 +12,5 @@ __all__ = (
     "BroadcastData",
     "MessagePayload",
     "UserStats",
+    "BotInfo",
 )

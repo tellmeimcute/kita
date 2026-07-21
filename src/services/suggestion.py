@@ -10,8 +10,8 @@ from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from database.redis.userstats import UserStatsRedis
-from interfaces import SuggestionRepositoryProtocol
+from database.redis import UserStatsRedis, KitaKeyBuilder, RedisKey
+from interfaces import SuggestionRepositoryProtocol, BotRegistryProtocol
 
 from services.message_parser import MessageParser
 
@@ -22,24 +22,35 @@ class SuggestionService:
 
     __slots__ = (
         "redis",
-        "redis_key",
         "repo",
+        "bot_registry",
         "parser",
+        "key_builder",
     )
 
     def __init__(
         self,
         redis: Redis,
         repo: SuggestionRepositoryProtocol,
+        bot_registry: BotRegistryProtocol,
         parser: MessageParser,
     ):
         self.redis = redis
-        self.redis_key = lambda x: f"user_stats:{x}"
         self.repo = repo
         self.parser = parser
+        self.bot_registry = bot_registry
+
+        self.key_builder = KitaKeyBuilder()
         
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        key = self.redis_key(user_dto.user_id)
+        redis_key = RedisKey(
+            bot_id=self.bot_registry.get_current().id,
+            user_id=user_dto.user_id
+        )
+
+        key = self.key_builder.build(
+            key=redis_key, part="user_stats"
+        )
 
         stats_row = await UserStatsRedis.get(self.redis, key)
         if stats_row:

@@ -7,9 +7,10 @@ from aiogram_dialog.widgets.input import MessageInput
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.config import Config, RuntimeConfig
+from core.config import Config
+from core.schemas import BotInfo
 from core.i18n_translator import Translator
-from ui.state_groups import AdminMenuSG, BannerMenuSG
+from ui.state_groups import AdminMenuSG
 
 
 @inject
@@ -19,11 +20,11 @@ async def get_banner_text(
     manager: DialogManager,
     translator: FromDishka[Translator],
     config: FromDishka[Config],
-    runtime_config: FromDishka[RuntimeConfig]
+    bot_info: FromDishka[BotInfo]
 ):
     builder = InlineKeyboardBuilder()
     btn_text = translator.translate("channel_banner_btn")
-    builder.button(text=btn_text, url=runtime_config.bot_url)
+    builder.button(text=btn_text, url=bot_info.bot_url)
     markup = builder.as_markup()
 
     banner_text = message.text or message.caption

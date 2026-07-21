@@ -7,6 +7,7 @@ from aiogram.utils.i18n import I18n
 from aiogram_dialog import BgManagerFactory
 from aiogram_dialog.manager.bg_manager import BgManager
 
+from core.config import Config
 from core.schemas import SuggestionViewerData
 from core.i18n_translator import Translator
 from core.events import EventBus
@@ -57,6 +58,10 @@ class InfraProvider(Provider):
     moderate_suggestion = provide(ModerateSuggestionUseCase, scope=Scope.REQUEST)
     change_role = provide(ChangeRoleUseCase, scope=Scope.REQUEST)
     broadcast = provide(BroadcastUseCase, scope=Scope.REQUEST)
+
+    @provide(scope=Scope.APP)
+    def config(self) -> Config:
+        return Config()
 
 
 class UtilsProvider(Provider):
