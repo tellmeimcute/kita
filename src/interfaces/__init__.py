@@ -11,3 +11,5 @@ from .services import (
 )
 
 from .uow import UnitOfWorkProtocol
+
+from .bot_registry import BotRegistryProtocol

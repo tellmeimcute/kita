@@ -1,4 +1,5 @@
 
+from aiogram import Bot
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
@@ -38,5 +39,7 @@ async def on_album_received(
 
     await manager.switch_to(SuggestionSG.on_moderation)
 
-    event_bus.dispatch(NewSuggestionEvent(suggestion_dto=suggestion_dto))
+    event_bus.dispatch(
+        NewSuggestionEvent(suggestion_dto=suggestion_dto, bot_id=message.bot.id)
+    )
     

@@ -83,7 +83,7 @@ async def viewer_verdict(
 ):
     async with uow.transaction():
         updated_dto = await suggestion_service.get(viewer_data.suggestion_dto.id)
-        result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict)
+        result: ModerationResult = await moderation_usecase.execute(updated_dto, verdict, bot_id=message.bot.id)
 
     if result.verdict_exists:
         await notifier.send_text(
@@ -213,6 +213,7 @@ async def message_to_user(
             caller_dto=user_dto,
             source_chat_id=message.chat.id,
             album_ids=album_ids,
+            bot_id=message.bot.id,
         )
     )
 

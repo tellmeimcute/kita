@@ -3,14 +3,18 @@
 import asyncio
 from logging import getLogger
 from typing import Callable, Sequence
+
 from dishka import AsyncContainer
+from interfaces import BotRegistryProtocol
 from .base import KitaEvent
 
 logger = getLogger("kita.event")
 
+
 class EventBus:
-    def __init__(self, container: AsyncContainer):
+    def __init__(self, container: AsyncContainer, registry: BotRegistryProtocol):
         self._container = container
+        self._registry = registry
         self.listeners = {}
 
         self.background_tasks = set()
@@ -35,11 +39,17 @@ class EventBus:
         logger.debug("Event %s unsub %s listener", event_name, listener.__name__)
 
     async def _run_listener(self, listener: Callable, event: KitaEvent):
+        token = None
         try:
+            if event.bot_id:
+                token = self._registry.set_current(self._registry.get(event.bot_id))
             async with self._container() as container:
                 await listener(event, container)
         except Exception as e:
             logger.error("Listener %s failed: %s", listener.__name__, e, exc_info=True)
+        finally:
+            if token is not None:
+                self._registry.reset_current(token)
 
     async def _dispatch(self, listeners: Sequence, event: KitaEvent):
         async with asyncio.TaskGroup() as tg:

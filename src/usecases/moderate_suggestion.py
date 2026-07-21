@@ -29,6 +29,7 @@ class ModerateSuggestionUseCase:
         suggestion_dto: SuggestionFullDTO,
         verdict: Status,
         force_update: bool = False,
+        bot_id: int | None = None,
     ) -> ModerationResult:
         
         if suggestion_dto.status != Status.PENDING and not force_update:
@@ -40,6 +41,7 @@ class ModerateSuggestionUseCase:
         if verdict == Status.ACCEPTED:
             self._event_bus.dispatch(SuggestionAcceptedEvent(
                 suggestion_dto=suggestion_dto,
+                bot_id=bot_id,
             ))
 
         return ModerationResult(suggestion_dto, False)

@@ -3,6 +3,7 @@ from logging import getLogger
 from typing import Any
 from datetime import datetime
 
+from aiogram import Bot
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
@@ -14,7 +15,11 @@ from core.consts import DISHKA_CONTAINER_KEY
 
 from database.dto import UserDTO
 from database.enums import UserRole
-from interfaces import UnitOfWorkProtocol, UserServiceProtocol
+from interfaces import (
+    UnitOfWorkProtocol,
+    UserServiceProtocol,
+    BotRegistryProtocol
+)
 
 from .base import KitaMiddleware
 
@@ -22,9 +27,15 @@ logger = getLogger("kita.middleware")
 
 
 class UserMiddleware(KitaMiddleware):
-    def __init__(self, config: Config, i18n: I18n):
+    def __init__(
+        self,
+        config: Config,
+        i18n: I18n,
+        bot_registry: BotRegistryProtocol,
+    ):
         self.admin_id = config.admin_id
         self.i18n = i18n
+        self.bot_registry = bot_registry
 
     async def __call__(
         self,
@@ -34,36 +45,43 @@ class UserMiddleware(KitaMiddleware):
     ) -> Any:
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
 
+        bot: Bot = data.get("bot")
+        self.bot_registry.set_current(bot)
+
         event_bus = await container.get(EventBus)
         uow = await container.get(UnitOfWorkProtocol)
         user_service = await container.get(UserServiceProtocol)
         if not event.from_user or event.from_user.is_bot:
             return logger.warning("No user in event. Stop")
         
-        is_new_user = False
         user_tg = event.from_user
-
         async with uow.transaction():
-            user_dto = await self._resolve_user(user_service, user_tg)
-            if not user_dto:
-                user_dto = await user_service.create(self.dto_from_aiogram(user_tg))
-                is_new_user = True
-        
-        if is_new_user:
-            event_bus.dispatch(NewUserEvent(user_dto=user_dto))
+            user_dto = await self._resolve_user(event_bus, user_service, user_tg)
 
         data.update(user_dto=user_dto)
         return await handler(event, data)
 
     async def _resolve_user(
         self,
+        event_bus: EventBus,
         user_service: UserServiceProtocol,
         user_tg: AiogramUser,
     ) -> UserDTO | None:
         user_dto = await user_service.get(user_tg.id)
         if not user_dto:
-            return None
+            user_dto = await user_service.create(self.dto_from_aiogram(user_tg))
+            bot = self.bot_registry.get_current()
+            event_bus.dispatch(NewUserEvent(user_dto=user_dto, bot_id=bot.id))
+            return user_dto
 
+        return await self._update_user_data(user_service, user_dto, user_tg)
+         
+    async def _update_user_data(
+        self,
+        user_service: UserServiceProtocol,
+        user_dto: UserDTO,
+        user_tg: AiogramUser,
+    ):
         user_dto.update_from_data(user_tg)
         if user_dto.is_bot_blocked:
             user_dto.is_bot_blocked = False

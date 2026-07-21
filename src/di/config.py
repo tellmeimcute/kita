@@ -15,7 +15,7 @@ class ConfigProvider(Provider):
         logger.info("Initializing Config instance")
         return Config()
     
-    @provide(scope=Scope.APP)
+    @provide(scope=Scope.REQUEST)
     async def runtime_config(self, bot: Bot, config: Config) -> RuntimeConfig:
         logger.info("Initializing RuntimeConfig instance")
 
@@ -27,3 +27,4 @@ class ConfigProvider(Provider):
             bot_username=bot_user.username,
             bot_url=f"{T_ME}{bot_user.username}",
         )
+    

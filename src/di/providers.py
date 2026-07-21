@@ -44,7 +44,7 @@ from ui.suggestion_utils import SuggestionUtils
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
 
-    notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol, scope=Scope.APP)
+    notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol, scope=Scope.REQUEST)
     user_service = provide(source=UserService, provides=UserServiceProtocol, scope=Scope.REQUEST)
     suggestion_service = provide(source=SuggestionService, provides=SuggestionServiceProtocol, scope=Scope.REQUEST)
     
@@ -61,7 +61,7 @@ class InfraProvider(Provider):
 
 class UtilsProvider(Provider):
     translator = provide(Translator, scope=Scope.APP)
-    suggestion_utils = provide(SuggestionUtils, scope=Scope.APP)
+    suggestion_utils = provide(SuggestionUtils, scope=Scope.REQUEST)
     message_parser = provide(MessageParser, scope=Scope.APP)
 
     @provide(scope=Scope.APP)

@@ -1,38 +1,20 @@
 
 from logging import getLogger
-from collections.abc import AsyncIterable
 from dishka import Provider, Scope, provide
 
-from redis.asyncio import Redis
+from aiogram import Bot
 
-from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
-from aiogram.fsm.storage.base import DefaultKeyBuilder
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
-
-from core.config import Config
+from interfaces import BotRegistryProtocol
+from services import BotRegistry
 
 logger = getLogger("kita.providers")
 
 class BotProvider(Provider):
+    bot_registry = provide(source=BotRegistry, provides=BotRegistryProtocol, scope=Scope.APP)
 
-    @provide(scope=Scope.APP)
-    async def bot(self, config: Config) -> AsyncIterable[Bot]:
-        logger.info("Initializing Bot instance")
-
-        async with Bot(
-            token=config.tg_token.get_secret_value(),
-            default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-            session=AiohttpSession(proxy=config.PROXY),
-        ) as bot:
-            yield bot
-        
-        logger.info("Closing Bot session")
-
-    @provide(scope=Scope.APP)
-    def dp(self, redis: Redis) -> Dispatcher:
-        logger.info("Initializing Dispatcher instance")
-        storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
-        return Dispatcher(storage=storage, name="dispatcher")
+    @provide(scope=Scope.REQUEST)
+    def get_bot(self, registry: BotRegistryProtocol) -> Bot:
+        bot = registry.get_current()
+        if bot is not None:
+            return bot
+        raise ValueError("No Bot available in current context")

@@ -1,7 +1,6 @@
-
-import asyncio
 from pydantic import ValidationError
 
+from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -101,6 +100,7 @@ async def message_to_user(
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     target_dto_raw = manager.dialog_data.get("target_dto")
+    bot: Bot = manager.middleware_data.get("bot")
     target_dto = UserDTO.model_validate(target_dto_raw)
 
     album: list[Message] | None = manager.middleware_data.get("album")
@@ -114,6 +114,7 @@ async def message_to_user(
             caller_dto=user_dto,
             source_chat_id=message.chat.id,
             album_ids=album_ids,
+            bot_id=bot.id,
         )
     )
 
