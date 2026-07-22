@@ -39,7 +39,7 @@ def upgrade() -> None:
     sa.Column('bot_id', sa.BigInteger(), nullable=False),
     sa.Column('username', sa.String(), nullable=False),
     sa.Column('owner_id', sa.BigInteger(), nullable=False),
-    sa.Column('channel_id', sa.Integer(), nullable=True),
+    sa.Column('channel_id', sa.BigInteger(), nullable=True),
     sa.Column('channel_name', sa.String(), nullable=True),
     sa.Column('active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),

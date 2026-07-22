@@ -17,7 +17,7 @@ class UserBot(AbstractModel, TimestampMixin):
     username: Mapped[str] = mapped_column()
     owner_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
 
-    channel_id: Mapped[int | None] = mapped_column(nullable=True)
+    channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     channel_name: Mapped[str | None] = mapped_column(nullable=True)
 
     active: Mapped[bool] = mapped_column(
