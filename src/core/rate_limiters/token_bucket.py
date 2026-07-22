@@ -4,8 +4,10 @@ from logging import getLogger
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from redis.asyncio import Redis
-from database.dto import UserDTO
 
+from database.redis import RedisKey, KitaKeyBuilder
+from database.dto import UserDTO
+from interfaces import BotRegistryProtocol
 
 # https://redis.io/tutorials/howtos/ratelimiting/#4-token-bucket
 
@@ -60,12 +62,15 @@ class TokenBucketLimiter:
     def __init__(
         self,
         redis: Redis,
+        bot_registry: BotRegistryProtocol,
         max_tokens: int = 5,
         refill_rate: float = 0.3,
     ):
         self._redis = redis
+        self._bot_registry = bot_registry
         self._max_tokens = max_tokens
         self._refill_rate = refill_rate
+        self._key_builder = KitaKeyBuilder()
 
         self.WARNED_TTL =  int((1 / refill_rate) + 1)
         self._script = SCRIPT
@@ -75,7 +80,11 @@ class TokenBucketLimiter:
         user_dto: UserDTO,
         action: Literal["ALL", "CALLBACK", "MESSAGE", "WARNED"]
     ):
-        return f"rate_limit:{user_dto.user_id}:{action}"
+        bot = self._bot_registry.get_current()
+        return  self._key_builder.build(
+            RedisKey(bot_id=bot.id, user_id=user_dto.user_id),
+            f"rate_limit_{action.lower()}"
+        )
 
     async def mark_warned(self, user_dto: UserDTO):
         key = self.get_user_key(user_dto, "WARNED")
@@ -103,6 +112,6 @@ class TokenBucketLimiter:
         )
 
         result = TokenBucketResult(*result)
-        logger.debug("UserID %s : %s", user_dto.user_id, result)
+        logger.debug("RedisKey %s : %s", key, result)
 
         return result

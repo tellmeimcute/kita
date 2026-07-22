@@ -8,6 +8,7 @@ from redis.asyncio import ConnectionPool, Redis
 
 from core.config import Config
 from core.rate_limiters import TokenBucketLimiter
+from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.providers")
 
@@ -33,7 +34,7 @@ class RedisProvider(Provider):
         await redis.aclose()
 
     @provide(scope=Scope.APP)
-    def token_bucket(self, config: Config, redis: Redis) -> TokenBucketLimiter:
+    def token_bucket(self, config: Config, redis: Redis, bot_registry: BotRegistryProtocol) -> TokenBucketLimiter:
         logger.info("Initializing TokenBucketLimiter instance")
         kwargs = config.rate_limit.model_dump()
-        return TokenBucketLimiter(redis, **kwargs)
+        return TokenBucketLimiter(redis, bot_registry, **kwargs)
