@@ -1,7 +1,6 @@
 
 from typing import TYPE_CHECKING
 from datetime import datetime
-from database.enums import UserRole
 from .base import TrackableDto
 
 if TYPE_CHECKING:
@@ -11,12 +10,8 @@ if TYPE_CHECKING:
 class UserDTO(TrackableDto):
     user_id: int
     username: str | None
-    role: UserRole
     name: str
     language_code: str
-
-    prefer_anonymous: bool = False
-    is_bot_blocked: bool | None = False
 
     created_at: datetime
     updated_at: datetime
@@ -39,12 +34,3 @@ class UserDTO(TrackableDto):
 
         data.update(updated_at=updated_at, created_at=created_at)
         return data
-
-    @property
-    def is_admin(self) -> bool:
-        return self.role == UserRole.ADMIN
-
-    @property
-    def is_banned(self) -> bool:
-        return self.role == UserRole.BANNED
-    

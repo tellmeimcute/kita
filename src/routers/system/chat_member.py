@@ -11,7 +11,7 @@ from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
 from ui.senders.payload import TextSender
 
-from interfaces import UnitOfWorkProtocol, UserServiceProtocol
+from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol
 
 
 router = Router(name="chat_member")
@@ -22,11 +22,11 @@ logger = getLogger("kita.chat_member")
 async def on_user_block_bot(
     event: ChatMemberUpdated,
     uow: FromDishka[UnitOfWorkProtocol],
-    user_service: FromDishka[UserServiceProtocol],
+    user_profile_service: FromDishka[UserProfileServiceProtocol],
 ):
     user_id = event.from_user.id
     async with uow.transaction():
-        await user_service.update(user_id, is_bot_blocked=True)
+        await user_profile_service.update(user_id, is_bot_blocked=True)
 
     logger.info("UserID %s blocked the bot.", user_id)
 
@@ -47,4 +47,3 @@ async def unknown_intent(
     )
 
     await strategy.send()
-

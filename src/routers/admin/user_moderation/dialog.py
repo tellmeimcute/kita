@@ -1,5 +1,6 @@
 
 
+
 from aiogram_dialog import Window, Dialog, ShowMode
 from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import SwitchTo, Button, Start
@@ -34,25 +35,25 @@ user_moderation_window = Window(
         I18nText("demote_user_btn"),
         id="change_to_user",
         on_click=user_change_role,
-        when=role_condition(UserRole.ADMIN, user_key="target_dto",),
+        when=role_condition(UserRole.ADMIN, user_key="target_profile",),
     ),
     Button(
         I18nText("promote_admin_btn"),
         id="promote_admin",
         on_click=user_change_role,
-        when=role_condition(UserRole.USER, user_key="target_dto"),
+        when=role_condition(UserRole.USER, user_key="target_profile"),
     ),
     Button(
         I18nText("ban_user_btn"),
         id="ban",
         on_click=user_change_role,
-        when=role_condition(UserRole.BANNED, user_key="target_dto", mode="not"),
+        when=role_condition(UserRole.BANNED, user_key="target_profile", mode="not"),
     ),
     Button(
         I18nText("unban_user_btn"),
         id="change_to_user",
         on_click=user_change_role,
-        when=role_condition(UserRole.BANNED, user_key="target_dto"),
+        when=role_condition(UserRole.BANNED, user_key="target_profile"),
     ),
     Start(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main),
     state=ModerationMenuSG.user_moderation,

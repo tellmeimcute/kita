@@ -1,7 +1,7 @@
 
 
 from .base import BaseRedisRepository
-from database.dto import UserDTO
+from database.dto import UserDTO, UserProfileDTO
 from core.schemas.objects import UserStats, BotInfo
 
 
@@ -11,6 +11,10 @@ class UserStatsRedis(BaseRedisRepository[UserStats]):
 
 class UserRedis(BaseRedisRepository[UserDTO]):
     model = UserDTO
+
+
+class UserProfileRedis(BaseRedisRepository[UserProfileDTO]):
+    model = UserProfileDTO
 
 
 class BotInfoRedis(BaseRedisRepository[BotInfo]):

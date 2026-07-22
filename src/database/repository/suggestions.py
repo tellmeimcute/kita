@@ -13,16 +13,25 @@ from database.enums import SuggestionStatus
 from core.schemas.objects import UserStats
 
 from services.message_parser import MediaInfo
+from interfaces import BotRegistryProtocol
 
 class SuggestionRepository:
 
-    def __init__(self, session: AsyncSession):
+    def __init__(
+        self,
+        session: AsyncSession,
+        bot_registry: BotRegistryProtocol,
+    ):
         self._session = session
+        self._current_bot = bot_registry.get_current()
 
     async def get_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
         stmt = (
             select(Suggestion)
-            .where(Suggestion.id == suggestion_id)
+            .where(
+                Suggestion.id == suggestion_id,
+                Suggestion.bot_id == self._current_bot.id,
+            )
             .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
         )
 
@@ -33,7 +42,10 @@ class SuggestionRepository:
         return SuggestionFullDTO.model_validate(orm_model)
     
     async def update(self, suggestion_id: int, **data: Any):
-        stmt = update(Suggestion).where(Suggestion.id == suggestion_id).values(data)
+        stmt = update(Suggestion).where(
+            Suggestion.id == suggestion_id,
+            Suggestion.bot_id == self._current_bot.id,
+        ).values(data)
         await self._session.execute(stmt)
 
     async def save(self, dto: SuggestionBaseDTO):
@@ -49,13 +61,15 @@ class SuggestionRepository:
         media_group_id: str | None,
         forwarded_from: str | None,
     ):
+        bot_id = self._current_bot.id
         suggestion_orm = Suggestion(
+            bot_id=bot_id,
             author_id=author_id,
             anonymous=anonymous,
             media_group_id=media_group_id,
             caption=caption,
             forwarded_from=forwarded_from,
-            media=[Media(**asdict(info)) for info in mediainfo]
+            media=[Media(bot_id=bot_id, **asdict(info)) for info in mediainfo]
         )
 
         self._session.add(suggestion_orm)
@@ -70,7 +84,10 @@ class SuggestionRepository:
     ) -> Sequence[SuggestionFullDTO]:
         stmt = (
             select(Suggestion)
-            .where(Suggestion.status == SuggestionStatus.PENDING)
+            .where(
+                Suggestion.status == SuggestionStatus.PENDING,
+                Suggestion.bot_id == self._current_bot.id,
+            )
             .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
             .offset(offset)
             .limit(limit)
@@ -86,7 +103,10 @@ class SuggestionRepository:
             func.count(Suggestion.id).label("total"),
             func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.ACCEPTED).label("accepted"),
             func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.DECLINED).label("declined"),
-        ).where(Suggestion.author_id == user_id)
+        ).where(
+            Suggestion.author_id == user_id,
+            Suggestion.bot_id == self._current_bot.id,
+        )
 
         result: Result = await self._session.execute(stmt)
         row = result.one_or_none()
@@ -95,7 +115,10 @@ class SuggestionRepository:
         return UserStats.model_validate(row)
 
     async def count(self) -> int:
-        stmt = select(func.count(Suggestion.id))
+        stmt = select(
+            func.count(Suggestion.id)
+        ).where(Suggestion.bot_id == self._current_bot.id)
+        
         count = await self._session.scalar(stmt)
         return count or 0
     

@@ -4,13 +4,15 @@ from abc import abstractmethod
 
 from interfaces import (
     UserRepositoryProtocol,
+    UserProfileRepositoryProtocol,
     SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
 )
 
 class UnitOfWorkProtocol(Protocol):
-    
+
     users: UserRepositoryProtocol
+    profiles: UserProfileRepositoryProtocol
     suggestions: SuggestionRepositoryProtocol
     medias: MediaRepositoryProtocol
 

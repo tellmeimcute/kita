@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 from aiogram_dialog import BgManagerFactory
 from aiogram_dialog.manager.bg_manager import BgManager
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import Config
 from core.schemas import SuggestionViewerData
@@ -13,6 +14,7 @@ from core.i18n_translator import Translator
 from core.events import EventBus
 
 from services.user import UserService
+from services.user_profile import UserProfileService
 from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 from services.message_parser import MessageParser
@@ -21,6 +23,7 @@ from database.uow import UnitOfWork
 from database.repository import (
     SuggestionRepository,
     UserRepository,
+    UserProfileRepository,
     MediaRepository
 )
 
@@ -32,12 +35,15 @@ from usecases import (
 
 from interfaces import (
     UserRepositoryProtocol,
+    UserProfileRepositoryProtocol,
     SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
     UnitOfWorkProtocol,
     UserServiceProtocol,
+    UserProfileServiceProtocol,
     SuggestionServiceProtocol,
     NotifierServiceProtocol,
+    BotRegistryProtocol,
 )
 
 from ui.suggestion_utils import SuggestionUtils
@@ -47,10 +53,12 @@ class InfraProvider(Provider):
 
     notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol, scope=Scope.REQUEST)
     user_service = provide(source=UserService, provides=UserServiceProtocol, scope=Scope.REQUEST)
+    user_profile_service = provide(source=UserProfileService, provides=UserProfileServiceProtocol, scope=Scope.REQUEST)
     suggestion_service = provide(source=SuggestionService, provides=SuggestionServiceProtocol, scope=Scope.REQUEST)
-    
+
     suggestion_repo = provide(source=SuggestionRepository, provides=SuggestionRepositoryProtocol, scope=Scope.REQUEST)
     user_repo = provide(source=UserRepository, provides=UserRepositoryProtocol, scope=Scope.REQUEST)
+    user_profile_repo = provide(source=UserProfileRepository, provides=UserProfileRepositoryProtocol, scope=Scope.REQUEST)
     media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol, scope=Scope.REQUEST)
 
     uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol, scope=Scope.REQUEST)
@@ -78,7 +86,7 @@ class FSMProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def fsm_context(self, middleware_data: AiogramMiddlewareData) -> FSMContext:
         return middleware_data["state"]
-    
+
     @provide(scope=Scope.REQUEST)
     async def background_manager(self, middleware_data: AiogramMiddlewareData) -> BgManager:
         bg_factory: BgManagerFactory = middleware_data.get("dialog_bg_factory")
@@ -99,5 +107,5 @@ class FSMProvider(Provider):
         if not raw_viewer_data:
             user_dto = middleware_data.get("user_dto")
             return SuggestionViewerData(user_dto=user_dto)
-        
+
         return SuggestionViewerData.model_validate(raw_viewer_data)

@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable, Dict
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
-from database.dto import UserDTO
+from database.dto import UserProfileDTO
 from .base import KitaMiddleware
 
 logger = getLogger("kita.ban_middleware")
@@ -17,9 +17,9 @@ class BanCheckMiddleware(KitaMiddleware):
         event: Message | CallbackQuery,
         data: Dict[str, Any],
     ) -> Any:
-        user_dto: UserDTO = data.get("user_dto")
+        profile_dto: UserProfileDTO = data.get("profile_dto")
 
-        if user_dto and not user_dto.is_banned:
+        if profile_dto and not profile_dto.is_banned:
             return await handler(event, data)
 
         logger.debug("Stop banned user")

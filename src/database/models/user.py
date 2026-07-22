@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Enum, text
+from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from database.enums import UserRole
 
 from .abstract_model import AbstractModel
 from .timestamp import TimestampMixin
 
 if TYPE_CHECKING:
     from .suggestion import Suggestion
+    from .userbot import UserBot
+    from .user_profile import UserProfile
 
 
 class UserAlchemy(AbstractModel, TimestampMixin):
@@ -19,27 +19,7 @@ class UserAlchemy(AbstractModel, TimestampMixin):
     username: Mapped[str | None] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(nullable=False)
     language_code: Mapped[str] = mapped_column(default="ru", server_default="ru", nullable=True)
-    prefer_anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
-
-    is_bot_blocked: Mapped[bool] = mapped_column(default=False, nullable=True)
-
-    role: Mapped[UserRole] = mapped_column(
-        Enum(
-            UserRole,
-            name="user_role",
-            create_constraint=True,
-            validate_strings=True,
-        ),
-        default=UserRole.USER,
-        server_default=UserRole.USER.value,
-    )
 
     suggestions: Mapped[list["Suggestion"]] = relationship(back_populates="author")
-
-    @property
-    def is_admin(self):
-        return self.role == UserRole.ADMIN
-
-    @property
-    def is_banned(self):
-        return self.role == UserRole.BANNED
+    bots: Mapped[list["UserBot"]] = relationship(back_populates="owner")
+    profiles: Mapped[list["UserProfile"]] = relationship(back_populates="user")

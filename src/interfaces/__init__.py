@@ -1,11 +1,13 @@
 from .repository import (
     UserRepositoryProtocol,
+    UserProfileRepositoryProtocol,
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
 )
 
 from .services import (
     UserServiceProtocol,
+    UserProfileServiceProtocol,
     SuggestionServiceProtocol,
     NotifierServiceProtocol,
 )

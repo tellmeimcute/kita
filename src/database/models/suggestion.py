@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 class Suggestion(AbstractModel, TimestampMixin):
     __tablename__ = "suggestion"
 
+    bot_id: Mapped[int] = mapped_column(BigInteger)
+
     caption: Mapped[str | None] = mapped_column(nullable=True)
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
     forwarded_from: Mapped[str | None] = mapped_column(nullable=True, default=None)

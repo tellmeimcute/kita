@@ -1,14 +1,15 @@
 
 
+
 from pydantic import computed_field
 
-from database.dto.user import UserDTO
+from database.dto.user_profile import UserProfileDTO
 
 from .base import BaseData
 
 
 class BroadcastData(BaseData):
-    users: list[UserDTO] | None = None
+    users: list[UserProfileDTO] | None = None
 
     is_forwarded: bool = False
     source_chat_id: int | None = None

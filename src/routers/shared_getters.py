@@ -4,7 +4,7 @@ from typing import Literal
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import Whenable
 
-from database.dto import UserDTO
+from database.dto import UserProfileDTO
 from database.enums import UserRole
 
 
@@ -18,10 +18,12 @@ def role_condition(
         source: dict = getattr(manager, data_source)
         target_dto = source.get(user_key)
 
-        if isinstance(target_dto, UserDTO):
+        if isinstance(target_dto, UserProfileDTO):
             target_role = target_dto.role
+        elif isinstance(target_dto, dict):
+            target_role = target_dto.get("role")
         else:
-            target_role = target_dto["role"]
+            return False
 
         if mode == "is":
             return target_role == role
@@ -30,4 +32,4 @@ def role_condition(
     return _factory
 
 
-is_admin = role_condition(UserRole.ADMIN, user_key="user_dto", data_source="middleware_data")
+is_admin = role_condition(UserRole.ADMIN, user_key="profile_dto", data_source="middleware_data")

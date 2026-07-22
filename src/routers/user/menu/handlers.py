@@ -1,4 +1,5 @@
 
+
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
@@ -17,10 +18,11 @@ from core.i18n_translator import Translator
 from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
+    UserProfileServiceProtocol,
     NotifierServiceProtocol,
 )
 
-from database.dto import UserDTO
+from database.dto import UserDTO, UserProfileDTO
 from ui.state_groups import UserMenuSG
 
 router = Router(name="main_menu")
@@ -56,13 +58,13 @@ async def prefer_anon_toggle(
     button: Button,
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
-    user_service: FromDishka[UserServiceProtocol]
+    user_profile_service: FromDishka[UserProfileServiceProtocol],
 ):
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
 
-    user_dto.prefer_anonymous = not user_dto.prefer_anonymous
+    profile_dto.prefer_anonymous = not profile_dto.prefer_anonymous
     async with uow.transaction():
-        await user_service.save(user_dto)
+        await user_profile_service.save(profile_dto)
 
     await callback.answer(text="Success")
     await manager.switch_to(UserMenuSG.settings)

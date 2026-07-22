@@ -41,7 +41,7 @@ class SuggestionService:
         self.bot_registry = bot_registry
 
         self.key_builder = KitaKeyBuilder()
-        
+
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         redis_key = RedisKey(
             bot_id=self.bot_registry.get_current().id,
@@ -55,7 +55,7 @@ class SuggestionService:
         stats_row = await UserStatsRedis.get(self.redis, key)
         if stats_row:
             return stats_row
-        
+
         user_stats = await self.repo.user_stats(user_dto.user_id)
         await UserStatsRedis.set(self.redis, key, user_stats)
         return user_stats
@@ -74,13 +74,13 @@ class SuggestionService:
         await self.repo.update(suggestion_id, **data)
         logger.info("Update suggestion %s", suggestion_id)
 
-    async def create(self, author_dto: UserDTO, album: list[Message]) -> SuggestionFullDTO:
+    async def create(self, author_dto: UserDTO, album: list[Message], anonymous: bool = False) -> SuggestionFullDTO:
         first_msg = album[0]
         caption = first_msg.caption or first_msg.text
         media_group_id = first_msg.media_group_id
         forwarded_from = self.parser.parse_forward_origin(first_msg)
         media_info = [
-            info for msg in album 
+            info for msg in album
             if (info := self.parser.parse_media(msg))
         ]
 
@@ -93,7 +93,7 @@ class SuggestionService:
 
         return await self.repo.create(
             author_id=author_dto.user_id,
-            anonymous=author_dto.prefer_anonymous,
+            anonymous=anonymous,
             mediainfo=media_info,
             caption=caption,
             media_group_id=media_group_id,

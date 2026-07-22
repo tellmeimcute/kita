@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import (
     UserRepositoryProtocol,
+    UserProfileRepositoryProtocol,
     SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
 )
@@ -17,6 +18,7 @@ class UnitOfWork:
     __slots__ = (
         "_session",
         "users",
+        "profiles",
         "suggestions",
         "medias",
     )
@@ -25,12 +27,14 @@ class UnitOfWork:
         self,
         session: AsyncSession,
         user_repo: UserRepositoryProtocol,
+        user_profile_repo: UserProfileRepositoryProtocol,
         suggestion_repo: SuggestionRepositoryProtocol,
         media_repo: MediaRepositoryProtocol,
     ):
         self._session = session
-        
+
         self.users = user_repo
+        self.profiles = user_profile_repo
         self.suggestions = suggestion_repo
         self.medias = media_repo
 

@@ -4,7 +4,7 @@ from typing import Protocol, Sequence, Any, Literal
 from aiogram.types import Message, InlineKeyboardMarkup
 from core.schemas.objects import UserStats
 from core.schemas.message_payload import MessagePayload
-from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO
+from database.dto import UserDTO, UserProfileDTO, SuggestionBaseDTO, SuggestionFullDTO
 from ui.senders.base import BaseSender
 
 
@@ -26,11 +26,37 @@ class UserServiceProtocol(Protocol):
     async def save(self, user_dto: UserDTO) -> None:
         ...
 
-    @abstractmethod
-    async def get_active(self) -> Sequence[UserDTO]: ...
+
+class UserProfileServiceProtocol(Protocol):
 
     @abstractmethod
-    async def get_admins(self) -> Sequence[UserDTO]: ...
+    async def get_or_create(self, user_id: int) -> UserProfileDTO:
+        ...
+
+    @abstractmethod
+    async def create(self, user_id: int) -> UserProfileDTO:
+        ...
+
+    @abstractmethod
+    async def get(self, user_id: int) -> UserProfileDTO | None:
+        ...
+
+    @abstractmethod
+    async def update(self, user_id: int, **data: Any) -> None:
+        ...
+
+    @abstractmethod
+    async def save(self, profile_dto: UserProfileDTO) -> None:
+        ...
+
+    @abstractmethod
+    async def get_active(self) -> Sequence[UserProfileDTO]: ...
+
+    @abstractmethod
+    async def get_admins(self) -> Sequence[UserProfileDTO]: ...
+
+    @abstractmethod
+    async def decline_suggestion(self, profile_dto: UserProfileDTO) -> None: ...
 
 
 class SuggestionServiceProtocol(Protocol):
@@ -44,7 +70,7 @@ class SuggestionServiceProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def create(self, author_dto: UserDTO, album: Sequence[Message]) -> SuggestionFullDTO:
+    async def create(self, author_dto: UserDTO, album: Sequence[Message], anonymous: bool = False) -> SuggestionFullDTO:
         ...
 
     @abstractmethod

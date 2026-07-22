@@ -10,7 +10,7 @@ from core.i18n_translator import Translator
 from core.consts import DISHKA_CONTAINER_KEY
 from core.schemas import BotInfo
 
-from database.dto import UserDTO
+from database.dto import UserDTO, UserProfileDTO
 
 class I18nText(Text):
     def __init__(self, i18n_key: str, when: WhenCondition = None):
@@ -23,6 +23,7 @@ class I18nText(Text):
         bot_info: BotInfo = await container.get(BotInfo)
 
         user_dto: UserDTO = manager.middleware_data.get("user_dto")
+        profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
 
         additional_data = data.copy()
         additional_data.pop("middleware_data")
@@ -31,7 +32,11 @@ class I18nText(Text):
 
         dialog_data = additional_data.pop("dialog_data")
         
-        i18n_kwargs = {"user_dto": user_dto.to_i18n_kwargs()}
+        i18n_kwargs = {
+            "user_dto": user_dto.to_i18n_kwargs(),
+            "profile_dto": profile_dto.model_dump(mode="json")
+        }
+
         i18n_kwargs.update(**dialog_data)
         i18n_kwargs.update(bot_info.model_dump())
         i18n_kwargs.update(additional_data)

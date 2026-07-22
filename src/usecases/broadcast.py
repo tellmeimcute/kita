@@ -6,13 +6,13 @@ from aiogram.types import Message, MessageOriginChannel
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
-from interfaces import UserServiceProtocol, NotifierServiceProtocol
+from interfaces import UserProfileServiceProtocol, NotifierServiceProtocol
 
 
 class BroadcastUseCase:
 
     __slots__ = (
-        "_user_service",
+        "_user_profile_service",
         "_notifier",
         "_translator",
         "_chunk_size",
@@ -21,11 +21,11 @@ class BroadcastUseCase:
 
     def __init__(
         self,
-        user_service: UserServiceProtocol,
+        user_profile_service: UserProfileServiceProtocol,
         notifier: NotifierServiceProtocol,
         translator: Translator,
     ):
-        self._user_service = user_service
+        self._user_profile_service = user_profile_service
         self._notifier = notifier
         self._translator = translator
 
@@ -33,7 +33,7 @@ class BroadcastUseCase:
         self._chunk_delay = 2.5
 
     async def prepare(self, message: Message, album: tuple[Message]) -> BroadcastData:
-        active = await self._user_service.get_active()
+        active = await self._user_profile_service.get_active()
 
         is_forwarded = isinstance(message.forward_origin, MessageOriginChannel)
         return BroadcastData(

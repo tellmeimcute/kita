@@ -11,6 +11,7 @@ from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEven
 from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
+    UserProfileServiceProtocol,
     NotifierServiceProtocol,
 )
 from ui.suggestion_utils import SuggestionUtils
@@ -40,15 +41,18 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
 async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
+    user_profile_service = await container.get(UserProfileServiceProtocol)
     notifier = await container.get(NotifierServiceProtocol)
     suggestion_utils = await container.get(SuggestionUtils)
     i18n = await container.get(I18n)
 
     async with uow.transaction():
-        admins = await user_service.get_admins()
+        admin_profiles = await user_profile_service.get_admins()
 
     with i18n.context():
-        for admin in admins:
+        for profile in admin_profiles:
+            async with uow.transaction():
+                admin = await user_service.get(profile.user_id)
             with i18n.use_locale(admin.language_code):
                 i18n_kwargs = suggestion_utils.get_i18n_kwargs(event.suggestion_dto)
                 await notifier.send_text(

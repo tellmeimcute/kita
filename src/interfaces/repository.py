@@ -1,10 +1,11 @@
 
 
+
 from abc import abstractmethod
 from typing import Protocol, Sequence, Any
 
 from core.schemas.objects import UserStats
-from database.dto import UserDTO, SuggestionBaseDTO, SuggestionFullDTO
+from database.dto import UserDTO, UserProfileDTO, SuggestionBaseDTO, SuggestionFullDTO
 
 
 class UserRepositoryProtocol(Protocol):
@@ -24,23 +25,50 @@ class UserRepositoryProtocol(Protocol):
     @abstractmethod
     async def create(self, dto: UserDTO) -> UserDTO:
         ...
-    
+
     @abstractmethod
-    async def get_active(self) -> Sequence[UserDTO]:
+    async def count(self) -> int:
         ...
-    
+
+
+class UserProfileRepositoryProtocol(Protocol):
+
     @abstractmethod
-    async def get_admins(self) -> Sequence[UserDTO]:
+    async def get(self, user_id: int) -> UserProfileDTO | None:
         ...
 
     @abstractmethod
-    async def get_banned(self) -> Sequence[UserDTO]:
+    async def get_or_create(self, user_id: int) -> UserProfileDTO:
+        ...
+
+    @abstractmethod
+    async def create(self, user_id: int) -> UserProfileDTO:
+        ...
+
+    @abstractmethod
+    async def update(self, user_id: int, **data) -> None:
+        ...
+
+    @abstractmethod
+    async def save(self, dto: UserProfileDTO) -> None:
+        ...
+
+    @abstractmethod
+    async def get_active(self) -> Sequence[UserProfileDTO]:
+        ...
+
+    @abstractmethod
+    async def get_admins(self) -> Sequence[UserProfileDTO]:
+        ...
+
+    @abstractmethod
+    async def get_banned(self) -> Sequence[UserProfileDTO]:
         ...
 
     @abstractmethod
     async def count(self) -> int:
         ...
-    
+
     @abstractmethod
     async def admins_count(self) -> int:
         ...
@@ -50,19 +78,20 @@ class UserRepositoryProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def global_user_stats(self) -> Any:
+    async def bot_user_stats(self) -> Any:
         ...
 
     @abstractmethod
     async def decline_all_suggestions(self, user_id: int) -> None:
         ...
 
+
 class SuggestionRepositoryProtocol(Protocol):
 
     @abstractmethod
     async def get_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
         ...
-    
+
     @abstractmethod
     async def update(self, suggestion_id: int, **data: Any):
         ...
@@ -70,7 +99,7 @@ class SuggestionRepositoryProtocol(Protocol):
     @abstractmethod
     async def save(self, dto: SuggestionBaseDTO):
         ...
-    
+
     @abstractmethod
     async def create(
         self,
@@ -94,10 +123,10 @@ class SuggestionRepositoryProtocol(Protocol):
     @abstractmethod
     async def count(self) -> int:
         ...
-    
+
 
 class MediaRepositoryProtocol(Protocol):
-    
+
     @abstractmethod
     async def count(self) -> int:
         ...

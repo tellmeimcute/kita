@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message, TelegramObject
 from core.consts import DISHKA_CONTAINER_KEY
 from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
-from database.dto import UserDTO
+from database.dto import UserProfileDTO
 from ui.senders.payload import TextSender
 from .base import KitaMiddleware
 
@@ -18,10 +18,10 @@ class AdminMiddleware(KitaMiddleware):
         event: Union[Message, CallbackQuery],
         data: Dict[str, Any],
     ) -> Any:
-        user_dto: UserDTO = data.get("user_dto")
-        if user_dto and user_dto.is_admin:
+        profile_dto: UserProfileDTO = data.get("profile_dto")
+        if profile_dto and profile_dto.is_admin:
             return await handler(event, data)
-        
+
         if isinstance(event, CallbackQuery):
             await event.answer()
 
@@ -36,4 +36,3 @@ class AdminMiddleware(KitaMiddleware):
             translator=translator,
         )
         await strategy.send()
-        

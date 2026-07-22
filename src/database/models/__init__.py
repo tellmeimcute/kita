@@ -1,9 +1,13 @@
-from database.models.media import Media
-from database.models.suggestion import Suggestion
-from database.models.user import UserAlchemy
+from .media import Media
+from .suggestion import Suggestion
+from .user import UserAlchemy
+from .user_profile import UserProfile
+from .userbot import UserBot
 
 __all__ = (
     "UserAlchemy",
+    "UserProfile",
     "Media",
     "Suggestion",
+    "UserBot",
 )

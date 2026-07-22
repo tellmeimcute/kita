@@ -1,5 +1,6 @@
 
 
+
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -11,7 +12,7 @@ async def get_app_stats(
     uow: FromDishka[UnitOfWorkProtocol],
     **kwargs
 ):
-    user_stats = await uow.users.global_user_stats()
+    user_stats = await uow.profiles.bot_user_stats()
     suggestions_count = await uow.suggestions.count()
     media_count = await uow.medias.count()
 

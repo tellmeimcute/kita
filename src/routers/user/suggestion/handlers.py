@@ -11,7 +11,7 @@ from core.exceptions import UnsupportedPayload
 from core.events import EventBus, NewSuggestionEvent
 
 from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
-from database.dto import UserDTO
+from database.dto import UserDTO, UserProfileDTO
 
 from ui.state_groups import SuggestionSG
 
@@ -26,6 +26,7 @@ async def on_album_received(
     event_bus: FromDishka[EventBus],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
     album = manager.middleware_data.get("album")
 
     if not album:
@@ -33,7 +34,9 @@ async def on_album_received(
 
     try:
         async with uow.transaction():
-            suggestion_dto = await suggestion_service.create(user_dto, album)
+            suggestion_dto = await suggestion_service.create(
+                user_dto, album, anonymous=profile_dto.prefer_anonymous,
+            )
     except UnsupportedPayload:
         return await manager.switch_to(SuggestionSG.media_error, show_mode=ShowMode.DELETE_AND_SEND)
 
@@ -42,4 +45,3 @@ async def on_album_received(
     event_bus.dispatch(
         NewSuggestionEvent(suggestion_dto=suggestion_dto, bot_id=message.bot.id)
     )
-    

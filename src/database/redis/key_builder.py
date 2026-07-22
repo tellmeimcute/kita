@@ -5,7 +5,7 @@ from typing import Literal
 
 @dataclass(frozen=True)
 class RedisKey:
-    bot_id: int
+    bot_id: int | None = None
     user_id: int | None = None
 
 

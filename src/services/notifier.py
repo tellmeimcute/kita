@@ -9,7 +9,7 @@ from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
 
-from database.dto import UserDTO, SuggestionFullDTO
+from database.dto import UserDTO, UserProfileDTO, SuggestionFullDTO
 
 from ui.senders.base import BaseSender
 from ui.senders import (
@@ -26,7 +26,7 @@ logger = getLogger("kita.notifier_service")
 
 
 class NotifierService:
-    
+
     __slots__ = (
         "_bot",
         "_tl",
@@ -66,7 +66,7 @@ class NotifierService:
             i18n_key = "suggestion_caption"
         else:
             i18n_key = "channel_post_message"
-            
+
         payload = self._suggestion_utils.payload_factory(dto, i18n_key)
         strategy = self.strategy_factory(target_id, payload)
         suggestion_msg = await strategy.send()
@@ -101,10 +101,10 @@ class NotifierService:
             strategy = self.strategy_factory(target, payload)
             return await strategy.send()
 
-    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload):
-        if user_dto.is_bot_blocked:
+    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload, profile_dto: UserProfileDTO | None = None):
+        if profile_dto and profile_dto.is_bot_blocked:
             return logger.info("UserID %s has blocked the bot. Skip.", user_dto.user_id)
-        
+
         strategy = self.strategy_factory(user_dto.user_id, payload)
         return await strategy.send()
 

@@ -17,6 +17,7 @@ from core.events import EventBus, CopyMessagesToUserEvent
 from interfaces import (
     UnitOfWorkProtocol,
     UserServiceProtocol,
+    UserProfileServiceProtocol,
 )
 
 from database.dto import UserDTO
@@ -33,15 +34,18 @@ async def select_user(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
+    user_profile_service: FromDishka[UserProfileServiceProtocol],
 ):
     try:
         id_command = IDCommand(target_id=message.text)
         async with uow.transaction():
             target_dto = await user_service.get(id_command.target_id)
+            target_profile = await user_profile_service.get(id_command.target_id)
     except ValidationError:
         target_dto = None
+        target_profile = None
 
-    if not target_dto:
+    if not target_dto or not target_profile:
         manager.dialog_data["user_not_found"] = True
         return
 
@@ -49,6 +53,7 @@ async def select_user(
         "user_not_found": False,
         "target_dto": target_dto.model_dump(mode="json"),
         "target_dto_i18n": target_dto.to_i18n_kwargs(),
+        "target_profile": target_profile.model_dump(mode="json") if target_profile else None,
     })
     await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
@@ -75,7 +80,7 @@ async def user_change_role(
 
     try:
         async with uow.transaction():
-            new_target_dto = await change_role.execute(
+            new_profile_dto = await change_role.execute(
                 target_dto.user_id,
                 target_role,
                 caller=user_dto,
@@ -83,8 +88,7 @@ async def user_change_role(
 
         await callback.answer()
         await manager.update({
-            "target_dto": new_target_dto.model_dump(mode="json"),
-            "target_dto_i18n": new_target_dto.to_i18n_kwargs(),
+            "target_profile": new_profile_dto.model_dump(mode="json"),
         })
     except UserImmuneError:
         error_msg = translator.translate("error_user_immune")
@@ -119,4 +123,3 @@ async def message_to_user(
     )
 
     await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
-    
