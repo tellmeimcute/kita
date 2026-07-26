@@ -17,14 +17,14 @@ class UserProfileRepository:
         bot_registry: BotRegistryProtocol,
     ):
         self._session = session
-        self._bot_id = bot_registry.get_current().id
+        self._current_bot = bot_registry.get_current()
 
     async def get(self, user_id: int) -> UserProfileDTO | None:
         stmt = (
             select(UserProfile)
             .where(
                 UserProfile.user_id == user_id,
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
             )
         )
 
@@ -43,7 +43,7 @@ class UserProfileRepository:
         return profile
 
     async def create(self, user_id: int) -> UserProfileDTO:
-        orm = UserProfile(bot_id=self._bot_id, user_id=user_id)
+        orm = UserProfile(bot_id=self._current_bot.id, user_id=user_id)
         self._session.add(orm)
         await self._session.flush()
         return UserProfileDTO.model_validate(orm)
@@ -53,7 +53,7 @@ class UserProfileRepository:
             update(UserProfile)
             .where(
                 UserProfile.user_id == user_id,
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
             )
             .values(data)
         )
@@ -67,7 +67,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
                 (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
             )
         )
@@ -80,7 +80,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
                 UserProfile.role == UserRole.ADMIN,
             )
         )
@@ -93,7 +93,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
                 UserProfile.role == UserRole.BANNED,
             )
         )
@@ -105,7 +105,7 @@ class UserProfileRepository:
     async def count(self) -> int:
         stmt = (
             select(func.count(UserProfile.id))
-            .where(UserProfile.bot_id == self._bot_id)
+            .where(UserProfile.bot_id == self._current_bot.id)
         )
         count = await self._session.scalar(stmt)
         return count or 0
@@ -114,7 +114,7 @@ class UserProfileRepository:
         stmt = (
             select(func.count(UserProfile.id))
             .where(
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
                 UserProfile.role == UserRole.ADMIN,
             )
         )
@@ -125,7 +125,7 @@ class UserProfileRepository:
         stmt = (
             select(func.count(UserProfile.id))
             .where(
-                UserProfile.bot_id == self._bot_id,
+                UserProfile.bot_id == self._current_bot.id,
                 UserProfile.role == UserRole.BANNED,
             )
         )
@@ -138,7 +138,7 @@ class UserProfileRepository:
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.USER).label("users"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.ADMIN).label("admins"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.BANNED).label("banned"),
-        ).where(UserProfile.bot_id == self._bot_id)
+        ).where(UserProfile.bot_id == self._current_bot.id)
         result: Result = await self._session.execute(stmt)
         return result.one()
 
@@ -147,7 +147,7 @@ class UserProfileRepository:
             update(Suggestion)
             .where(
                 Suggestion.author_id == user_id,
-                Suggestion.bot_id == self._bot_id,
+                Suggestion.bot_id == self._current_bot.id,
             )
             .values(status=SuggestionStatus.DECLINED)
         )
