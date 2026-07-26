@@ -43,15 +43,14 @@ from routers.system.listeners import (
 logger = logging.getLogger("kita.startup")
 
 
-async def register_events(container: AsyncContainer):
-    event_bus = await container.get(EventBus)
+async def register_events(event_bus: EventBus):
     event_bus.sub(NewUserEvent, notify_admin_new_user)
     event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
     event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
     event_bus.sub(CopyMessagesToUserEvent, copy_to_user_notify_both)
     
     logger.debug("%s", event_bus.listeners)
-    logger.info("Event Bus successfully registered")
+    logger.info("Event Bus events successfully registered")
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     user_middleware = await container.get(UserMiddleware)
@@ -107,6 +106,6 @@ async def register_all(
 ):
     await register_middlewares(container, dp)
     await register_routers(container, dp)
-    await register_events(container)
+    #await register_events(container)
 
     logger.info("Bot fully init")

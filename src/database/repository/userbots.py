@@ -10,14 +10,16 @@ class UserBotRepository:
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def get(self, bot_id: int) -> UserBotDTO:
+    async def get(self, bot_id: int) -> UserBotDTO | None:
         stmt = (
             select(UserBot)
             .where(UserBot.bot_id == bot_id)
         )
         result = await self._session.execute(stmt)
-        orm_models = result.scalar()
-        return UserBotDTO.model_validate(orm_models)
+        orm_model = result.scalar()
+        if not orm_model:
+            return None
+        return UserBotDTO.model_validate(orm_model)
 
     async def get_active(self) -> Sequence[UserBotDTO]:
         stmt = (

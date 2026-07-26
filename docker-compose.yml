@@ -32,6 +32,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    ports:
+      - 127.0.0.1:5000:${BOT_PORT:-5000}
     environment:
       TG_TOKEN: ${TG_TOKEN}
       ADMIN_ID: ${ADMIN_ID}
@@ -47,6 +49,9 @@ services:
       RATELIMIT_MAX_TOKENS: ${RATELIMIT_MAX_TOKENS:-5}
       RATELIMIT_REFILL_RATE: ${RATELIMIT_REFILL_RATE:-0.3}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      DOMAIN: ${DOMAIN}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      BOT_PORT: ${BOT_PORT:-5000}
     restart: unless-stopped
 
 volumes:

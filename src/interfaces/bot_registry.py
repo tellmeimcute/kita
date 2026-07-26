@@ -15,6 +15,9 @@ class BotRegistryProtocol(Protocol):
     def get(self, bot_id: int) -> Bot: ...
 
     @abstractmethod
+    def get_all(self) -> list[Bot]: ...
+
+    @abstractmethod
     def get_current(self) -> Bot | None: ...
 
     @abstractmethod
@@ -22,3 +25,6 @@ class BotRegistryProtocol(Protocol):
 
     @abstractmethod
     def reset_current(self, token: contextvars.Token[Bot | None]) -> None: ...
+
+    @abstractmethod
+    async def close(self) -> None: ...

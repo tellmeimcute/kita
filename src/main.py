@@ -1,21 +1,19 @@
-import asyncio
 import logging
 
-from redis.asyncio import Redis
-
-from aiogram import Bot, Dispatcher
+import uvicorn
+from aiogram import Dispatcher
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.storage.base import DefaultKeyBuilder
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
+from dishka import make_async_container, AsyncContainer
+from dishka.integrations.aiogram import AiogramProvider
+from dishka.integrations.aiogram import setup_dishka as setup_dishka_aiogram
+from dishka.integrations.fastapi import setup_dishka as setup_dishka_fastapi
 
-from dishka import make_async_container
-from dishka.integrations.aiogram import AiogramProvider, setup_dishka
+from fastapi import FastAPI
 
 from core.config import Config
 from core.logging_config import setup_logging
-from interfaces import BotRegistryProtocol
+from web.app import get_app
 from di import (
     DatabaseProvider,
     InfraProvider,
@@ -26,15 +24,11 @@ from di import (
     BotProvider,
 )
 
-from startup import register_all
 
 logger = logging.getLogger("kita.main")
 
-async def main():
-
-    setup_logging()
-
-    container = make_async_container(
+def create_container() -> AsyncContainer:
+    return make_async_container(
         InfraProvider(),
         UtilsProvider(),
         BotProvider(),
@@ -45,38 +39,36 @@ async def main():
         AiogramProvider(),
     )
 
-    config = await container.get(Config)
-    redis = await container.get(Redis)
 
-    bot = Bot(
-        token=config.tg_token.get_secret_value(),
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-        session=AiohttpSession(proxy=config.PROXY),
+def get_dispatcher(config: Config):
+    storage = RedisStorage.from_url(
+        url=config.redis.redis_url,
+        key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True),
     )
-
-    storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True))
     dp = Dispatcher(storage=storage, name="dispatcher")
+    logger.info("Initialized Dispatcher with Redis storage")
+    return dp
 
-    setup_dishka(
-        container=container,
-        router=dp,
-        auto_inject=True,
-    )
 
-    registry: BotRegistryProtocol = await container.get(BotRegistryProtocol)
-    registry.register(bot)
+def application() -> FastAPI:
+    setup_logging()
 
-    await register_all(container, dp)
-    await bot.delete_webhook(drop_pending_updates=True)
+    container = create_container()
+    config = Config.get()
 
-    try:
-        await dp.start_polling(bot)
-    finally:
-        await container.close()
-        await bot.session.close()
+    dp = get_dispatcher(config)
+    setup_dishka_aiogram(container, dp, auto_inject=True)
+
+    app = get_app(config, dp, container)
+    setup_dishka_fastapi(container, app)
+
+    return app
+
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("Shutdown...")
+    uvicorn.run(
+        app=application,
+        host="0.0.0.0",
+        port=8000,
+        factory=True,
+    )

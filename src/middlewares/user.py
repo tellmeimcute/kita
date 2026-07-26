@@ -46,9 +46,6 @@ class UserMiddleware(KitaMiddleware):
     ) -> Any:
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
 
-        bot: Bot = data.get("bot")
-        self.bot_registry.set_current(bot)
-
         event_bus = await container.get(EventBus)
         uow = await container.get(UnitOfWorkProtocol)
         user_service = await container.get(UserServiceProtocol)

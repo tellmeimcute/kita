@@ -140,7 +140,7 @@ class MediaRepositoryProtocol(Protocol):
 class UserBotRepositoryProtocol(Protocol):
 
     @abstractmethod
-    async def get(self, bot_id: int) -> UserBotDTO:
+    async def get(self, bot_id: int) -> UserBotDTO | None:
         ...
 
     @abstractmethod

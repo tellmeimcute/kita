@@ -22,6 +22,9 @@ class BotRegistry:
     def get(self, bot_id: int) -> Bot:
         return self._storage[bot_id]
 
+    def get_all(self) -> list[Bot]:
+        return list(self._storage.values())
+
     def get_current(self) -> Bot | None:
         return self._current_bot.get()
 
@@ -31,3 +34,7 @@ class BotRegistry:
 
     def reset_current(self, token: contextvars.Token[Bot | None]) -> None:
         self._current_bot.reset(token)
+
+    async def close(self):
+        for bot in self.get_all():
+            await bot.session.close()

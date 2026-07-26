@@ -17,4 +17,17 @@ class Config(BaseConfig):
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
 
+    domain: SecretStr
+
+    webhook_secret: str
+    webhook_path: str = "/webhook"
+
     PROXY: str | None = None
+
+    @property
+    def webhook_base_url(self) -> str:
+        return f"https://{self.domain.get_secret_value()}{self.webhook_path}"
+
+    @classmethod
+    def get(cls):
+        return cls()

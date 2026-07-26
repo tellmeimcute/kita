@@ -17,6 +17,8 @@ from services.user_profile import UserProfileService
 from services.suggestion import SuggestionService
 from services.notifier import NotifierService
 from services.message_parser import MessageParser
+from services.webhooks import WebhookService
+from services.userbots import UserBotService
 
 from database.uow import UnitOfWork
 from database.repository import (
@@ -43,12 +45,16 @@ from interfaces import (
     UserProfileServiceProtocol,
     SuggestionServiceProtocol,
     NotifierServiceProtocol,
+    UserBotRepositoryProtocol,
 )
 
 from ui.suggestion_utils import SuggestionUtils
 
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)
+
+    webhook_service = provide(WebhookService, scope=Scope.APP)
+    userbot_service = provide(UserBotService, scope=Scope.REQUEST)
 
     notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol, scope=Scope.REQUEST)
     user_service = provide(source=UserService, provides=UserServiceProtocol, scope=Scope.REQUEST)
@@ -59,7 +65,7 @@ class InfraProvider(Provider):
     user_repo = provide(source=UserRepository, provides=UserRepositoryProtocol, scope=Scope.REQUEST)
     user_profile_repo = provide(source=UserProfileRepository, provides=UserProfileRepositoryProtocol, scope=Scope.REQUEST)
     media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol, scope=Scope.REQUEST)
-    userbot_repo = provide(UserBotRepository, scope=Scope.REQUEST)
+    userbot_repo = provide(source=UserBotRepository, provides=UserBotRepositoryProtocol, scope=Scope.REQUEST)
 
     uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol, scope=Scope.REQUEST)
 

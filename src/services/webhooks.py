@@ -1,0 +1,39 @@
+
+from logging import getLogger
+from aiogram.methods import SetWebhook
+from aiogram import Bot
+
+from core.config import Config
+
+logger = getLogger("kita.webhook")
+
+class WebhookService:
+
+    def __init__(self, config: Config):
+        self.config = config
+
+    async def set_webhook(self, bot: Bot) -> None:
+        current_webhook = await bot.get_webhook_info()
+        url = f"{self.config.webhook_base_url}/{bot.id}"
+
+        if current_webhook.url == url and not current_webhook.has_custom_certificate:
+            logger.debug("Webhook already set for bot %s: %s", bot.id, url)
+            return current_webhook
+
+        webhook_request = SetWebhook(
+            url=url,
+            secret_token=self.config.webhook_secret,
+            drop_pending_updates=True,
+        )
+
+        if not await bot(webhook_request):
+            logger.error("Failed to set webhook for bot %s")
+            raise RuntimeError(f"Could not set webhook for bot '{bot.id}'")
+
+        logger.info("Webhook set successfully for bot %s", bot.id)
+        return await bot.get_webhook_info()
+
+
+    async def remove_webhook(self, bot: Bot):
+        await bot.delete_webhook(drop_pending_updates=True)
+        logger.info("Webhook removed for bot %s", bot.id)

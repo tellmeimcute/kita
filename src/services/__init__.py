@@ -4,6 +4,7 @@ from .user import UserService
 from .user_profile import UserProfileService
 
 from .bot_registry import BotRegistry
+from .userbots import UserBotService
 
 __all__ = (
     "NotifierService",
@@ -11,4 +12,5 @@ __all__ = (
     "UserProfileService",
     "SuggestionService",
     "BotRegistry",
+    "UserBotService",
 )

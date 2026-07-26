@@ -5,4 +5,4 @@ echo "Running alembic migrations..."
 uv run alembic upgrade head
 
 echo "Starting bot..."
-exec uv run python src/main.py
+exec uv run uvicorn main:application --host 0.0.0.0 --port "${BOT_PORT:-5000}" --factory --app-dir src
