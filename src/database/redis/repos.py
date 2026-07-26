@@ -1,7 +1,7 @@
 
 
 from .base import BaseRedisRepository
-from database.dto import UserDTO, UserProfileDTO
+from database.dto import UserDTO, UserProfileDTO, UserBotDTO
 from core.schemas.objects import UserStats, BotInfo
 
 
@@ -19,4 +19,8 @@ class UserProfileRedis(BaseRedisRepository[UserProfileDTO]):
 
 class BotInfoRedis(BaseRedisRepository[BotInfo]):
     model = BotInfo
+    expiry: int = 3600
+
+class UserBotRedis(BaseRedisRepository[UserBotDTO]):
+    model = UserBotDTO
     expiry: int = 3600

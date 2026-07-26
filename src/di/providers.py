@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 from aiogram_dialog import BgManagerFactory
 from aiogram_dialog.manager.bg_manager import BgManager
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import Config
 from core.schemas import SuggestionViewerData
@@ -24,7 +23,8 @@ from database.repository import (
     SuggestionRepository,
     UserRepository,
     UserProfileRepository,
-    MediaRepository
+    MediaRepository,
+    UserBotRepository,
 )
 
 from usecases import (
@@ -43,7 +43,6 @@ from interfaces import (
     UserProfileServiceProtocol,
     SuggestionServiceProtocol,
     NotifierServiceProtocol,
-    BotRegistryProtocol,
 )
 
 from ui.suggestion_utils import SuggestionUtils
@@ -60,6 +59,7 @@ class InfraProvider(Provider):
     user_repo = provide(source=UserRepository, provides=UserRepositoryProtocol, scope=Scope.REQUEST)
     user_profile_repo = provide(source=UserProfileRepository, provides=UserProfileRepositoryProtocol, scope=Scope.REQUEST)
     media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol, scope=Scope.REQUEST)
+    userbot_repo = provide(UserBotRepository, scope=Scope.REQUEST)
 
     uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol, scope=Scope.REQUEST)
 

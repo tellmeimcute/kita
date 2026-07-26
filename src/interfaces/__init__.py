@@ -3,6 +3,7 @@ from .repository import (
     UserProfileRepositoryProtocol,
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
+    UserBotRepositoryProtocol,
 )
 
 from .services import (

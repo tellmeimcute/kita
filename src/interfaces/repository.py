@@ -5,7 +5,13 @@ from abc import abstractmethod
 from typing import Protocol, Sequence, Any
 
 from core.schemas.objects import UserStats
-from database.dto import UserDTO, UserProfileDTO, SuggestionBaseDTO, SuggestionFullDTO
+from database.dto import (
+    UserDTO,
+    UserProfileDTO,
+    SuggestionBaseDTO,
+    SuggestionFullDTO,
+    UserBotDTO,
+)
 
 
 class UserRepositoryProtocol(Protocol):
@@ -130,3 +136,14 @@ class MediaRepositoryProtocol(Protocol):
     @abstractmethod
     async def count(self) -> int:
         ...
+
+class UserBotRepositoryProtocol(Protocol):
+
+    @abstractmethod
+    async def get(self, bot_id: int) -> UserBotDTO:
+        ...
+
+    @abstractmethod
+    async def get_active(self) -> Sequence[UserBotDTO]:
+        ...
+        
