@@ -41,9 +41,9 @@ class UnitOfWork:
     @asynccontextmanager
     async def transaction(self):
         async with self._session.begin():
-            logger.debug("Translaction begin")
+            logger.debug("Transaction begin")
             yield
-        logger.debug("Translaction close")
+        logger.debug("Transaction close")
 
     async def commit(self):
         await self._session.commit()

@@ -18,6 +18,7 @@ class MediaGroupMiddleware(KitaMiddleware):
         "redis",
         'latency',
         "prefix",
+        "tasks",
     )
 
     # event fields to be cached in redis
@@ -40,6 +41,8 @@ class MediaGroupMiddleware(KitaMiddleware):
         self.latency = latency
         self.prefix = "media_group:"
 
+        self.tasks = set()
+
     async def __call__(self, handler, event: Message, data: dict):
         if not isinstance(event, Message) or not event.media_group_id:
             return await handler(event, data)
@@ -54,7 +57,9 @@ class MediaGroupMiddleware(KitaMiddleware):
 
         lock_key = f"{key}:processing"
         if await self.redis.set(lock_key, "1", nx=True, ex=5):
-            asyncio.create_task(self._process_album(key, handler, event, data))
+            task = asyncio.create_task(self._process_album(key, handler, event, data))
+            self.tasks.add(task)
+            task.add_done_callback(self.tasks.discard)
 
         return None
 

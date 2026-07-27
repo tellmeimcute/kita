@@ -23,8 +23,9 @@ class SuggestionService:
     __slots__ = (
         "redis",
         "repo",
-        "bot_registry",
         "parser",
+        "bot_registry",
+        "bot",
         "key_builder",
     )
 
@@ -39,12 +40,13 @@ class SuggestionService:
         self.repo = repo
         self.parser = parser
         self.bot_registry = bot_registry
+        self.bot = bot_registry.get_current()
 
         self.key_builder = KitaKeyBuilder()
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         redis_key = RedisKey(
-            bot_id=self.bot_registry.get_current().id,
+            bot_id=self.bot.id,
             user_id=user_dto.user_id
         )
 
@@ -68,6 +70,13 @@ class SuggestionService:
 
     async def update(self, suggestion_dto: SuggestionBaseDTO):
         await self.repo.save(suggestion_dto)
+
+        key = self.key_builder.build(
+            key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id),
+            part="user_stats"
+        )
+        await self.redis.delete(key)
+        
         logger.info("Update suggestion %s", suggestion_dto.id)
 
     async def update_by_id(self, suggestion_id: int, **data: Any):

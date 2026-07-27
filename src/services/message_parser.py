@@ -1,11 +1,6 @@
 
-from dataclasses import dataclass
 from aiogram.types import Message, MessageOriginChannel
-
-@dataclass
-class MediaInfo:
-    filetype: str
-    telegram_file_id: str
+from core.schemas import MediaInfo
 
 class MessageParser:
     @staticmethod

@@ -1,9 +1,14 @@
 from sqlalchemy import inspect
-from sqlalchemy.orm import Mapped, as_declarative, declared_attr, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 
-@as_declarative()
-class AbstractModel:
+class Base(DeclarativeBase):
+    pass
+
+
+class AbstractModel(Base):
+    __abstract__ = True
+
     id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
 
     @declared_attr

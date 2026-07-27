@@ -19,7 +19,7 @@ class Config(BaseConfig):
 
     domain: SecretStr
 
-    webhook_secret: str
+    webhook_secret: SecretStr
     webhook_path: str = "/webhook"
 
     PROXY: str | None = None
@@ -31,3 +31,4 @@ class Config(BaseConfig):
     @classmethod
     def get(cls):
         return cls()
+    

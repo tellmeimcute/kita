@@ -3,6 +3,7 @@ import secrets
 from typing import Annotated
 
 from logging import getLogger
+from pydantic import SecretStr
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -29,7 +30,7 @@ class TelegramWebhookEndpoint:
     def __init__(
         self,
         dp: Dispatcher,
-        secret_token: str,
+        secret_token: SecretStr,
         config: Config,
         container: AsyncContainer,
     ):
@@ -73,7 +74,7 @@ class TelegramWebhookEndpoint:
         )
 
     def _verify_secret(self, token: str) -> bool:
-        return secrets.compare_digest(token, self.secret_token)
+        return secrets.compare_digest(token, self.secret_token.get_secret_value())
 
     async def _lazy_register(self, bot_id: int) -> Bot | None:
         try:

@@ -10,9 +10,7 @@ from database.models import Suggestion, Media
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
 from database.enums import SuggestionStatus
 
-from core.schemas.objects import UserStats
-
-from services.message_parser import MediaInfo
+from core.schemas import UserStats, MediaInfo
 from interfaces import BotRegistryProtocol
 
 class SuggestionRepository:

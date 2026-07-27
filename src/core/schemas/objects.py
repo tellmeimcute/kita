@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from .base import BaseData
+
 
 class UserStats(BaseData):
     total: int
@@ -12,3 +14,8 @@ class BotInfo(BaseData):
     channel_name: str
     bot_username: str
     bot_url: str
+
+@dataclass
+class MediaInfo:
+    filetype: str
+    telegram_file_id: str

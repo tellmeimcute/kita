@@ -106,6 +106,5 @@ async def register_all(
 ):
     await register_middlewares(container, dp)
     await register_routers(container, dp)
-    #await register_events(container)
 
-    logger.info("Bot fully init")
+    logger.info("Dispatcher fully init")
