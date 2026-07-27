@@ -19,6 +19,8 @@ from fastapi import (
 from dishka import AsyncContainer
 
 from core.config import Config
+from database.dto import UserBotDTO
+
 from services import UserBotService
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
 
@@ -76,41 +78,41 @@ class TelegramWebhookEndpoint:
     def _verify_secret(self, token: str) -> bool:
         return secrets.compare_digest(token, self.secret_token.get_secret_value())
 
-    async def _lazy_register(self, bot_id: int) -> Bot | None:
+    async def _get_userbot(self, bot_id: int) -> UserBotDTO | None:
         try:
             async with self._container() as container:
                 uow = await container.get(UnitOfWorkProtocol)
                 userbot_service = await container.get(UserBotService)
                 async with uow.transaction():
                     userbot = await userbot_service.get(bot_id)
+            return userbot
+        except Exception:
+            logger.exception("Failed to fetch UserBot %s from DataBase", bot_id)
+            return None
 
-            if not userbot:
-                return None
-            
+    async def _resolve_bot(self, bot_id: int) -> tuple[Bot | None, UserBotDTO | None]:
+        userbot = await self._get_userbot(bot_id)
+        if not userbot or not userbot.active:
+            return None, userbot
+        
+        try:
+            bot = self.bot_registry.get(bot_id)
+        except KeyError:
             bot = Bot(
                 token=userbot.token.get_secret_value(),
                 default=DefaultBotProperties(parse_mode=ParseMode.HTML),
                 session=AiohttpSession(proxy=self.config.PROXY),
             )
             self.bot_registry.register(bot)
-            logger.info("Lazy registered bot %s from DB", bot_id)
-            return bot
-        except Exception:
-            logger.exception("Failed to lazy-register bot %s", bot_id)
-            return None
+            logger.info("Lazy registered into bot_registry bot id %s from DB", bot_id)
 
-    async def _resolve_bot(self, bot_id: int):
-        try:
-            bot = self.bot_registry.get(bot_id)
-        except KeyError:
-            bot = await self._lazy_register(bot_id)
-        return bot
+        return bot, userbot
 
-    async def _feed_update(self, bot: Bot, update: Update) -> None:
+    async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
         token = None
         try:
             token = self.bot_registry.set_current(bot)
-            result = await self.dp.feed_update(bot, update)
+            result = await self.dp.feed_update(bot, update, userbot_dto=userbot)
             if isinstance(result, TelegramMethod):
                 await result.as_(bot)
         except Exception as e:
@@ -142,15 +144,23 @@ class TelegramWebhookEndpoint:
                 detail="Invalid secret token",
             )
 
-        bot = await self._resolve_bot(bot_id)
+        bot, userbot = await self._resolve_bot(bot_id)
+
+        if userbot and not userbot.active:
+            logger.warning("Bot %s marked inactive, skipping update", bot_id)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bot inactive",
+            )
+
         if not bot:
             logger.warning("Bot %s not found, skipping update", bot_id)
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail="Bot not registered",
             )
 
-        task = asyncio.create_task(self._feed_update(bot, update))
+        task = asyncio.create_task(self._feed_update(bot, update, userbot))
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)
 

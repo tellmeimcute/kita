@@ -8,8 +8,9 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.config import Config
-from core.schemas import BotInfo
 from core.i18n_translator import Translator
+
+from database.dto import UserBotDTO
 from ui.state_groups import AdminMenuSG
 
 
@@ -20,11 +21,11 @@ async def get_banner_text(
     manager: DialogManager,
     translator: FromDishka[Translator],
     config: FromDishka[Config],
-    bot_info: FromDishka[BotInfo]
+    userbot_dto: FromDishka[UserBotDTO],
 ):
     builder = InlineKeyboardBuilder()
     btn_text = translator.translate("channel_banner_btn")
-    builder.button(text=btn_text, url=bot_info.bot_url)
+    builder.button(text=btn_text, url=userbot_dto.bot_url)
     markup = builder.as_markup()
 
     banner_text = message.text or message.caption

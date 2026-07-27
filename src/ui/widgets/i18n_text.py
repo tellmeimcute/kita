@@ -8,9 +8,7 @@ from aiogram_dialog.widgets.common import WhenCondition
 
 from core.i18n_translator import Translator
 from core.consts import DISHKA_CONTAINER_KEY
-from core.schemas import BotInfo
-
-from database.dto import UserDTO, UserProfileDTO
+from database.dto import UserDTO, UserProfileDTO, UserBotDTO
 
 class I18nText(Text):
     def __init__(self, i18n_key: str, when: WhenCondition = None):
@@ -19,11 +17,11 @@ class I18nText(Text):
 
     async def _render_text(self, data: dict, manager: DialogManager) -> str:
         container: AsyncContainer = manager.middleware_data[DISHKA_CONTAINER_KEY]
-        translator: Translator = await container.get(Translator)
-        bot_info: BotInfo = await container.get(BotInfo)
-
+        userbot_dto: UserBotDTO = manager.middleware_data.get("userbot_dto")
         user_dto: UserDTO = manager.middleware_data.get("user_dto")
         profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
+
+        translator: Translator = await container.get(Translator)
 
         additional_data = data.copy()
         additional_data.pop("middleware_data")
@@ -38,7 +36,7 @@ class I18nText(Text):
         }
 
         i18n_kwargs.update(**dialog_data)
-        i18n_kwargs.update(bot_info.model_dump())
+        i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
         i18n_kwargs.update(additional_data)
         
         return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
