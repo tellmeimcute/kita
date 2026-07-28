@@ -38,7 +38,7 @@ from routers.user import menu_dialog as user_menu_dialog
 from routers.user import menu_router as user_menu_router
 from routers.user import suggestion_dialog as user_suggestion_dialog
 
-from routers.system import chat_member_router
+from routers.system import get_error_router
 from routers.system.listeners import (
     notify_admin_new_user,
     notify_admin_new_suggestion,
@@ -98,7 +98,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
 
     setup_dialogs(dp)
     dp.include_routers(
-        chat_member_router,
+        get_error_router(),
         user_routers,
         admin_routers,
     )
@@ -131,5 +131,5 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
         userbot_registrar_router,
         userbot_registrar_dialog,
         userbot_registrar_menu_dialog,
-        chat_member_router,
+        get_error_router(),
     )

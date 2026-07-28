@@ -1,8 +1,12 @@
-
+from logging import getLogger
+from typing import Any
 from redis.asyncio import Redis
 from database.dto import UserBotDTO
 from database.redis import UserBotRedis, KitaKeyBuilder, RedisKey
 from interfaces import UserBotRepositoryProtocol, BotRegistryProtocol
+
+logger = getLogger("kita.userbot_service")
+
 
 class UserBotService:
 
@@ -57,4 +61,13 @@ class UserBotService:
         return await self.repo.create(
             token, bot_id, username, owner_id, channel_id, channel_name
         )
-    
+
+    async def update(self, bot_id: int, **data: Any):
+        await self.repo.update(bot_id, **data)
+        await UserBotRedis.delete(redis=self.redis, key=self._get_key(bot_id))
+        logger.info("Update userbot %s", bot_id)
+
+    async def save(self, userbot_dto: UserBotDTO):
+        await self.repo.save(userbot_dto)
+        await UserBotRedis.delete(redis=self.redis, key=self._get_key(userbot_dto.bot_id))
+        logger.info("Update userbot %s", userbot_dto.bot_id)

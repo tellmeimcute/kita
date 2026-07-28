@@ -1,7 +1,1 @@
-
-
-from .chat_member import router as chat_member_router
-
-__all__ = (
-    "chat_member_router",
-)
+from .chat_member import get_error_router

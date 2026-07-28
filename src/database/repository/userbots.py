@@ -1,6 +1,6 @@
 
-from typing import Sequence
-from sqlalchemy import select
+from typing import Sequence, Any
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import UserBot
 from database.dto import UserBotDTO
@@ -50,3 +50,15 @@ class UserBotRepository:
 
         self._session.add(orm_model)
         await self._session.flush()
+
+    async def update(self, bot_id: int, **data: Any):
+        stmt = (
+            update(UserBot)
+            .where(UserBot.bot_id == bot_id)
+            .values(data)
+        )
+        await self._session.execute(stmt)
+
+    async def save(self, dto: UserBotDTO):
+        if changed := dto.prepare_changed_data():
+            await self.update(dto.bot_id, **changed)

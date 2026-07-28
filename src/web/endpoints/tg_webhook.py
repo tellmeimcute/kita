@@ -97,7 +97,11 @@ class TelegramWebhookEndpoint:
         
         try:
             bot = self.bot_registry.get(bot_id)
-        except KeyError:
+            return bot, userbot
+        except:
+            bot = None
+
+        try:
             bot = Bot(
                 token=userbot.token.get_secret_value(),
                 default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -105,6 +109,9 @@ class TelegramWebhookEndpoint:
             )
             self.bot_registry.register(bot)
             logger.info("Lazy registered into bot_registry bot id %s from DB", bot_id)
+        except Exception as e:
+            bot = None
+            logger.error(e)
 
         return bot, userbot
 
