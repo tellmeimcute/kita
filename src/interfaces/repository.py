@@ -156,5 +156,5 @@ class UserBotRepositoryProtocol(Protocol):
         owner_id: int,
         channel_id: int,
         channel_name: str,
-    ) -> UserBotDTO:
+    ) -> None:
         ...

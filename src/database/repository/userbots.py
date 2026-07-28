@@ -38,7 +38,7 @@ class UserBotRepository:
         owner_id: int,
         channel_id: int,
         channel_name: str,
-    ) -> UserBotDTO:
+    ):
         orm_model = UserBot(
             token=token,
             bot_id=bot_id,
@@ -50,4 +50,3 @@ class UserBotRepository:
 
         self._session.add(orm_model)
         await self._session.flush()
-        return UserBotDTO.model_validate(orm_model)

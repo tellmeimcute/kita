@@ -74,14 +74,14 @@ async def channel_id_handler(
 
     async with uow.transaction():
         if await userbot_service.get(bot_info.id):
-            manager.dialog_data["something_wrong"] = "reg_bot_alredy_exist"
+            await notifier.send_text(user_dto, "reg_bot_alredy_exist")
             return await manager.start(
                 RegistrarMenuSG.menu,
                 show_mode=ShowMode.DELETE_AND_SEND,
                 mode=StartMode.RESET_STACK,
             )
         
-        userbot_dto = await userbot_service.create(
+        await userbot_service.create(
             token=token,
             bot_id=bot_info.id,
             username=bot_info.username,
@@ -93,10 +93,7 @@ async def channel_id_handler(
     async with Bot(token=token) as tmp_bot:
         await webhook_service.set_webhook(tmp_bot)
 
-    await notifier.send_text(
-        user_dto, "reg_bot_userbot_registered", userbot_dto.model_dump(exclude={"token"})
-    )
-
+    await notifier.send_text(user_dto, "reg_bot_userbot_registered")
     await manager.start(
         RegistrarMenuSG.menu,
         mode=StartMode.RESET_STACK,
