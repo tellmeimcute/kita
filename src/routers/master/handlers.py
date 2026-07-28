@@ -15,7 +15,7 @@ from dishka.integrations.aiogram_dialog import inject
 from ui.state_groups import RegistrarMenuSG
 from database.dto import UserDTO
 from services import UserBotService, WebhookService
-from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol
+from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol, BotRegistryProtocol
 
 
 router = Router(name="registrar_start")
@@ -48,6 +48,7 @@ async def channel_id_handler(
     userbot_service: FromDishka[UserBotService],
     notifier: FromDishka[NotifierServiceProtocol],
     webhook_service: FromDishka[WebhookService],
+    bot_registry: FromDishka[BotRegistryProtocol],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_exception"
@@ -100,8 +101,10 @@ async def channel_id_handler(
                 owner_id=message.from_user.id,
                 channel_id=channel.id,
                 channel_name=channel.full_name,
+                active=True,
             )
 
+    bot_registry.remove(bot_info.id)
     async with Bot(token=token) as tmp_bot:
         await webhook_service.set_webhook(tmp_bot)
 

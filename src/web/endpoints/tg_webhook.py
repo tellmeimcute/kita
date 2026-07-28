@@ -5,9 +5,6 @@ from typing import Annotated
 from logging import getLogger
 from pydantic import SecretStr
 from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
 from aiogram.methods import TelegramMethod
 from aiogram.types import Update
 
@@ -36,7 +33,7 @@ class TelegramWebhookEndpoint:
         config: Config,
         container: AsyncContainer,
     ):
-        self.bot_registry = None
+        self.bot_registry: BotRegistryProtocol = None
 
         self.dp = dp
         self.secret_token = secret_token
@@ -95,23 +92,9 @@ class TelegramWebhookEndpoint:
         if not userbot or not userbot.active:
             return None, userbot
         
-        try:
-            bot = self.bot_registry.get(bot_id)
-            return bot, userbot
-        except:
-            bot = None
-
-        try:
-            bot = Bot(
-                token=userbot.token.get_secret_value(),
-                default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-                session=AiohttpSession(proxy=self.config.PROXY),
-            )
-            self.bot_registry.register(bot)
-            logger.info("Lazy registered into bot_registry bot id %s from DB", bot_id)
-        except Exception as e:
-            bot = None
-            logger.error(e)
+        bot = self.bot_registry.get_or_create(
+            bot_id, userbot.token.get_secret_value()
+        )
 
         return bot, userbot
 
@@ -183,7 +166,7 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
         config: Config,
         container: AsyncContainer,
     ):
-        self.bot_registry = None
+        self.bot_registry: BotRegistryProtocol = None
         self.bot = None
 
         self.dp = dp

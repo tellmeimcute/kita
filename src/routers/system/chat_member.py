@@ -47,6 +47,11 @@ async def unknown_intent(
 
     await strategy.send()
 
+    logger.info(
+        "Unknown intent exception on update %s. Send warning to %s userid",
+        event.update.update_id, callback.from_user.id,
+    )
+
 async def userbot_token_invalid(
     event: ErrorEvent,
     uow: FromDishka[UnitOfWorkProtocol],
@@ -58,17 +63,25 @@ async def userbot_token_invalid(
     async with uow.transaction():
         await userbot_service.update(bot.id, active=False)
 
+    bot_registry.remove(bot.id)
+
     logger.info("Token invalid for bot %s, set userbot inactive", bot.id)
 
 def get_error_router():
     router = Router(name="kita_errors")
 
-    router.error.register(ExceptionTypeFilter(TelegramUnauthorizedError))
+    router.error.register(
+        userbot_token_invalid,
+        ExceptionTypeFilter(TelegramUnauthorizedError),
+    )
 
     router.my_chat_member.register(
-        on_user_block_bot, ChatMemberUpdatedFilter(IS_MEMBER >> IS_NOT_MEMBER)
+        on_user_block_bot,
+        ChatMemberUpdatedFilter(IS_MEMBER >> IS_NOT_MEMBER),
     )
+
     router.error.register(
+        unknown_intent,
         ExceptionTypeFilter(UnknownIntent), F.update.callback_query.as_("callback")
     )
 

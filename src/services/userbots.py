@@ -58,6 +58,7 @@ class UserBotService:
         channel_id: int,
         channel_name: str,
     ):
+        await UserBotRedis.delete(redis=self.redis, key=self._get_key(bot_id))
         return await self.repo.create(
             token, bot_id, username, owner_id, channel_id, channel_name
         )
