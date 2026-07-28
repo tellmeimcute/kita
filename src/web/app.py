@@ -8,7 +8,7 @@ from core.config import Config
 from interfaces import BotRegistryProtocol
 from lifespan import lifespan
 
-from .endpoints.tg_webhook import TelegramWebhookEndpoint
+from .endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 
 logger = getLogger("kita.fastapi")
@@ -16,11 +16,19 @@ logger = getLogger("kita.fastapi")
 
 def get_app(
     config: Config,
+    registrar_dp: Dispatcher,
     dispatcher: Dispatcher,
     container: AsyncContainer,
 ) -> FastAPI:
     endpoint = TelegramWebhookEndpoint(
         dp=dispatcher,
+        secret_token=config.webhook_secret,
+        config=config,
+        container=container,
+    )
+
+    registrar_endpoint = UserBotRegistrarEndpoint(
+        dp=registrar_dp,
         secret_token=config.webhook_secret,
         config=config,
         container=container,
@@ -37,8 +45,14 @@ def get_app(
     app.state.telegram_webhook = endpoint
     app.state.dispatcher = dispatcher
 
+    app.state.registrar_endpoint = registrar_endpoint
+    app.state.registrar_dp = registrar_dp
+
     path = config.webhook_path + "/{bot_id}"
     endpoint.register(app, path=path)
+
+    path = config.webhook_path
+    registrar_endpoint.register(app, path=path)
 
     logger.info("FastAPI instance initialized")
     return app

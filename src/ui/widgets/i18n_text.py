@@ -36,8 +36,9 @@ class I18nText(Text):
         }
 
         i18n_kwargs.update(**dialog_data)
-        i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
         i18n_kwargs.update(additional_data)
+        if userbot_dto:
+            i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
         
         return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
     

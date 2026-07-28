@@ -78,7 +78,8 @@ msgstr "Sent to moderation."
 
 msgid "start_msg"
 msgstr ""
-"✨ <b>{channel_name} suggestions bot!</b> ✨\n\n"
+"✨ <b>{channel_name} suggestions bot!</b> ✨\n"
+"\n"
 "😎 <b>You suggested</b>: <code>{user_stats[total]}</code> posts!\n"
 "\n"
 "<b>Your signature:</b> <i>{signature}</i>\n"
@@ -327,6 +328,38 @@ msgstr ""
 "🎉 <b>New user registered!</b>\n"
 "{new_user_dto[name]} @{new_user_dto[username]} "
 "<code>{new_user_dto[user_id]}</code>"
+
+msgid "registrar_menu"
+msgstr "Suggestion Bot Registrar Menu"
+
+msgid "start_userbot_register_btn"
+msgstr "Register"
+
+msgid "reg_bot_wait_for_channel_id"
+msgstr "Send your channel ID."
+
+msgid "reg_bot_wait_for_token"
+msgstr "Send your bot TOKEN."
+
+msgid "reg_bot_token_invalid"
+msgstr "The token is invalid. Send a valid token."
+
+msgid "reg_bot_exception"
+msgstr ""
+"An error occurred.\n\n"
+"Send a valid token and also check\n"
+"that the bot has been added as an administrator of your channel with posting permissions."
+
+msgid "reg_bot_channel_not_enough_permission"
+msgstr ""
+"<b>The bot in your channel does not have sufficient permissions to post messages.</b>\n"
+"Returning to the menu."
+
+msgid "reg_bot_alredy_exist"
+msgstr "The bot is already registered."
+
+msgid "reg_bot_userbot_registered"
+msgstr "🎉 <b>Your bot is registered, you can use the suggestion!</b>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"

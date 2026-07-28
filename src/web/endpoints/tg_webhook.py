@@ -165,3 +165,66 @@ class TelegramWebhookEndpoint:
         task.add_done_callback(self.tasks.discard)
 
         return Response(status_code=status.HTTP_200_OK)
+
+
+class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
+
+    def __init__(
+        self,
+        dp: Dispatcher,
+        secret_token: SecretStr,
+        config: Config,
+        container: AsyncContainer,
+    ):
+        self.bot_registry = None
+        self.bot = None
+
+        self.dp = dp
+        self.secret_token = secret_token
+        self.config = config
+        self._container = container
+        self.tasks = set()
+
+    def assign_bot(self, bot: Bot):
+        self.bot = bot
+
+    async def _feed_update(self, update: Update) -> None:
+        token = None
+        try:
+            token = self.bot_registry.set_current(self.bot)
+            result = await self.dp.feed_update(self.bot, update)
+            if isinstance(result, TelegramMethod):
+                await result.as_(self.bot)
+        except Exception as e:
+            logger.exception(
+                "Failed to process update '%s' for bot '%s': %s",
+                update.update_id, self.bot.id, e,
+            )
+        finally:
+            if token is not None:
+                self.bot_registry.reset_current(token)
+
+    async def _handle(
+        self,
+        update: Annotated[Update, Body()],
+        x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
+    ):
+        if not x_telegram_bot_api_secret_token:
+            logger.warning("Missing secret token header for bot %s", self.bot.id)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token header is missing",
+            )
+
+        if not self._verify_secret(x_telegram_bot_api_secret_token):
+            logger.warning("Invalid secret token for bot %s", self.bot.id)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid secret token",
+            )
+        
+        task = asyncio.create_task(self._feed_update(update))
+        self.tasks.add(task)
+        task.add_done_callback(self.tasks.discard)
+
+        return Response(status_code=status.HTTP_200_OK)

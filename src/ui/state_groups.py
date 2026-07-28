@@ -1,4 +1,3 @@
-
 from aiogram.filters.state import State, StatesGroup
 
 
@@ -41,4 +40,13 @@ class SuggestionViewerSG(StatesGroup):
     in_solo_view = State()
 
     message_user = State()
+
+
+class RegistrarMenuSG(StatesGroup):
+    menu = State()
+
+
+class UserBotRegisterSG(StatesGroup):
+    wait_token = State()
+    wait_channel_id = State()
     

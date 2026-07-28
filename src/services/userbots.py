@@ -44,4 +44,24 @@ class UserBotService:
         )
 
         return userbot_dto
-    
+
+    async def create(
+        self,
+        token: str,
+        bot_id: int,
+        username: str,
+        owner_id: int,
+        channel_id: int,
+        channel_name: str,
+    ) -> UserBotDTO:
+        userbot_dto = await self.repo.create(
+            token, bot_id, username, owner_id, channel_id, channel_name
+        )
+
+        await UserBotRedis.set(
+            redis=self.redis,
+            key=self._get_key(bot_id),
+            data=userbot_dto,
+        )
+
+        return userbot_dto

@@ -22,6 +22,12 @@ from middlewares import (
     RateLimitMiddleware,
 )
 
+from routers.master import (
+    userbot_registrar_dialog,
+    userbot_registrar_router,
+    userbot_registrar_menu_dialog,
+)
+
 from routers.admin import suggestion_router as admin_suggestion_router
 from routers.admin import menu_dialog as admin_menu_dialog
 from routers.admin import banner_dialog as admin_banner_dialog
@@ -108,3 +114,21 @@ async def register_all(
     await register_routers(container, dp)
 
     logger.info("Dispatcher fully init")
+
+
+async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
+    user_middleware = await container.get(UserMiddleware)
+    i18n_middleware = await container.get(KitaI18nMiddleware)
+    rate_limit_middleware = await container.get(RateLimitMiddleware)
+
+    user_middleware.setup(dp)
+    i18n_middleware.setup(dp)
+    rate_limit_middleware.setup(dp)
+
+    setup_dialogs(dp)
+
+    dp.include_routers(
+        userbot_registrar_router,
+        userbot_registrar_dialog,
+        userbot_registrar_menu_dialog,
+    )

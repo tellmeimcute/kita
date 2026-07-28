@@ -245,6 +245,33 @@ msgstr ""
 msgid "new_user_registered"
 msgstr ""
 
+msgid "registrar_menu"
+msgstr ""
+
+msgid "start_userbot_register_btn"
+msgstr ""
+
+msgid "reg_bot_wait_for_channel_id"
+msgstr ""
+
+msgid "reg_bot_wait_for_token"
+msgstr ""
+
+msgid "reg_bot_token_invalid"
+msgstr ""
+
+msgid "reg_bot_exception"
+msgstr ""
+
+msgid "reg_bot_channel_not_enough_permission"
+msgstr ""
+
+msgid "reg_bot_alredy_exist"
+msgstr ""
+
+msgid "reg_bot_userbot_registered"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 

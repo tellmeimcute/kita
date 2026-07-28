@@ -9,7 +9,6 @@ from .rate_limit import RateLimitConfig
 class Config(BaseConfig):
     tg_token: SecretStr
     admin_id: int
-    channel_id: int
 
     log_level: str = "INFO"
 

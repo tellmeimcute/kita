@@ -146,4 +146,15 @@ class UserBotRepositoryProtocol(Protocol):
     @abstractmethod
     async def get_active(self) -> Sequence[UserBotDTO]:
         ...
-        
+
+    @abstractmethod
+    async def create(
+        self,
+        token: str,
+        bot_id: int,
+        username: str,
+        owner_id: int,
+        channel_id: int,
+        channel_name: str,
+    ) -> UserBotDTO:
+        ...

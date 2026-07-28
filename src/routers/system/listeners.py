@@ -62,14 +62,13 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
                 await asyncio.sleep(0.2)
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
-    config = await container.get(Config)
     userbot_dto = await container.get(UserBotDTO)
     notifier = await container.get(NotifierServiceProtocol)
     i18n = await container.get(I18n)
 
     with i18n.context():
         channel_post = await notifier.send_suggestion(
-            config.channel_id, event.suggestion_dto, mode="channel_post"
+            userbot_dto.channel_id, event.suggestion_dto, mode="channel_post"
         )
 
         if isinstance(channel_post, list):

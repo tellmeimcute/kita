@@ -12,10 +12,11 @@ class WebhookService:
     def __init__(self, config: Config):
         self.config = config
 
-    async def set_webhook(self, bot: Bot) -> None:
-        current_webhook = await bot.get_webhook_info()
-        url = f"{self.config.webhook_base_url}/{bot.id}"
+    async def set_webhook(self, bot: Bot, url: str | None = None) -> None:
+        if not url:
+            url = f"{self.config.webhook_base_url}/{bot.id}"
 
+        current_webhook = await bot.get_webhook_info()
         if current_webhook.url == url and not current_webhook.has_custom_certificate:
             logger.debug("Webhook already set for bot %s: %s", bot.id, url)
             return current_webhook
@@ -32,7 +33,6 @@ class WebhookService:
 
         logger.info("Webhook set successfully for bot %s", bot.id)
         return await bot.get_webhook_info()
-
 
     async def remove_webhook(self, bot: Bot):
         await bot.delete_webhook(drop_pending_updates=True)

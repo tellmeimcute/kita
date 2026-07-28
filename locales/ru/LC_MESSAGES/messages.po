@@ -80,8 +80,10 @@ msgstr "Отправлено на модерацию."
 
 msgid "start_msg"
 msgstr ""
-"✨ <b>Предложка канала {channel_name}!</b> ✨\n\n"
-"😎 <b>Ты предложил постов</b>: <code>{user_stats[total]}</code> | <b>Принято:</b> <code>{user_stats[accepted]}</code>\n"
+"✨ <b>Предложка канала {channel_name}!</b> ✨\n"
+"\n"
+"😎 <b>Ты предложил постов</b>: <code>{user_stats[total]}</code> | "
+"<b>Принято:</b> <code>{user_stats[accepted]}</code>\n"
 "\n"
 "<b>Твоя подпись:</b> <i>{signature}</i>\n"
 "<i>В настройках можно включить\n"
@@ -332,6 +334,38 @@ msgstr ""
 "🎉 <b>Новый пользователь в боте!</b>\n"
 "{new_user_dto[name]} @{new_user_dto[username]} "
 "<code>{new_user_dto[user_id]}</code>"
+
+msgid "registrar_menu"
+msgstr "Меню создания своей предложки"
+
+msgid "start_userbot_register_btn"
+msgstr "Регистрация"
+
+msgid "reg_bot_wait_for_channel_id"
+msgstr "Отправьте ID своего канала."
+
+msgid "reg_bot_wait_for_token"
+msgstr "Отправьте ТОКЕН совего бота."
+
+msgid "reg_bot_token_invalid"
+msgstr "Токен инвалидный. Отправьте валидный токен."
+
+msgid "reg_bot_exception"
+msgstr ""
+"Произошла ошибка.\n\n"
+"Отправьте валидный токен а также проверьте\n"
+"добавлен ли бот в администраторы вашего канала с правом публикации сообщений."
+
+msgid "reg_bot_channel_not_enough_permission"
+msgstr ""
+"<b>У бота в вашем не достаточно прав для публикации сообщений.</b>\n"
+"Возвращаемся в меню."
+
+msgid "reg_bot_alredy_exist"
+msgstr "Бот уже зарегистрирован."
+
+msgid "reg_bot_userbot_registered"
+msgstr "🎉 <b>Ваш бот зарегистрирован, можете пользоваться предложкой!</b>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
