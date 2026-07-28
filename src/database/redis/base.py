@@ -1,8 +1,8 @@
-
+import json
 import logging
 from typing import Generic, TypeVar
 from redis.asyncio import Redis
-from pydantic import BaseModel
+from pydantic import BaseModel, SecretStr
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -25,7 +25,14 @@ class BaseRedisRepository(Generic[T]):
 
     @classmethod
     async def set(cls, redis: Redis, key: str, data: T):
-        data = data.model_dump_json()
+        data_dict = data.model_dump(mode="python")
+
+        for k, v in data_dict.items():
+            if isinstance(v, SecretStr):
+                data_dict[k] = v.get_secret_value()
+
+        data = json.dumps(data_dict, default=str)
+        
         await redis.set(
             name=key,
             value=data,

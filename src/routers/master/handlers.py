@@ -77,7 +77,7 @@ async def channel_id_handler(
     async with uow.transaction():
         userbot = await userbot_service.get(bot_info.id)
 
-        if userbot and userbot.token == token:
+        if userbot and userbot.token.get_secret_value() == token:
             await notifier.send_text(user_dto, "reg_bot_alredy_exist")
             return await manager.start(
                 RegistrarMenuSG.menu,
