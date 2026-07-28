@@ -7,7 +7,7 @@ from ui.widgets.i18n_text import I18nText
 from ui.state_groups import UserBotRegisterSG, RegistrarMenuSG
 
 from .handlers import bot_token_handler, channel_id_handler
-from .getters import bot_token_window_text
+from .getters import get_error_text
 
 
 menu_window = Window(
@@ -21,7 +21,8 @@ menu_window = Window(
 )
 
 get_bot_token_window = Window(
-    Format("{text}"),
+    I18nText("reg_bot_wait_for_token"),
+    Format("{error}", when="error"),
     MessageInput(bot_token_handler),
     Start(
         I18nText("menu_btn"),
@@ -30,11 +31,12 @@ get_bot_token_window = Window(
         state=RegistrarMenuSG.menu,
     ),
     state=UserBotRegisterSG.wait_token,
-    getter=bot_token_window_text,
+    getter=get_error_text,
 )
 
 get_channel_id_window = Window(
     I18nText("reg_bot_wait_for_channel_id"),
+    Format("{error}", when="error"),
     MessageInput(channel_id_handler),
     Start(
         I18nText("menu_btn"),
@@ -43,11 +45,11 @@ get_channel_id_window = Window(
         state=RegistrarMenuSG.menu,
     ),
     state=UserBotRegisterSG.wait_channel_id,
+    getter=get_error_text,
 )
 
 menu_dialog = Dialog(
     menu_window,
-    launch_mode=LaunchMode.ROOT,
 )
 
 dialog = Dialog(
