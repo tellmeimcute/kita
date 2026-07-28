@@ -13,7 +13,7 @@ from core.config import Config
 from core.events import EventBus, NewUserEvent
 from core.consts import DISHKA_CONTAINER_KEY
 
-from database.dto import UserDTO, UserProfileDTO
+from database.dto import UserDTO, UserProfileDTO, UserBotDTO
 from database.enums import UserRole
 from interfaces import (
     UnitOfWorkProtocol,
@@ -45,6 +45,7 @@ class UserMiddleware(KitaMiddleware):
         data: dict[str, Any],
     ) -> Any:
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
+        userbot_dto: AsyncContainer = data.get("userbot_dto")
 
         event_bus = await container.get(EventBus)
         uow = await container.get(UnitOfWorkProtocol)
@@ -57,7 +58,9 @@ class UserMiddleware(KitaMiddleware):
         user_tg = event.from_user
         async with uow.transaction():
             user_dto = await self._resolve_user(user_service, user_profile_service, user_tg)
-            profile_dto = await self._resolve_profile(event_bus, user_profile_service, user_dto, user_tg)
+            profile_dto = await self._resolve_profile(
+                event_bus, userbot_dto, user_profile_service, user_dto, user_tg
+            )
 
         data.update(user_dto=user_dto, profile_dto=profile_dto)
         return await handler(event, data)
@@ -65,6 +68,7 @@ class UserMiddleware(KitaMiddleware):
     async def _resolve_profile(
         self,
         event_bus: EventBus,
+        userbot_dto: UserBotDTO | None,
         user_profile_service: UserProfileServiceProtocol,
         user_dto: UserDTO,
         user_tg: AiogramUser,
@@ -74,7 +78,11 @@ class UserMiddleware(KitaMiddleware):
             return profile_dto
         
         profile_dto = await user_profile_service.create(user_tg.id)
-        if profile_dto.user_id == self.admin_id:
+
+        is_userbot_admin = userbot_dto and profile_dto.user_id == userbot_dto.owner_id
+        is_global_admin = profile_dto.user_id == self.admin_id
+        
+        if is_global_admin or is_userbot_admin:
             profile_dto.role = UserRole.ADMIN
             await user_profile_service.save(profile_dto)
 
