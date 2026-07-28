@@ -20,15 +20,15 @@ from ui.suggestion_utils import SuggestionUtils
 logger = getLogger("kita.event")
 
 async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
-    config = await container.get(Config)
-
+    userbot_dto = await container.get(UserBotDTO)
+    
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
     notifier = await container.get(NotifierServiceProtocol)
     i18n = await container.get(I18n)
 
     async with uow.transaction():
-        admin = await user_service.get(config.admin_id)
+        admin = await user_service.get(userbot_dto.owner_id)
 
     with i18n.context():
         with i18n.use_locale(admin.language_code):
