@@ -131,4 +131,5 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
         userbot_registrar_router,
         userbot_registrar_dialog,
         userbot_registrar_menu_dialog,
+        chat_member_router,
     )

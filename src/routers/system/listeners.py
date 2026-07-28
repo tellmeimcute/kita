@@ -22,6 +22,10 @@ logger = getLogger("kita.event")
 async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
     userbot_dto = await container.get(UserBotDTO)
     
+    if not userbot_dto:
+        logger.info("Userbot not found. Skip new_user notification")
+        return
+    
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
     notifier = await container.get(NotifierServiceProtocol)
