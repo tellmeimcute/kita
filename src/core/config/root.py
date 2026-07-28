@@ -17,7 +17,7 @@ class Config(BaseConfig):
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
 
     domain: SecretStr
-
+    webhook_port: int = 443
     webhook_secret: SecretStr
     webhook_path: str = "/webhook"
 
@@ -25,7 +25,7 @@ class Config(BaseConfig):
 
     @property
     def webhook_base_url(self) -> str:
-        return f"https://{self.domain.get_secret_value()}{self.webhook_path}"
+        return f"https://{self.domain.get_secret_value()}:{self.webhook_port}{self.webhook_path}"
 
     @classmethod
     def get(cls):
