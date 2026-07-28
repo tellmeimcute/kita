@@ -17,7 +17,7 @@ class WebhookService:
             url = f"{self.config.webhook_base_url}/{bot.id}"
 
         current_webhook = await bot.get_webhook_info()
-        if current_webhook.url == url and not current_webhook.has_custom_certificate:
+        if current_webhook.url == url:
             logger.debug("Webhook already set for bot %s: %s", bot.id, url)
             return current_webhook
 
