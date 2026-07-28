@@ -32,7 +32,7 @@ async def bot_token_handler(
         bot_id = extract_bot_id(token)
     except TokenValidationError:
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
-        return await manager.show(show_mode=ShowMode.EDIT)
+        return
     
     manager.dialog_data["new_userbot_token"] = token
     manager.dialog_data["new_userbot_bot_id"] = bot_id
@@ -51,7 +51,7 @@ async def channel_id_handler(
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_exception"
-        return await manager.show(show_mode=ShowMode.DELETE_AND_SEND)
+        return
 
     channel_id = "-100" + message.text.strip()
     token = manager.dialog_data.get("new_userbot_token")
@@ -64,14 +64,14 @@ async def channel_id_handler(
             channel_member = await tmp_bot.get_chat_member(channel_id, bot_info.id)
     except TelegramUnauthorizedError:
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
-        return await manager.show(show_mode=ShowMode.DELETE_AND_SEND)
+        return
     except:
         manager.dialog_data["something_wrong"] = "reg_bot_exception"
-        return await manager.show(show_mode=ShowMode.DELETE_AND_SEND)
+        return
 
     if channel_member.status != ChatMemberStatus.ADMINISTRATOR or not channel_member.can_post_messages:
         manager.dialog_data["something_wrong"] = "reg_bot_channel_not_enough_permission"
-        return await manager.show(show_mode=ShowMode.DELETE_AND_SEND)
+        return
 
     async with uow.transaction():
         userbot = await userbot_service.get(bot_info.id)
