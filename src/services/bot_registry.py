@@ -41,7 +41,7 @@ class BotRegistry:
         bot = Bot(token=token, **self._bot_settings)
         self._storage[bot.id] = bot
 
-    async def remove(self, bot_id: int):
+    def remove(self, bot_id: int):
         self._storage.pop(bot_id, None)
 
     def get_all(self) -> list[Bot]:
