@@ -13,7 +13,7 @@ class UserBot(AbstractModel, TimestampMixin):
     __tablename__ = "userbot"
 
     token: Mapped[str] = mapped_column()
-    bot_id: Mapped[int] = mapped_column(BigInteger)
+    bot_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     username: Mapped[str] = mapped_column()
     owner_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
 
