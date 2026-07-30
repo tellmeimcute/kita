@@ -1,5 +1,6 @@
 
 from pydantic import SecretStr, Field
+from functools import lru_cache
 
 from .base import BaseConfig
 from .database import DatabaseConfig
@@ -21,6 +22,8 @@ class Config(BaseConfig):
     webhook_secret: SecretStr
     webhook_path: str = "/webhook"
 
+    encryption_key: SecretStr
+
     PROXY: str | None = None
 
     @property
@@ -28,6 +31,7 @@ class Config(BaseConfig):
         return f"https://{self.domain.get_secret_value()}:{self.webhook_port}{self.webhook_path}"
 
     @classmethod
+    @lru_cache
     def get(cls):
         return cls()
     

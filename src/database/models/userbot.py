@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, BigInteger, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from database.types.encrypted_str import EncryptedString
 from .abstract_model import AbstractModel
 from .timestamp import TimestampMixin
 
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 class UserBot(AbstractModel, TimestampMixin):
     __tablename__ = "userbot"
 
-    token: Mapped[str] = mapped_column()
+    token: Mapped[str] = mapped_column(EncryptedString)
     bot_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     username: Mapped[str] = mapped_column()
     owner_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
