@@ -21,6 +21,7 @@ class Config(BaseConfig):
     webhook_port: int = 443
     webhook_secret: SecretStr
     webhook_path: str = "/webhook"
+    webhook_force_update: bool = False
 
     encryption_key: SecretStr
 

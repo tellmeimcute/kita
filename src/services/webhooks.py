@@ -5,6 +5,7 @@ from aiogram import Bot
 
 from core.config import Config
 
+
 logger = getLogger("kita.webhook")
 
 class WebhookService:
@@ -17,9 +18,12 @@ class WebhookService:
             url = f"{self.config.webhook_base_url}/{bot.id}"
 
         current_webhook = await bot.get_webhook_info()
-        if current_webhook.url == url:
+        if current_webhook.url == url and not self.config.webhook_force_update:
             logger.debug("Webhook already set for bot %s: %s", bot.id, url)
             return current_webhook
+
+        if self.config.webhook_force_update:
+            logger.info("Webhook force update enabled. Set/update webhook for bot %s", bot.id)
 
         webhook_request = SetWebhook(
             url=url,
