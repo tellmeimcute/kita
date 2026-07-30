@@ -17,7 +17,6 @@ Telegram бот для быстрого запуска пользователь�
 ### Предварительные требования
 Установите на хост [Docker Engine](https://docs.docker.com/engine/install/)
 
-
 ### Установка и запуск
 1. **Склонируйте репозиторий**
 ```sh
@@ -47,15 +46,25 @@ openssl rand -base64 32 > secrets/.encryption_key
 openssl rand -hex 32 > secrets/.webhook_secret
 ```
 
-6. **Запуск**
+6. **Создайте docker network**
+```sh
+docker network create kita-proxy
+```
+
+7. **Запуск**
 ```sh
 docker compose up -d
 ```
 
-7. **Опционально: посмотреть логи.**
+8. **Опционально: посмотреть логи.**
 ```sh
-docker compose logs -f kita-bot-1
+docker compose logs -f -t
 ```
+
+> [!CAUTION]
+> Бот обязательно должен работать через реверс прокси.
+>
+> *Рекомендуемое:* **Caddy** (или Nginx).
 
 ## 🛠 Разработка
 
