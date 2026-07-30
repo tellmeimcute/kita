@@ -7,5 +7,6 @@ class BaseConfig(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        secrets_dir="/run/secrets",
         extra="ignore",
     )

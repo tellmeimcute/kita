@@ -13,7 +13,11 @@ x-env: &env
 services:
   postgres:
     image: postgres:17-alpine
-    <<: [*logging, *env]
+    <<: *logging
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-kita}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -53,7 +57,19 @@ services:
     environment:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
+    secrets:
+      - tg_token
+      - encryption_key
+      - webhook_secret
     restart: unless-stopped
+
+secrets:
+  tg_token:
+    file: ./secrets/.tg_token
+  webhook_secret:
+    file: ./secrets/.webhook_secret
+  encryption_key:
+    file: ./secrets/.encryption_key
 
 volumes:
   pgdata:
