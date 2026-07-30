@@ -13,8 +13,8 @@ class UserDTO(TrackableDto):
     name: str
     language_code: str
 
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def update_from_data(self, user_data: "AiogramUser"):
         new_data = {

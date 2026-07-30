@@ -19,6 +19,10 @@ class UserServiceProtocol(Protocol):
         ...
 
     @abstractmethod
+    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
+        ...
+
+    @abstractmethod
     async def update(self, user_id: int, **data: Any) -> None:
         ...
 

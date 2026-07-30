@@ -25,7 +25,7 @@ class UserRepositoryProtocol(Protocol):
         ...
 
     @abstractmethod
-    async def save(self, dto: UserDTO) -> UserDTO:
+    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
         ...
 
     @abstractmethod
@@ -53,10 +53,6 @@ class UserProfileRepositoryProtocol(Protocol):
 
     @abstractmethod
     async def update(self, user_id: int, **data) -> None:
-        ...
-
-    @abstractmethod
-    async def save(self, dto: UserProfileDTO) -> None:
         ...
 
     @abstractmethod

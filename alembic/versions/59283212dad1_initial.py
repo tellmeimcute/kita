@@ -28,8 +28,8 @@ def upgrade() -> None:
     sa.Column('is_bot_blocked', sa.Boolean(), nullable=True),
     sa.Column('role', sa.Enum('USER', 'ADMIN', 'BANNED', name='user_role', create_constraint=True), server_default='USER', nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"),  nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_id')
     )
@@ -39,8 +39,8 @@ def upgrade() -> None:
     sa.Column('author_id', sa.BigInteger(), nullable=False),
     sa.Column('accepted', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.ForeignKeyConstraint(['author_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('id')
     )

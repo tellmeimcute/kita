@@ -35,9 +35,7 @@ class ChangeRoleUseCase:
         if target_id == self._config.admin_id or caller.user_id == target_id:
             raise UserImmuneError()
 
-        profile_dto = await self._user_profile_service.get(target_id)
-        if not profile_dto:
-            profile_dto = await self._user_profile_service.get_or_create(target_id)
+        profile_dto = await self._user_profile_service.get_or_create(target_id)
 
         profile_dto.role = target_role
         await self._user_profile_service.save(profile_dto)

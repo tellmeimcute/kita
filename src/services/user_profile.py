@@ -81,7 +81,11 @@ class UserProfileService:
         logger.info("Update user profile %s for bot %s", user_id, self.bot_registry.get_current().id)
 
     async def save(self, profile_dto: UserProfileDTO):
-        await self.repo.save(profile_dto)
+        changed = profile_dto.prepare_changed_data()
+        if not changed:
+            return
+        
+        await self.repo.update(profile_dto.user_id, **changed)
         await UserProfileRedis.delete(redis=self.redis, key=self._get_key(profile_dto.user_id))
         logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot_registry.get_current().id)
 

@@ -61,12 +61,33 @@ class UserService:
 
         return user_dto
 
+    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
+        cached = await UserRedis.get(
+            self.redis, self._get_key(prep_user_dto.user_id)
+        )
+        if cached:
+            return cached
+
+        user_dto = await self.repo.get_or_create(prep_user_dto)
+
+        await UserRedis.set(
+            redis=self.redis,
+            key=self._get_key(prep_user_dto.user_id),
+            data=user_dto,
+        )
+
+        return user_dto
+
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)
         await UserRedis.delete(redis=self.redis, key=self._get_key(user_id))
         logger.info("Update database info for user %s", user_id)
 
     async def save(self, user_dto: UserDTO):
-        await self.repo.save(user_dto)
+        changed = user_dto.prepare_changed_data()
+        if not changed:
+            return
+        
+        await self.repo.update(user_dto.user_id, **changed)
         await UserRedis.delete(redis=self.redis, key=self._get_key(user_dto.user_id))
         logger.info("Update database info for user %s", user_dto.user_id)

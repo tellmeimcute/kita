@@ -2,6 +2,7 @@
 from typing import Sequence, Any
 
 from sqlalchemy import Result, func, select, update
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import UserProfile, Suggestion
@@ -35,12 +36,19 @@ class UserProfileRepository:
         return UserProfileDTO.model_validate(orm_model)
 
     async def get_or_create(self, user_id: int) -> UserProfileDTO:
-        profile = await self.get(user_id)
-        if profile:
-            return profile
+        stmt = (
+            insert(UserProfile)
+            .values(bot_id=self._current_bot.id, user_id=user_id)
+            .on_conflict_do_nothing(constraint="uq_user_profile_bot_user")
+            .returning(UserProfile)
+        )
 
-        profile = await self.create(user_id)
-        return profile
+        result = await self._session.execute(stmt)
+        orm_model = result.scalar_one_or_none()
+        if orm_model is None:
+            return await self.get(user_id)
+
+        return UserProfileDTO.model_validate(orm_model)
 
     async def create(self, user_id: int) -> UserProfileDTO:
         orm = UserProfile(bot_id=self._current_bot.id, user_id=user_id)
@@ -58,10 +66,6 @@ class UserProfileRepository:
             .values(data)
         )
         await self._session.execute(stmt)
-
-    async def save(self, dto: UserProfileDTO):
-        if changed := dto.prepare_changed_data():
-            await self.update(dto.user_id, **changed)
 
     async def get_active(self) -> Sequence[UserProfileDTO]:
         stmt = (

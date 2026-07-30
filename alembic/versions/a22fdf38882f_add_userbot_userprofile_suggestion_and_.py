@@ -28,8 +28,8 @@ def upgrade() -> None:
     sa.Column('is_bot_blocked', sa.Boolean(), nullable=True),
     sa.Column('role', postgresql.ENUM('USER', 'ADMIN', 'BANNED', name='user_role', create_type=False), server_default='USER', nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('bot_id', 'user_id', name='uq_user_profile_bot_user')
@@ -43,8 +43,8 @@ def upgrade() -> None:
     sa.Column('channel_name', sa.String(), nullable=True),
     sa.Column('active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.user_id'], ),
     sa.PrimaryKeyConstraint('id')
     )
