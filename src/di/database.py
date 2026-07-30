@@ -16,9 +16,11 @@ class DatabaseProvider(Provider):
         logger.info("Initializing AsyncEngine instance")
         engine = create_async_engine(
             config.database.db_url,
-            pool_timeout=30,
-            pool_recycle=1800,
-            echo=False,
+            pool_size=config.database.pool_size,
+            max_overflow=config.database.max_overflow,
+            pool_timeout=config.database.pool_timeout,
+            pool_recycle=config.database.pool_recycle,
+            echo=config.database.echo,
         )
 
         yield engine
