@@ -75,7 +75,7 @@ class InfraProvider(Provider):
 
     @provide(scope=Scope.APP)
     def config(self) -> Config:
-        return Config()
+        return Config.get()
 
 
 class UtilsProvider(Provider):

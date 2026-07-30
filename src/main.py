@@ -51,10 +51,11 @@ def get_dispatcher(config: Config):
 
 
 def application() -> FastAPI:
-    setup_logging()
+    config = Config.get()
+
+    setup_logging(config.log_level.upper())
 
     container = create_container()
-    config = Config.get()
 
     registrar_dp = get_dispatcher(config)
     setup_dishka_aiogram(container, registrar_dp, auto_inject=True)
