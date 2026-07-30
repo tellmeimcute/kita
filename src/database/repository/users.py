@@ -3,16 +3,11 @@ from typing import Any
 
 from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from database.models import UserAlchemy
 from database.dto import UserDTO
+from .base import BaseRepository
 
-
-class UserRepository:
-
-    def __init__(self, session: AsyncSession):
-        self._session = session
+class UserRepository(BaseRepository):
 
     async def get_by_id(self, user_id: int) -> UserDTO | None:
         stmt = (

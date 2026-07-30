@@ -4,31 +4,22 @@ from dataclasses import asdict
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.orm import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from database.models import Suggestion, Media
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
 from database.enums import SuggestionStatus
 
 from core.schemas import UserStats, MediaInfo
-from interfaces import BotRegistryProtocol
+from .base import BaseRepository
 
-class SuggestionRepository:
 
-    def __init__(
-        self,
-        session: AsyncSession,
-        bot_registry: BotRegistryProtocol,
-    ):
-        self._session = session
-        self._current_bot = bot_registry.get_current()
+class SuggestionRepository(BaseRepository):
 
     async def get_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
         stmt = (
             select(Suggestion)
             .where(
                 Suggestion.id == suggestion_id,
-                Suggestion.bot_id == self._current_bot.id,
+                Suggestion.bot_id == self.bot.id,
             )
             .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
         )
@@ -42,7 +33,7 @@ class SuggestionRepository:
     async def update(self, suggestion_id: int, **data: Any):
         stmt = update(Suggestion).where(
             Suggestion.id == suggestion_id,
-            Suggestion.bot_id == self._current_bot.id,
+            Suggestion.bot_id == self.bot.id,
         ).values(data)
         await self._session.execute(stmt)
 
@@ -59,7 +50,7 @@ class SuggestionRepository:
         media_group_id: str | None,
         forwarded_from: str | None,
     ):
-        bot_id = self._current_bot.id
+        bot_id = self.bot.id
         suggestion_orm = Suggestion(
             bot_id=bot_id,
             author_id=author_id,
@@ -84,7 +75,7 @@ class SuggestionRepository:
             select(Suggestion)
             .where(
                 Suggestion.status == SuggestionStatus.PENDING,
-                Suggestion.bot_id == self._current_bot.id,
+                Suggestion.bot_id == self.bot.id,
             )
             .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
             .offset(offset)
@@ -103,7 +94,7 @@ class SuggestionRepository:
             func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.DECLINED).label("declined"),
         ).where(
             Suggestion.author_id == user_id,
-            Suggestion.bot_id == self._current_bot.id,
+            Suggestion.bot_id == self.bot.id,
         )
 
         result: Result = await self._session.execute(stmt)
@@ -115,7 +106,7 @@ class SuggestionRepository:
     async def count(self) -> int:
         stmt = select(
             func.count(Suggestion.id)
-        ).where(Suggestion.bot_id == self._current_bot.id)
+        ).where(Suggestion.bot_id == self.bot.id)
         
         count = await self._session.scalar(stmt)
         return count or 0

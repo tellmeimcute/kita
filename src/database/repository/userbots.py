@@ -1,14 +1,13 @@
 
 from typing import Sequence, Any
+
 from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import UserBot
 from database.dto import UserBotDTO
+from .base import BaseRepository
 
-class UserBotRepository:
 
-    def __init__(self, session: AsyncSession):
-        self._session = session
+class UserBotRepository(BaseRepository):
 
     async def get(self, bot_id: int) -> UserBotDTO | None:
         stmt = (

@@ -3,29 +3,22 @@ from typing import Sequence, Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import UserProfile, Suggestion
 from database.dto import UserProfileDTO
 from database.enums import UserRole, SuggestionStatus
-from interfaces import BotRegistryProtocol
 
-class UserProfileRepository:
+from .base import BaseRepository
 
-    def __init__(
-        self,
-        session: AsyncSession,
-        bot_registry: BotRegistryProtocol,
-    ):
-        self._session = session
-        self._current_bot = bot_registry.get_current()
+
+class UserProfileRepository(BaseRepository):
 
     async def get(self, user_id: int) -> UserProfileDTO | None:
         stmt = (
             select(UserProfile)
             .where(
                 UserProfile.user_id == user_id,
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
             )
         )
 
@@ -38,7 +31,7 @@ class UserProfileRepository:
     async def get_or_create(self, user_id: int) -> UserProfileDTO:
         stmt = (
             insert(UserProfile)
-            .values(bot_id=self._current_bot.id, user_id=user_id)
+            .values(bot_id=self.bot.id, user_id=user_id)
             .on_conflict_do_nothing(constraint="uq_user_profile_bot_user")
             .returning(UserProfile)
         )
@@ -51,7 +44,7 @@ class UserProfileRepository:
         return UserProfileDTO.model_validate(orm_model)
 
     async def create(self, user_id: int) -> UserProfileDTO:
-        orm = UserProfile(bot_id=self._current_bot.id, user_id=user_id)
+        orm = UserProfile(bot_id=self.bot.id, user_id=user_id)
         self._session.add(orm)
         await self._session.flush()
         return UserProfileDTO.model_validate(orm)
@@ -61,7 +54,7 @@ class UserProfileRepository:
             update(UserProfile)
             .where(
                 UserProfile.user_id == user_id,
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
             )
             .values(data)
         )
@@ -71,7 +64,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
                 (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
             )
         )
@@ -84,7 +77,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.ADMIN,
             )
         )
@@ -97,7 +90,7 @@ class UserProfileRepository:
         stmt = (
             select(UserProfile)
             .where(
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.BANNED,
             )
         )
@@ -109,7 +102,7 @@ class UserProfileRepository:
     async def count(self) -> int:
         stmt = (
             select(func.count(UserProfile.id))
-            .where(UserProfile.bot_id == self._current_bot.id)
+            .where(UserProfile.bot_id == self.bot.id)
         )
         count = await self._session.scalar(stmt)
         return count or 0
@@ -118,7 +111,7 @@ class UserProfileRepository:
         stmt = (
             select(func.count(UserProfile.id))
             .where(
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.ADMIN,
             )
         )
@@ -129,7 +122,7 @@ class UserProfileRepository:
         stmt = (
             select(func.count(UserProfile.id))
             .where(
-                UserProfile.bot_id == self._current_bot.id,
+                UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.BANNED,
             )
         )
@@ -142,7 +135,7 @@ class UserProfileRepository:
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.USER).label("users"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.ADMIN).label("admins"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.BANNED).label("banned"),
-        ).where(UserProfile.bot_id == self._current_bot.id)
+        ).where(UserProfile.bot_id == self.bot.id)
         result: Result = await self._session.execute(stmt)
         return result.one()
 
@@ -151,7 +144,7 @@ class UserProfileRepository:
             update(Suggestion)
             .where(
                 Suggestion.author_id == user_id,
-                Suggestion.bot_id == self._current_bot.id,
+                Suggestion.bot_id == self.bot.id,
             )
             .values(status=SuggestionStatus.DECLINED)
         )
