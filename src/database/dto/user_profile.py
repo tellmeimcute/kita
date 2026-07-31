@@ -21,3 +21,11 @@ class UserProfileDTO(TrackableDto):
     @property
     def is_banned(self) -> bool:
         return self.role == UserRole.BANNED
+
+    def to_i18n_kwargs(self) -> dict:
+        data = self.model_dump(mode="json")
+        updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
+        created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
+
+        data.update(updated_at=updated_at, created_at=created_at)
+        return data

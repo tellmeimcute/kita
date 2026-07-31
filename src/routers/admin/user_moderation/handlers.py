@@ -54,6 +54,7 @@ async def select_user(
         "target_dto": target_dto.model_dump(mode="json"),
         "target_dto_i18n": target_dto.to_i18n_kwargs(),
         "target_profile": target_profile.model_dump(mode="json") if target_profile else None,
+        "target_profile_i18n": target_profile.to_i18n_kwargs() if target_profile else None,
     })
     await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
