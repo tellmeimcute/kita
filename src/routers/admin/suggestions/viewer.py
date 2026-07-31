@@ -15,7 +15,7 @@ from core.i18n_translator import Translator
 from core.schemas import SuggestionViewerData
 from core.events import EventBus, CopyMessagesToUserEvent
 
-from database.dto import UserDTO
+from database.dto import UserDTO, UserProfileDTO
 from database.enums import UserRole, SuggestionStatus
 from interfaces import (
     UnitOfWorkProtocol,
@@ -46,6 +46,12 @@ async def enter_suggestion_viewer(
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
+
+    if not profile_dto.is_admin:
+        warning = tl.translate("warning_not_enough_permission")
+        return await callback.answer(warning)
+
     state: FSMContext = manager.middleware_data.get("state")
 
     async with uow.transaction():
