@@ -11,6 +11,8 @@ from .base import BaseRepository
 
 class UserBotRepository(BaseRepository):
 
+    __slots__ = ()
+
     async def get(self, bot_id: int) -> UserBotDTO | None:
         stmt = (
             select(UserBot)

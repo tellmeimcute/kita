@@ -13,6 +13,8 @@ from .base import BaseRepository
 
 class UserProfileRepository(BaseRepository):
 
+    __slots__ = ()
+
     async def get(self, user_id: int) -> UserProfileDTO | None:
         stmt = (
             select(UserProfile)

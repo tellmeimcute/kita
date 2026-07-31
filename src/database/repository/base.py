@@ -11,6 +11,12 @@ from interfaces import BotRegistryProtocol
 
 class BaseRepository(ABC):
 
+    __slots__ = (
+        "_session",
+        "_bot_registry",
+        "_bot",
+    )
+
     def __init__(
         self,
         session: AsyncSession,

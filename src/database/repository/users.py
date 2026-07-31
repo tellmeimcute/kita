@@ -12,6 +12,8 @@ from .base import BaseRepository
 
 class UserRepository(BaseRepository):
 
+    __slots__ = ()
+
     async def get_by_id(self, user_id: int) -> UserDTO | None:
         stmt = (
             select(UserAlchemy)

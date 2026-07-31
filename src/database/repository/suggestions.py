@@ -15,6 +15,8 @@ from .base import BaseRepository
 
 class SuggestionRepository(BaseRepository):
 
+    __slots__ = ()
+
     async def get_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
         stmt = (
             select(Suggestion)

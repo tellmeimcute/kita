@@ -7,6 +7,8 @@ from .base import BaseRepository
 
 
 class MediaRepository(BaseRepository):
+
+    __slots__ = ()
     
     async def count(self) -> int:
         stmt = (
