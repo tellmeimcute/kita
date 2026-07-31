@@ -11,7 +11,7 @@ class RedisKey:
 
 @dataclass(frozen=True)
 class MediaGroupKey(RedisKey):
-    media_group_id: int
+    media_group_id: int | None = None
 
 
 class KeyBuilder(ABC):
