@@ -38,7 +38,7 @@ class MediaGroupMiddleware(KitaMiddleware):
             media_group_id=event.media_group_id
         )
 
-        key = self.key_builder.build(key=redis_key)
+        key = self.key_builder.build(key=redis_key, part="media_group")
         lock_key = self.key_builder.build(key=redis_key, part="lock")
 
         await TgMessageRedis.rpush(self.redis, key, event)

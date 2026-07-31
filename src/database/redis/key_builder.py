@@ -57,7 +57,7 @@ class MediaGroupKeyBulder(KitaKeyBuilder):
     def build(
         self,
         key: MediaGroupKey,
-        part: Literal["lock"] = None,
+        part: Literal["lock", "media_group"] = None,
     ):
         parts = [self.prefix]
 
