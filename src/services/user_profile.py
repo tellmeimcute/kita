@@ -5,19 +5,17 @@ from typing import Any
 from redis.asyncio import Redis
 
 from database.dto import UserProfileDTO
-from database.redis import KitaKeyBuilder, RedisKey, UserProfileRedis
+from database.redis import UserProfileRedis
 from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
+from .base import BaseService
 
 logger = getLogger("kita.user_profile_service")
 
-class UserProfileService:
+class UserProfileService(BaseService):
+    
+    REDIS_KEY_PART = "user_profile"
 
-    __slots__ = (
-        "redis",
-        "repo",
-        "bot_registry",
-        "key_builder",
-    )
+    __slots__ = ("redis", "repo")
 
     def __init__(
         self,
@@ -25,17 +23,9 @@ class UserProfileService:
         repo: UserProfileRepositoryProtocol,
         bot_registry: BotRegistryProtocol,
     ):
+        super().__init__(bot_registry)
         self.redis = redis
         self.repo = repo
-        self.bot_registry = bot_registry
-        self.key_builder = KitaKeyBuilder()
-
-    def _get_key(self, user_id: int):
-        redis_key = RedisKey(
-            bot_id=self.bot_registry.get_current().id,
-            user_id=user_id,
-        )
-        return self.key_builder.build(key=redis_key, part="user_profile")
 
     async def get_or_create(self, user_id: int) -> UserProfileDTO:
         cached = await UserProfileRedis.get(self.redis, self._get_key(user_id))
@@ -79,7 +69,7 @@ class UserProfileService:
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)
         await UserProfileRedis.delete(redis=self.redis, key=self._get_key(user_id))
-        logger.info("Update user profile %s for bot %s", user_id, self.bot_registry.get_current().id)
+        logger.info("Update user profile %s for bot %s", user_id, self.bot.id)
 
     async def save(self, profile_dto: UserProfileDTO):
         changed = profile_dto.prepare_changed_data()
@@ -88,7 +78,7 @@ class UserProfileService:
         
         await self.repo.update(profile_dto.user_id, **changed)
         await UserProfileRedis.delete(redis=self.redis, key=self._get_key(profile_dto.user_id))
-        logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot_registry.get_current().id)
+        logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot.id)
 
     async def get_active(self):
         return await self.repo.get_active()

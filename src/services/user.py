@@ -5,31 +5,31 @@ from typing import Any
 from redis.asyncio import Redis
 
 from database.dto import UserDTO
-from database.redis import KitaKeyBuilder, RedisKey, UserRedis
-from interfaces import UserRepositoryProtocol
+from database.redis import KitaKeyBuilder, UserRedis
+from interfaces import UserRepositoryProtocol, BotRegistryProtocol
+from .base import BaseService
 
 logger = getLogger("kita.user_service")
 
-class UserService:
+class UserService(BaseService):
+
+    REDIS_KEY_PART = "user"
 
     __slots__ = (
         "redis",
         "repo",
-        "key_builder",
     )
 
     def __init__(
         self,
         redis: Redis,
         repo: UserRepositoryProtocol,
+        bot_registry: BotRegistryProtocol,
     ):
+        super().__init__(bot_registry, KitaKeyBuilder(with_bot_id=False))
+
         self.redis = redis
         self.repo = repo
-        self.key_builder = KitaKeyBuilder(with_bot_id=False)
-
-    def _get_key(self, user_id: int):
-        redis_key = RedisKey(user_id=user_id)
-        return self.key_builder.build(key=redis_key, part="user")
 
     async def create(self, prep_user_dto: UserDTO):
         user_dto = await self.repo.create(prep_user_dto)

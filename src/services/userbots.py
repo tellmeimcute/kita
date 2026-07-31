@@ -6,17 +6,17 @@ from redis.asyncio import Redis
 from database.dto import UserBotDTO
 from database.redis import KitaKeyBuilder, RedisKey, UserBotRedis
 from interfaces import BotRegistryProtocol, UserBotRepositoryProtocol
+from .base import BaseService
 
 logger = getLogger("kita.userbot_service")
 
 
-class UserBotService:
+class UserBotService(BaseService):
+    REDIS_KEY_PART = "userbot"
 
     __slots__ = (
         "redis",
         "repo",
-        "key_builder",
-        "bot_registry"
     )
 
     def __init__(
@@ -25,14 +25,13 @@ class UserBotService:
         repo: UserBotRepositoryProtocol,
         bot_registry: BotRegistryProtocol,
     ):
+        super().__init__(bot_registry, KitaKeyBuilder(with_user_id=False))
         self.redis = redis
         self.repo = repo
-        self.bot_registry = bot_registry
-        self.key_builder = KitaKeyBuilder(with_user_id=False)
 
     def _get_key(self, bot_id: int):
         redis_key = RedisKey(bot_id=bot_id)
-        return self.key_builder.build(key=redis_key, part="bot")
+        return self._key_builder.build(redis_key, self.REDIS_KEY_PART)
 
     async def get(self, bot_id: int) -> UserBotDTO | None:
         cached_bot = await UserBotRedis.get(self.redis, self._get_key(bot_id))

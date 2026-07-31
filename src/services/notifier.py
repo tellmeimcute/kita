@@ -16,22 +16,29 @@ from ui.senders import (
     MediaGroupSender,
     TextSender,
 )
+
 from ui.senders.base import BaseSender
 from ui.suggestion_utils import SuggestionUtils
+from interfaces import BotRegistryProtocol
+from .base import BaseService
 
 logger = getLogger("kita.notifier_service")
 
 
-class NotifierService:
+class NotifierService(BaseService):
 
     __slots__ = (
-        "_bot",
         "_tl",
         "_suggestion_utils"
     )
 
-    def __init__(self, bot: Bot, translator: Translator, suggestion_utils: SuggestionUtils):
-        self._bot = bot
+    def __init__(
+        self,
+        translator: Translator,
+        suggestion_utils: SuggestionUtils,
+        bot_registry: BotRegistryProtocol,
+    ):
+        super().__init__(bot_registry)
         self._tl = translator
         self._suggestion_utils = suggestion_utils
 
@@ -39,9 +46,9 @@ class NotifierService:
         self, target_id: int, payload: MessagePayload, silent: bool = True
     ) -> BaseSender:
         if payload.i18n_key:
-            return TextSender(self._bot, target_id, payload, silent, self._tl)
+            return TextSender(self.bot, target_id, payload, silent, self._tl)
         if payload.media:
-            return MediaGroupSender(self._bot, target_id, payload, silent, self._tl)
+            return MediaGroupSender(self.bot, target_id, payload, silent, self._tl)
 
         raise UnsupportedPayload(payload=payload)
 
@@ -107,7 +114,7 @@ class NotifierService:
 
     async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         strategy = ForwardTransfer(
-            bot=self._bot,
+            bot=self.bot,
             target_id=user_dto.user_id,
             from_chat_id=source,
             message_ids=messages,
@@ -116,7 +123,7 @@ class NotifierService:
 
     async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int):
         strategy = CopyTransfer(
-            bot=self._bot,
+            bot=self.bot,
             target_id=user_dto.user_id,
             from_chat_id=source,
             message_ids=messages,
@@ -129,7 +136,7 @@ class NotifierService:
         text: str,
         reply_markup: InlineKeyboardMarkup | None = None,
     ):
-        await self._bot.edit_message_text(
+        await self.bot.edit_message_text(
             text=text,
             chat_id=message.chat.id,
             message_id=message.message_id,

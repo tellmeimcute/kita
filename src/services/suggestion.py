@@ -9,22 +9,23 @@ from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from database.redis import KitaKeyBuilder, RedisKey, UserStatsRedis
+from database.redis import RedisKey, UserStatsRedis
 from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
 from services.message_parser import MessageParser
+
+from .base import BaseService
 
 logger = getLogger("kita.suggestion_service")
 
 
-class SuggestionService:
+class SuggestionService(BaseService):
+
+    REDIS_KEY_PART = "suggestion"
 
     __slots__ = (
         "redis",
         "repo",
         "parser",
-        "bot_registry",
-        "bot",
-        "key_builder",
     )
 
     def __init__(
@@ -34,13 +35,11 @@ class SuggestionService:
         bot_registry: BotRegistryProtocol,
         parser: MessageParser,
     ):
+        super().__init__(bot_registry)
+
         self.redis = redis
         self.repo = repo
         self.parser = parser
-        self.bot_registry = bot_registry
-        self.bot = bot_registry.get_current()
-
-        self.key_builder = KitaKeyBuilder()
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         redis_key = RedisKey(
@@ -48,7 +47,7 @@ class SuggestionService:
             user_id=user_dto.user_id
         )
 
-        key = self.key_builder.build(
+        key = self._key_builder.build(
             key=redis_key, part="user_stats"
         )
 
@@ -69,7 +68,7 @@ class SuggestionService:
     async def update(self, suggestion_dto: SuggestionBaseDTO):
         await self.repo.save(suggestion_dto)
 
-        key = self.key_builder.build(
+        key = self._key_builder.build(
             key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id),
             part="user_stats"
         )
