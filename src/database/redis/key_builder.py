@@ -9,6 +9,10 @@ class RedisKey:
     user_id: int | None = None
 
 
+@dataclass(frozen=True)
+class MediaGroupKey(RedisKey):
+    media_group_id: int
+
 
 class KeyBuilder(ABC):
     @abstractmethod
@@ -39,7 +43,6 @@ class KitaKeyBuilder(KeyBuilder):
         part: Literal["user", "user_stats", "bot_config"] = None,
     ):
         parts = [self.prefix]
-
         if self.with_bot_id:
             parts.append(str(key.bot_id))
         if self.with_user_id:
@@ -47,5 +50,25 @@ class KitaKeyBuilder(KeyBuilder):
 
         if part:
             parts.append(part)
+        return self.separator.join(parts)
+
+
+class MediaGroupKeyBulder(KitaKeyBuilder):
+    def build(
+        self,
+        key: MediaGroupKey,
+        part: Literal["lock"] = None,
+    ):
+        parts = [self.prefix]
+
+        if self.with_bot_id:
+            parts.append(str(key.bot_id))
+        if self.with_user_id:
+            parts.append(str(key.user_id))
+
+        parts.append(str(key.media_group_id))
+        if part:
+            parts.append(part)
+
         return self.separator.join(parts)
     
