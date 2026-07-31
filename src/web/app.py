@@ -5,11 +5,9 @@ from dishka import AsyncContainer
 from fastapi import FastAPI
 
 from core.config import Config
-from interfaces import BotRegistryProtocol
 from lifespan import lifespan
 
 from .endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
-
 
 logger = getLogger("kita.fastapi")
 
