@@ -11,7 +11,7 @@ logger = logging.getLogger("kita.redis")
 
 class BaseRedisRepository(Generic[T]):
     model: type[T]
-    expiry: int = 60
+    expiry: int = 3600
 
     exclude: Set[str] | None = None
     include: Set[str] | None = None

@@ -17,7 +17,6 @@ class UserProfileRedis(BaseRedisRepository[UserProfileDTO]):
 
 class UserBotRedis(BaseRedisRepository[UserBotDTO]):
     model = UserBotDTO
-    expiry: int = 3600
 
 
 class TgMessageRedis(BaseRedisRepository[Message]):
