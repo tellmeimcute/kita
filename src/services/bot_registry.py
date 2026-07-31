@@ -41,6 +41,8 @@ class BotRegistry:
         bot = Bot(token=token, **self._bot_settings)
         self._storage[bot.id] = bot
 
+        return bot
+
     def remove(self, bot_id: int):
         self._storage.pop(bot_id, None)
 
