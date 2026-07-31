@@ -1,12 +1,12 @@
 
-from typing import Sequence, Any
+from typing import Any, Sequence
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 
-from database.models import UserProfile, Suggestion
 from database.dto import UserProfileDTO
-from database.enums import UserRole, SuggestionStatus
+from database.enums import SuggestionStatus, UserRole
+from database.models import Suggestion, UserProfile
 
 from .base import BaseRepository
 

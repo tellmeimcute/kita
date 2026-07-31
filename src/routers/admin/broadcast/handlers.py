@@ -6,15 +6,13 @@ from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
-
-from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol
 from database.dto import UserDTO
+from interfaces import NotifierServiceProtocol, UnitOfWorkProtocol
 from ui.state_groups import AdminMenuSG, BroadcastMenuSG
 from usecases.broadcast import BroadcastUseCase
 

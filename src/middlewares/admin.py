@@ -1,14 +1,16 @@
 from typing import Any, Awaitable, Callable, Dict, Union
 
-from dishka import AsyncContainer
 from aiogram.types import CallbackQuery, Message, TelegramObject
+from dishka import AsyncContainer
 
 from core.consts import DISHKA_CONTAINER_KEY
-from core.schemas.message_payload import MessagePayload
 from core.i18n_translator import Translator
+from core.schemas.message_payload import MessagePayload
 from database.dto import UserProfileDTO
 from ui.senders.payload import TextSender
+
 from .base import KitaMiddleware
+
 
 class AdminMiddleware(KitaMiddleware):
 

@@ -1,5 +1,6 @@
-from sqlalchemy import TypeDecorator, String
 from cryptography.fernet import Fernet
+from sqlalchemy import String, TypeDecorator
+
 from core.config import Config
 
 

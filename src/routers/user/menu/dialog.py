@@ -1,20 +1,17 @@
 
 
-from aiogram_dialog import Window, Dialog, StartMode, LaunchMode
-from aiogram_dialog.widgets.kbd import SwitchTo, Cancel, Button, Start
+from aiogram_dialog import Dialog, LaunchMode, StartMode, Window
+from aiogram_dialog.widgets.kbd import Button, Cancel, Start, SwitchTo
 from aiogram_dialog.widgets.style import Style
 
-from ui.widgets.locale_group import LocaleGroup
+from routers.admin.suggestions import enter_viewer_callback
+from routers.shared_getters import is_admin
+from ui.state_groups import AdminMenuSG, SuggestionSG, UserMenuSG
 from ui.widgets.i18n_text import I18nText
+from ui.widgets.locale_group import LocaleGroup
 from ui.widgets.protected_start import ProtectedStart
 
-from ui.state_groups import UserMenuSG, AdminMenuSG, SuggestionSG
-
-from routers.shared_getters import is_admin
-from routers.admin.suggestions import enter_viewer_callback
-
 from .getters import get_menu_i18n_kwargs
-
 from .handlers import (
     on_language_selected,
     prefer_anon_toggle,

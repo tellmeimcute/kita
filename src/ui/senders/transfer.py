@@ -1,6 +1,8 @@
 
 from aiogram import Bot
+
 from .base import BaseSender
+
 
 class MessageTransfer(BaseSender):
     def __init__(

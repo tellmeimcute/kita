@@ -1,20 +1,18 @@
 
 
 
-from aiogram_dialog import Window, Dialog, ShowMode
-from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import SwitchTo, Button, Start
+from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Button, Start, SwitchTo
+from aiogram_dialog.widgets.text import Format
 
 from database.enums import UserRole
-from ui.widgets.i18n_text import I18nText
-from ui.state_groups import AdminMenuSG, ModerationMenuSG
-
 from routers.shared_getters import role_condition
+from ui.state_groups import AdminMenuSG, ModerationMenuSG
+from ui.widgets.i18n_text import I18nText
 
-from .handlers import select_user, user_change_role, message_to_user
 from .getters import user_select_getter
-
+from .handlers import message_to_user, select_user, user_change_role
 
 user_select_window = Window(
     Format("{user_select_text}"),

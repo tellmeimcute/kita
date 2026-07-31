@@ -1,15 +1,13 @@
 
-from aiogram.types import Message, Video, Animation
+from aiogram.types import Animation, Message, Video
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.config import Config
 from core.i18n_translator import Translator
-
 from database.dto import UserBotDTO
 from ui.state_groups import AdminMenuSG
 

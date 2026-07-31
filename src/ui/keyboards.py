@@ -1,6 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.i18n import gettext as _
 
+
 class ReplyKeyboard:
     @classmethod
     def build(cls, *buttons: list[KeyboardButton], one_time: bool = False):

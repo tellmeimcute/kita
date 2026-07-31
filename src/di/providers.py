@@ -1,54 +1,49 @@
 
-from dishka import Provider, Scope, provide
-from dishka.integrations.aiogram import AiogramMiddlewareData
-
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.i18n import I18n
 from aiogram_dialog import BgManagerFactory
 from aiogram_dialog.manager.bg_manager import BgManager
+from dishka import Provider, Scope, provide
+from dishka.integrations.aiogram import AiogramMiddlewareData
 
 from core.config import Config
-from core.schemas import SuggestionViewerData
-from core.i18n_translator import Translator
 from core.events import EventBus
-
+from core.i18n_translator import Translator
+from core.schemas import SuggestionViewerData
+from database.repository import (
+    MediaRepository,
+    SuggestionRepository,
+    UserBotRepository,
+    UserProfileRepository,
+    UserRepository,
+)
+from database.uow import UnitOfWork
+from interfaces import (
+    MediaRepositoryProtocol,
+    NotifierServiceProtocol,
+    SuggestionRepositoryProtocol,
+    SuggestionServiceProtocol,
+    UnitOfWorkProtocol,
+    UserBotRepositoryProtocol,
+    UserProfileRepositoryProtocol,
+    UserProfileServiceProtocol,
+    UserRepositoryProtocol,
+    UserServiceProtocol,
+)
+from services.message_parser import MessageParser
+from services.notifier import NotifierService
+from services.suggestion import SuggestionService
 from services.user import UserService
 from services.user_profile import UserProfileService
-from services.suggestion import SuggestionService
-from services.notifier import NotifierService
-from services.message_parser import MessageParser
-from services.webhooks import WebhookService
 from services.userbots import UserBotService
-
-from database.uow import UnitOfWork
-from database.repository import (
-    SuggestionRepository,
-    UserRepository,
-    UserProfileRepository,
-    MediaRepository,
-    UserBotRepository,
-)
-
+from services.webhooks import WebhookService
+from ui.suggestion_utils import SuggestionUtils
 from usecases import (
     BroadcastUseCase,
     ChangeRoleUseCase,
     ModerateSuggestionUseCase,
 )
 
-from interfaces import (
-    UserRepositoryProtocol,
-    UserProfileRepositoryProtocol,
-    SuggestionRepositoryProtocol,
-    MediaRepositoryProtocol,
-    UnitOfWorkProtocol,
-    UserServiceProtocol,
-    UserProfileServiceProtocol,
-    SuggestionServiceProtocol,
-    NotifierServiceProtocol,
-    UserBotRepositoryProtocol,
-)
-
-from ui.suggestion_utils import SuggestionUtils
 
 class InfraProvider(Provider):
     event_bus = provide(EventBus, scope=Scope.APP)

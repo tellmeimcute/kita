@@ -1,18 +1,15 @@
 
 from aiogram import Bot
-from dishka import FromDishka
-from dishka.integrations.aiogram_dialog import inject
-
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
+from dishka import FromDishka
+from dishka.integrations.aiogram_dialog import inject
 
-from core.exceptions import UnsupportedPayload
 from core.events import EventBus, NewSuggestionEvent
-
-from interfaces import UnitOfWorkProtocol, SuggestionServiceProtocol
+from core.exceptions import UnsupportedPayload
 from database.dto import UserDTO, UserProfileDTO
-
+from interfaces import SuggestionServiceProtocol, UnitOfWorkProtocol
 from ui.state_groups import SuggestionSG
 
 

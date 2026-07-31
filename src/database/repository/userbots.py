@@ -1,9 +1,11 @@
 
-from typing import Sequence, Any
+from typing import Any, Sequence
 
 from sqlalchemy import select, update
-from database.models import UserBot
+
 from database.dto import UserBotDTO
+from database.models import UserBot
+
 from .base import BaseRepository
 
 

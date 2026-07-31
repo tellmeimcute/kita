@@ -1,12 +1,13 @@
 
-from typing import Literal
-from logging import getLogger
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from logging import getLogger
+from typing import Literal
+
 from redis.asyncio import Redis
 
-from database.redis import RedisKey, KitaKeyBuilder
 from database.dto import UserDTO
+from database.redis import KitaKeyBuilder, RedisKey
 from interfaces import BotRegistryProtocol
 
 # https://redis.io/tutorials/howtos/ratelimiting/#4-token-bucket

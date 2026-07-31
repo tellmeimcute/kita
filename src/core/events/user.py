@@ -1,7 +1,10 @@
 
 from dataclasses import dataclass
+
 from database.dto import SuggestionFullDTO, UserDTO
+
 from .base import KitaEvent, UserEvent
+
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class NewUserEvent(UserEvent):

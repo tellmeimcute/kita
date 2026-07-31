@@ -1,7 +1,7 @@
 
 
-from logging import getLogger
 from collections.abc import AsyncIterable
+from logging import getLogger
 
 from dishka import Provider, Scope, provide
 from redis.asyncio import ConnectionPool, Redis

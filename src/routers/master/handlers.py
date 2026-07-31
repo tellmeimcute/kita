@@ -1,22 +1,19 @@
 from aiogram import Bot, Router
+from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.enums import ChatMemberStatus
 from aiogram.types import Message
-from aiogram.utils.token import extract_bot_id, TokenValidationError
-
+from aiogram.utils.token import TokenValidationError, extract_bot_id
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.input import MessageInput
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from ui.state_groups import RegistrarMenuSG
 from database.dto import UserDTO
+from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
-from interfaces import UnitOfWorkProtocol, NotifierServiceProtocol, BotRegistryProtocol
-
+from ui.state_groups import RegistrarMenuSG
 
 router = Router(name="registrar_start")
 

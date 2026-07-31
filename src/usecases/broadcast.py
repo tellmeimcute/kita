@@ -6,7 +6,7 @@ from aiogram.types import Message, MessageOriginChannel
 
 from core.i18n_translator import Translator
 from core.schemas.broadcast import BroadcastData
-from interfaces import UserProfileServiceProtocol, NotifierServiceProtocol
+from interfaces import NotifierServiceProtocol, UserProfileServiceProtocol
 
 
 class BroadcastUseCase:

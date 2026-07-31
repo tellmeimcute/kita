@@ -6,11 +6,12 @@ from redis.asyncio import Redis
 from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
-    MediaGroupMiddleware,
-    UserMiddleware,
     KitaI18nMiddleware,
+    MediaGroupMiddleware,
     RateLimitMiddleware,
+    UserMiddleware,
 )
+
 
 class MiddlewareProvider(Provider):
     user_middleware = provide(UserMiddleware, scope=Scope.APP)

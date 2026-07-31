@@ -1,7 +1,7 @@
 
 import logging
-from typing import ClassVar
 from abc import ABC
+from typing import ClassVar
 
 from aiogram import BaseMiddleware, Router
 

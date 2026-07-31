@@ -1,6 +1,8 @@
 from typing import Any
+
 from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from aiogram.utils.media_group import MediaType
+
 from .base import BaseData
 
 AnyKeyboard = ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove

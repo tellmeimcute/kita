@@ -8,8 +8,8 @@ from .timestamp import TimestampMixin
 
 if TYPE_CHECKING:
     from .suggestion import Suggestion
-    from .userbot import UserBot
     from .user_profile import UserProfile
+    from .userbot import UserBot
 
 
 class UserAlchemy(AbstractModel, TimestampMixin):

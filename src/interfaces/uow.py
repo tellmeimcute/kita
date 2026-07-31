@@ -1,13 +1,14 @@
 
-from typing import Protocol
 from abc import abstractmethod
+from typing import Protocol
 
 from interfaces import (
-    UserRepositoryProtocol,
-    UserProfileRepositoryProtocol,
-    SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
+    SuggestionRepositoryProtocol,
+    UserProfileRepositoryProtocol,
+    UserRepositoryProtocol,
 )
+
 
 class UnitOfWorkProtocol(Protocol):
 

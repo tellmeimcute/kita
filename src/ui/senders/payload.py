@@ -1,8 +1,10 @@
 
 from aiogram import Bot
 from aiogram.types import Message
-from core.schemas.message_payload import MessagePayload
+
 from core.i18n_translator import Translator
+from core.schemas.message_payload import MessagePayload
+
 from .base import BaseSender
 
 

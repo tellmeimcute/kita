@@ -4,7 +4,9 @@
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+
 from interfaces import UnitOfWorkProtocol
+
 
 @inject
 async def get_app_stats(

@@ -1,7 +1,10 @@
 from aiogram.types import Message
-from database.dto import UserDTO, UserProfileDTO, UserBotDTO
+
 from core.schemas.objects import UserStats
+from database.dto import UserBotDTO, UserDTO, UserProfileDTO
+
 from .base import BaseRedisRepository
+
 
 class UserStatsRedis(BaseRedisRepository[UserStats]):
     model = UserStats

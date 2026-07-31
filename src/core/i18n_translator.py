@@ -1,6 +1,7 @@
 
 from aiogram.utils.i18n import gettext as _
 
+
 class Translator:
     def translate(self, i18n_key: str) -> str:
         return _(i18n_key)

@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from database.dto import UserProfileDTO
+
 from .base import KitaMiddleware
 
 logger = getLogger("kita.ban_middleware")

@@ -3,14 +3,12 @@ from logging import getLogger
 from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
+from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
 
-from aiogram.utils.i18n import I18n
-
 from core.consts import DISHKA_CONTAINER_KEY
-from core.rate_limiters import TokenBucketLimiter
 from core.i18n_translator import Translator
-
+from core.rate_limiters import TokenBucketLimiter
 from database.dto import UserDTO
 
 from .base import KitaMiddleware

@@ -1,9 +1,9 @@
 from .admin import AdminMiddleware
 from .ban import BanCheckMiddleware
-from .media_group import MediaGroupMiddleware
-from .user import UserMiddleware
 from .i18n import KitaI18nMiddleware
+from .media_group import MediaGroupMiddleware
 from .rate_limit import RateLimitMiddleware
+from .user import UserMiddleware
 
 __all__ = (
     "UserMiddleware",

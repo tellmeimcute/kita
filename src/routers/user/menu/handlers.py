@@ -1,28 +1,24 @@
 
 
+from aiogram import Router
+from aiogram.filters import Command, CommandStart
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.utils.i18n import I18n
+from aiogram_dialog import DialogManager, ShowMode, StartMode
+from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from aiogram import Router
-from aiogram.types import ReplyKeyboardRemove
-from aiogram.filters import CommandStart, Command
-from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
-from aiogram.utils.i18n import I18n
-
-from aiogram_dialog import DialogManager, StartMode, ShowMode
-from aiogram_dialog.widgets.kbd import Button
 from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
-
-from interfaces import (
-    UnitOfWorkProtocol,
-    UserServiceProtocol,
-    UserProfileServiceProtocol,
-    NotifierServiceProtocol,
-)
-
 from database.dto import UserDTO, UserProfileDTO
+from interfaces import (
+    NotifierServiceProtocol,
+    UnitOfWorkProtocol,
+    UserProfileServiceProtocol,
+    UserServiceProtocol,
+)
 from ui.state_groups import UserMenuSG
 
 router = Router(name="main_menu")

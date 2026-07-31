@@ -1,20 +1,17 @@
 from logging import getLogger
 
-from aiogram import Router, F
-from aiogram.filters import IS_MEMBER, IS_NOT_MEMBER, ChatMemberUpdatedFilter, ExceptionTypeFilter
-from aiogram.types import ChatMemberUpdated, CallbackQuery, ErrorEvent
+from aiogram import F, Router
 from aiogram.exceptions import TelegramUnauthorizedError
-
+from aiogram.filters import IS_MEMBER, IS_NOT_MEMBER, ChatMemberUpdatedFilter, ExceptionTypeFilter
+from aiogram.types import CallbackQuery, ChatMemberUpdated, ErrorEvent
 from aiogram_dialog.api.exceptions import UnknownIntent
-
 from dishka import FromDishka
-from core.schemas.message_payload import MessagePayload
+
 from core.i18n_translator import Translator
-from ui.senders.payload import TextSender
-
+from core.schemas.message_payload import MessagePayload
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol
 from services import UserBotService
-from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, BotRegistryProtocol
-
+from ui.senders.payload import TextSender
 
 logger = getLogger("kita.errors")
 

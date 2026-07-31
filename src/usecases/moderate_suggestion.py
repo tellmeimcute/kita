@@ -1,10 +1,12 @@
 
 
 from dataclasses import dataclass
+
 from core.events import EventBus, SuggestionAcceptedEvent
 from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
 from interfaces import SuggestionServiceProtocol
+
 
 @dataclass
 class ModerationResult:

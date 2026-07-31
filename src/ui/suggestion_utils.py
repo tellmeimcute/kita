@@ -10,6 +10,7 @@ from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
 from database.dto import SuggestionFullDTO, UserBotDTO
 
+
 class SuggestionUtils:
 
     __slots__ = (

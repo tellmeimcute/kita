@@ -1,25 +1,22 @@
 
-from typing import Literal
 from logging import getLogger
+from typing import Literal
 
 from aiogram import Bot
-from aiogram.types import Message, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
-
-from database.dto import UserDTO, UserProfileDTO, SuggestionFullDTO
-
-from ui.senders.base import BaseSender
+from database.dto import SuggestionFullDTO, UserDTO, UserProfileDTO
+from ui.keyboards import ReplyKeyboard
 from ui.senders import (
-    TextSender,
-    MediaGroupSender,
     CopyTransfer,
     ForwardTransfer,
+    MediaGroupSender,
+    TextSender,
 )
-
-from ui.keyboards import ReplyKeyboard
+from ui.senders.base import BaseSender
 from ui.suggestion_utils import SuggestionUtils
 
 logger = getLogger("kita.notifier_service")

@@ -1,11 +1,13 @@
 
-from pydantic import SecretStr, Field
 from functools import lru_cache
+
+from pydantic import Field, SecretStr
 
 from .base import BaseConfig
 from .database import DatabaseConfig
-from .redis import RedisConfig
 from .rate_limit import RateLimitConfig
+from .redis import RedisConfig
+
 
 class Config(BaseConfig):
     tg_token: SecretStr

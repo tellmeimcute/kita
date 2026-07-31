@@ -1,9 +1,10 @@
 import json
 import logging
-from typing import Generic, TypeVar, Set
+from typing import Generic, Set, TypeVar
+
+from pydantic import BaseModel, SecretStr
 
 from redis.asyncio import Redis
-from pydantic import BaseModel, SecretStr
 
 T = TypeVar("T", bound=BaseModel)
 

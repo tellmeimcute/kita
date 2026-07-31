@@ -5,7 +5,9 @@ from logging import getLogger
 from typing import Callable, Sequence
 
 from dishka import AsyncContainer
+
 from interfaces import BotRegistryProtocol
+
 from .base import KitaEvent
 
 logger = getLogger("kita.event")

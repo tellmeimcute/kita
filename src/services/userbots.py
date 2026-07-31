@@ -1,9 +1,11 @@
 from logging import getLogger
 from typing import Any
+
 from redis.asyncio import Redis
+
 from database.dto import UserBotDTO
-from database.redis import UserBotRedis, KitaKeyBuilder, RedisKey
-from interfaces import UserBotRepositoryProtocol, BotRegistryProtocol
+from database.redis import KitaKeyBuilder, RedisKey, UserBotRedis
+from interfaces import BotRegistryProtocol, UserBotRepositoryProtocol
 
 logger = getLogger("kita.userbot_service")
 

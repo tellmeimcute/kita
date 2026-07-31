@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, BigInteger, text
+from sqlalchemy import BigInteger, ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.types.encrypted_str import EncryptedString
+
 from .abstract_model import AbstractModel
 from .timestamp import TimestampMixin
 

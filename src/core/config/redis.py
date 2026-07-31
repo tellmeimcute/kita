@@ -1,5 +1,6 @@
 
-from pydantic import SecretStr, Field, RedisDsn
+from pydantic import Field, RedisDsn, SecretStr
+
 from .base import BaseConfig
 
 

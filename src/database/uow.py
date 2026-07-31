@@ -5,10 +5,10 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import (
-    UserRepositoryProtocol,
-    UserProfileRepositoryProtocol,
-    SuggestionRepositoryProtocol,
     MediaRepositoryProtocol,
+    SuggestionRepositoryProtocol,
+    UserProfileRepositoryProtocol,
+    UserRepositoryProtocol,
 )
 
 logger = getLogger("kita.uow")

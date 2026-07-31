@@ -3,9 +3,11 @@
 
 
 from abc import ABC
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import BotRegistryProtocol
+
 
 class BaseRepository(ABC):
 

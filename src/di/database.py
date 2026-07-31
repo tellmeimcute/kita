@@ -1,9 +1,15 @@
 
-from logging import getLogger
 from collections.abc import AsyncIterable
+from logging import getLogger
 
 from dishka import Provider, Scope, provide
-from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+
 from core.config import Config
 
 logger = getLogger("kita.providers")

@@ -1,14 +1,15 @@
 
-from typing import Sequence, Any
 from dataclasses import asdict
+from typing import Any, Sequence
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.orm import selectinload
-from database.models import Suggestion, Media
+
+from core.schemas import MediaInfo, UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
 from database.enums import SuggestionStatus
+from database.models import Media, Suggestion
 
-from core.schemas import UserStats, MediaInfo
 from .base import BaseRepository
 
 

@@ -6,45 +6,40 @@ from aiogram_dialog import setup_dialogs
 from dishka import AsyncContainer
 
 from core.events import (
-    EventBus,
-    NewUserEvent,
-    NewSuggestionEvent,
-    SuggestionAcceptedEvent,
     CopyMessagesToUserEvent,
+    EventBus,
+    NewSuggestionEvent,
+    NewUserEvent,
+    SuggestionAcceptedEvent,
 )
-
 from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
     KitaI18nMiddleware,
     MediaGroupMiddleware,
-    UserMiddleware,
     RateLimitMiddleware,
+    UserMiddleware,
 )
-
-from routers.master import (
-    userbot_registrar_dialog,
-    userbot_registrar_router,
-    userbot_registrar_menu_dialog,
-)
-
-from routers.admin import suggestion_router as admin_suggestion_router
-from routers.admin import menu_dialog as admin_menu_dialog
 from routers.admin import banner_dialog as admin_banner_dialog
 from routers.admin import broadcast_dialog as admin_broadcast_dialog
+from routers.admin import menu_dialog as admin_menu_dialog
+from routers.admin import suggestion_router as admin_suggestion_router
 from routers.admin import user_moderation_dialog as admin_user_moderation_dialog
-
+from routers.master import (
+    userbot_registrar_dialog,
+    userbot_registrar_menu_dialog,
+    userbot_registrar_router,
+)
+from routers.system import get_error_router
+from routers.system.listeners import (
+    copy_to_user_notify_both,
+    notify_admin_new_suggestion,
+    notify_admin_new_user,
+    suggestion_accepted,
+)
 from routers.user import menu_dialog as user_menu_dialog
 from routers.user import menu_router as user_menu_router
 from routers.user import suggestion_dialog as user_suggestion_dialog
-
-from routers.system import get_error_router
-from routers.system.listeners import (
-    notify_admin_new_user,
-    notify_admin_new_suggestion,
-    suggestion_accepted,
-    copy_to_user_notify_both,
-)
 
 logger = logging.getLogger("kita.startup")
 

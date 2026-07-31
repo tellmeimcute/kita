@@ -1,14 +1,14 @@
 
 
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.common import WhenCondition
+from aiogram_dialog.widgets.text import Text
 from dishka import AsyncContainer
 
-from aiogram_dialog import DialogManager
-from aiogram_dialog.widgets.text import Text
-from aiogram_dialog.widgets.common import WhenCondition
-
-from core.i18n_translator import Translator
 from core.consts import DISHKA_CONTAINER_KEY
-from database.dto import UserDTO, UserProfileDTO, UserBotDTO
+from core.i18n_translator import Translator
+from database.dto import UserBotDTO, UserDTO, UserProfileDTO
+
 
 class I18nText(Text):
     def __init__(self, i18n_key: str, when: WhenCondition = None):

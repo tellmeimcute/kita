@@ -8,6 +8,7 @@ from aiogram_dialog.widgets.kbd import Button, Start
 
 from database.dto import UserProfileDTO
 
+
 class ProtectedStart(Start):
     async def _on_click(
         self,

@@ -2,20 +2,24 @@
 import asyncio
 from logging import getLogger
 
-from dishka import AsyncContainer
 from aiogram.utils.i18n import I18n
+from dishka import AsyncContainer
 
 from core.config import Config
-from core.events import NewUserEvent, NewSuggestionEvent, SuggestionAcceptedEvent, CopyMessagesToUserEvent
+from core.events import (
+    CopyMessagesToUserEvent,
+    NewSuggestionEvent,
+    NewUserEvent,
+    SuggestionAcceptedEvent,
+)
 from database.dto import UserBotDTO
 from interfaces import (
-    UnitOfWorkProtocol,
-    UserServiceProtocol,
-    UserProfileServiceProtocol,
     NotifierServiceProtocol,
+    UnitOfWorkProtocol,
+    UserProfileServiceProtocol,
+    UserServiceProtocol,
 )
 from ui.suggestion_utils import SuggestionUtils
-
 
 logger = getLogger("kita.event")
 

@@ -3,9 +3,12 @@ from typing import Any
 
 from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
-from database.models import UserAlchemy
+
 from database.dto import UserDTO
+from database.models import UserAlchemy
+
 from .base import BaseRepository
+
 
 class UserRepository(BaseRepository):
 

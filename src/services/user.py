@@ -1,10 +1,11 @@
 
-from typing import Any
 from logging import getLogger
+from typing import Any
 
 from redis.asyncio import Redis
+
 from database.dto import UserDTO
-from database.redis import UserRedis, KitaKeyBuilder, RedisKey
+from database.redis import KitaKeyBuilder, RedisKey, UserRedis
 from interfaces import UserRepositoryProtocol
 
 logger = getLogger("kita.user_service")

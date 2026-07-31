@@ -1,13 +1,13 @@
-from aiogram_dialog import Window, Dialog, ShowMode
-from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Start
+from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Start
+from aiogram_dialog.widgets.text import Format
 
-from ui.widgets.i18n_text import I18nText
 from ui.state_groups import AdminMenuSG, BannerMenuSG
+from ui.widgets.i18n_text import I18nText
 
-from .handlers import get_banner_text
 from .getters import banner_text_getter
+from .handlers import get_banner_text
 
 get_banner_text_window = Window(
     Format("{banner_text}"),

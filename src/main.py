@@ -2,28 +2,26 @@ import logging
 
 import uvicorn
 from aiogram import Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.storage.base import DefaultKeyBuilder
-from dishka import make_async_container, AsyncContainer
+from aiogram.fsm.storage.redis import RedisStorage
+from dishka import AsyncContainer, make_async_container
 from dishka.integrations.aiogram import AiogramProvider
 from dishka.integrations.aiogram import setup_dishka as setup_dishka_aiogram
 from dishka.integrations.fastapi import setup_dishka as setup_dishka_fastapi
-
 from fastapi import FastAPI
 
 from core.config import Config
 from core.logging_config import setup_logging
-from web.app import get_app
 from di import (
-    DatabaseProvider,
-    InfraProvider,
-    UtilsProvider,
-    FSMProvider,
-    RedisProvider,
-    MiddlewareProvider,
     BotProvider,
+    DatabaseProvider,
+    FSMProvider,
+    InfraProvider,
+    MiddlewareProvider,
+    RedisProvider,
+    UtilsProvider,
 )
-
+from web.app import get_app
 
 logger = logging.getLogger("kita.main")
 

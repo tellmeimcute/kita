@@ -1,10 +1,16 @@
 
 
-from aiogram_dialog import Window, Dialog, StartMode, LaunchMode
-from aiogram_dialog.widgets.kbd import SwitchTo, Row, Start
+from aiogram_dialog import Dialog, LaunchMode, StartMode, Window
+from aiogram_dialog.widgets.kbd import Row, Start, SwitchTo
 
+from ui.state_groups import (
+    AdminMenuSG,
+    BannerMenuSG,
+    BroadcastMenuSG,
+    ModerationMenuSG,
+    UserMenuSG,
+)
 from ui.widgets.i18n_text import I18nText
-from ui.state_groups import AdminMenuSG, UserMenuSG, BannerMenuSG, BroadcastMenuSG, ModerationMenuSG
 
 from .getters import get_app_stats
 

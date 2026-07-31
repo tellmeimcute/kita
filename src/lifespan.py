@@ -2,7 +2,7 @@
 from contextlib import asynccontextmanager
 from logging import getLogger
 
-from aiogram import Dispatcher, Bot
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
@@ -11,11 +11,10 @@ from fastapi import FastAPI
 
 from core.config import Config
 from core.events import EventBus
-
-from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
-from services.webhooks import WebhookService
 from interfaces import BotRegistryProtocol
+from services.webhooks import WebhookService
 from startup import register_all, register_events, setup_registrar_dp
+from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 logger = getLogger("kita.fastapi")
 

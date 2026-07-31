@@ -1,10 +1,9 @@
 
-from .menu.dialog import dialog as menu_dialog
 from .banner.dialog import dialog as banner_dialog
 from .broadcast.dialog import dialog as broadcast_dialog
-from .user_moderation.dialog import dialog as user_moderation_dialog
-
+from .menu.dialog import dialog as menu_dialog
 from .suggestions import suggestion_router
+from .user_moderation.dialog import dialog as user_moderation_dialog
 
 __all__ = (
     "menu_dialog",

@@ -1,6 +1,8 @@
 
 from aiogram.types import Message, MessageOriginChannel
+
 from core.schemas import MediaInfo
+
 
 class MessageParser:
     @staticmethod

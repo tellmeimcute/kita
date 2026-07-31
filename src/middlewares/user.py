@@ -9,14 +9,13 @@ from dishka import AsyncContainer
 
 from core.config import Config
 from core.consts import DISHKA_CONTAINER_KEY
-
-from database.dto import UserDTO, UserBotDTO
+from database.dto import UserBotDTO, UserDTO
 from database.enums import UserRole
 from interfaces import (
+    BotRegistryProtocol,
     UnitOfWorkProtocol,
-    UserServiceProtocol,
     UserProfileServiceProtocol,
-    BotRegistryProtocol
+    UserServiceProtocol,
 )
 
 from .base import KitaMiddleware

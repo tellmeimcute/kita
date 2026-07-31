@@ -1,9 +1,9 @@
 
 
-from .base import BaseData
-
-from database.dto.user import UserDTO
 from database.dto.suggestion import SuggestionFullDTO
+from database.dto.user import UserDTO
+
+from .base import BaseData
 
 
 class SuggestionViewerData(BaseData):

@@ -1,6 +1,7 @@
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+
 from core.i18n_translator import Translator
 
 

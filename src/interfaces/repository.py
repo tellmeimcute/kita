@@ -2,15 +2,15 @@
 
 
 from abc import abstractmethod
-from typing import Protocol, Sequence, Any
+from typing import Any, Protocol, Sequence
 
 from core.schemas.objects import UserStats
 from database.dto import (
-    UserDTO,
-    UserProfileDTO,
     SuggestionBaseDTO,
     SuggestionFullDTO,
     UserBotDTO,
+    UserDTO,
+    UserProfileDTO,
 )
 
 

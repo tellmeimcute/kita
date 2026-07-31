@@ -4,32 +4,27 @@ from logging import getLogger
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from aiogram_dialog import DialogManager, StartMode, ShowMode
+from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.filters import I18nTextFilter
+from core.events import CopyMessagesToUserEvent, EventBus
 from core.exceptions import UserImmuneError
+from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 from core.schemas import SuggestionViewerData
-from core.events import EventBus, CopyMessagesToUserEvent
-
 from database.dto import UserDTO, UserProfileDTO
-from database.enums import UserRole, SuggestionStatus
+from database.enums import SuggestionStatus, UserRole
 from interfaces import (
-    UnitOfWorkProtocol,
-    SuggestionServiceProtocol,
     NotifierServiceProtocol,
+    SuggestionServiceProtocol,
+    UnitOfWorkProtocol,
 )
-
-from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
-from usecases import ChangeRoleUseCase
-
-from ui.state_groups import SuggestionViewerSG
-from ui.state_groups import UserMenuSG
 from ui.keyboards import ReplyKeyboard
-
+from ui.state_groups import SuggestionViewerSG, UserMenuSG
+from usecases import ChangeRoleUseCase
+from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 
 router = Router(name="admin_suggestions")
 logger = getLogger("kita.admin_suggestions")

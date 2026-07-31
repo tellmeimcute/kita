@@ -1,14 +1,14 @@
 
-from .repos import (
-    UserStatsRedis,
-    UserRedis,
-    UserProfileRedis,
-    UserBotRedis,
-    TgMessageRedis,
-)
 from .key_builder import (
-    RedisKey,
     KitaKeyBuilder,
-    MediaGroupKeyBulder,
     MediaGroupKey,
+    MediaGroupKeyBulder,
+    RedisKey,
+)
+from .repos import (
+    TgMessageRedis,
+    UserBotRedis,
+    UserProfileRedis,
+    UserRedis,
+    UserStatsRedis,
 )

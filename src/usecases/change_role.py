@@ -3,10 +3,10 @@
 
 from core.config import Config
 from core.exceptions import UserImmuneError
-
-from database.dto import UserDTO, UserProfileDTO
+from database.dto import UserDTO
 from database.enums import UserRole
-from interfaces import UserServiceProtocol, UserProfileServiceProtocol
+from interfaces import UserProfileServiceProtocol, UserServiceProtocol
+
 
 class ChangeRoleUseCase:
 

@@ -1,7 +1,8 @@
 
 
 from datetime import datetime
-from pydantic import computed_field, Field
+
+from pydantic import Field, computed_field
 
 from core.enums import RenderType
 from database.enums import SuggestionStatus

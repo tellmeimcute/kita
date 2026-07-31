@@ -1,11 +1,11 @@
 
+from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
-from aiogram_dialog import DialogManager
 
 from core.i18n_translator import Translator
+from database.dto import UserBotDTO, UserDTO, UserProfileDTO
 from interfaces import SuggestionServiceProtocol, UnitOfWorkProtocol
-from database.dto import UserDTO, UserProfileDTO, UserBotDTO
 
 
 @inject

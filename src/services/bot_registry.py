@@ -2,10 +2,11 @@
 
 import contextvars
 from logging import getLogger
+
 from aiogram import Bot
-from aiogram.enums import ParseMode
-from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.enums import ParseMode
 
 from core.config import Config
 

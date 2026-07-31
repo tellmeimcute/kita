@@ -1,6 +1,6 @@
 
-from typing import Any
 from logging import getLogger
+from typing import Any
 
 from aiogram.types import Message
 from redis.asyncio import Redis
@@ -8,11 +8,9 @@ from redis.asyncio import Redis
 from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
-
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from database.redis import UserStatsRedis, KitaKeyBuilder, RedisKey
-from interfaces import SuggestionRepositoryProtocol, BotRegistryProtocol
-
+from database.redis import KitaKeyBuilder, RedisKey, UserStatsRedis
+from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
 from services.message_parser import MessageParser
 
 logger = getLogger("kita.suggestion_service")

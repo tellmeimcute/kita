@@ -1,6 +1,7 @@
 
-from core.enums import UpperStrEnum
 from enum import auto
+
+from core.enums import UpperStrEnum
 
 
 class UserRole(UpperStrEnum):

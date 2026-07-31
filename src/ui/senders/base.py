@@ -1,6 +1,7 @@
 
 from abc import ABC, abstractmethod
 from logging import getLogger
+
 from aiogram.types import Message, MessageId
 
 logger = getLogger("kita.senders")

@@ -1,29 +1,24 @@
-from pydantic import ValidationError
-
 from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+from pydantic import ValidationError
 
+from core.events import CopyMessagesToUserEvent, EventBus
 from core.exceptions import UserImmuneError
-from core.schemas import IDCommand
 from core.i18n_translator import Translator
-from core.events import EventBus, CopyMessagesToUserEvent
-
-from interfaces import (
-    UnitOfWorkProtocol,
-    UserServiceProtocol,
-    UserProfileServiceProtocol,
-)
-
+from core.schemas import IDCommand
 from database.dto import UserDTO
 from database.enums import UserRole
+from interfaces import (
+    UnitOfWorkProtocol,
+    UserProfileServiceProtocol,
+    UserServiceProtocol,
+)
 from ui.state_groups import ModerationMenuSG
-
 from usecases.change_role import ChangeRoleUseCase
 
 

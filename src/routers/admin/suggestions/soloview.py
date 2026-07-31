@@ -4,24 +4,21 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 from dishka import FromDishka
 
-from core.filters import I18nTextFilter, TextArgsFilter
 from core.exceptions import UserImmuneError
-from core.schemas.viewer import SuggestionViewerData
+from core.filters import I18nTextFilter, TextArgsFilter
 from core.schemas import IDCommand
-
+from core.schemas.viewer import SuggestionViewerData
 from database.dto import UserDTO
-from database.enums import UserRole, SuggestionStatus
+from database.enums import SuggestionStatus, UserRole
 from interfaces import (
-    UnitOfWorkProtocol,
-    SuggestionServiceProtocol,
     NotifierServiceProtocol,
+    SuggestionServiceProtocol,
+    UnitOfWorkProtocol,
 )
-
-from usecases.moderate_suggestion import ModerateSuggestionUseCase
-from usecases.change_role import ChangeRoleUseCase
-
-from ui.state_groups import SuggestionViewerSG
 from ui.keyboards import ReplyKeyboard
+from ui.state_groups import SuggestionViewerSG
+from usecases.change_role import ChangeRoleUseCase
+from usecases.moderate_suggestion import ModerateSuggestionUseCase
 
 router = Router(name="admin_suggesions_soloview")
 

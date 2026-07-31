@@ -1,10 +1,10 @@
 
 from logging import getLogger
-from aiogram.methods import SetWebhook
+
 from aiogram import Bot
+from aiogram.methods import SetWebhook
 
 from core.config import Config
-
 
 logger = getLogger("kita.webhook")
 

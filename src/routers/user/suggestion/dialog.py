@@ -1,12 +1,12 @@
 
 
-from aiogram_dialog import Window, Dialog, ShowMode
-from aiogram_dialog.widgets.kbd import SwitchTo, Row, Start
-from aiogram_dialog.widgets.style import Style
+from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Row, Start, SwitchTo
+from aiogram_dialog.widgets.style import Style
 
+from ui.state_groups import SuggestionSG, UserMenuSG
 from ui.widgets.i18n_text import I18nText
-from ui.state_groups import UserMenuSG, SuggestionSG
 
 from .handlers import on_album_received
 

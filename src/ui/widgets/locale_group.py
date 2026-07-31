@@ -3,17 +3,17 @@
 from itertools import chain
 from typing import Any, Sequence
 
-from dishka import AsyncContainer
-
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import I18n
 from aiogram_dialog import DialogManager, DialogProtocol
 from aiogram_dialog.api.internal import RawKeyboard
-from aiogram_dialog.widgets.kbd import Button, Group, Keyboard
 from aiogram_dialog.widgets.common import WhenCondition
+from aiogram_dialog.widgets.kbd import Button, Group, Keyboard
+from dishka import AsyncContainer
 
 from core.consts import DISHKA_CONTAINER_KEY
 from ui.widgets.i18n_text import I18nText
+
 
 class LocaleGroup(Group):
     def __init__(

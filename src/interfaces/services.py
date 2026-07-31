@@ -1,10 +1,11 @@
 from abc import abstractmethod
-from typing import Protocol, Sequence, Any, Literal
+from typing import Any, Literal, Protocol, Sequence
 
-from aiogram.types import Message, InlineKeyboardMarkup
-from core.schemas.objects import UserStats
+from aiogram.types import InlineKeyboardMarkup, Message
+
 from core.schemas.message_payload import MessagePayload
-from database.dto import UserDTO, UserProfileDTO, SuggestionBaseDTO, SuggestionFullDTO
+from core.schemas.objects import UserStats
+from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO, UserProfileDTO
 from ui.senders.base import BaseSender
 
 

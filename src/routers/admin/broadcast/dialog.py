@@ -1,15 +1,15 @@
 
 
-from aiogram_dialog import Window, Dialog, ShowMode
-from aiogram_dialog.widgets.style import Style
-from aiogram_dialog.widgets.kbd import Row, Button, Start
+from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Button, Row, Start
+from aiogram_dialog.widgets.style import Style
 
-from ui.widgets.i18n_text import I18nText
 from ui.state_groups import AdminMenuSG, BroadcastMenuSG
+from ui.widgets.i18n_text import I18nText
 
 from .getters import get_broadcast_info
-from .handlers import prepare_broadcast, execute_broadcast
+from .handlers import execute_broadcast, prepare_broadcast
 
 wait_broadcast_window = Window(
     I18nText("broadcast_wait_message_text"),
