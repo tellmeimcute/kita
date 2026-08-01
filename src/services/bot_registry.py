@@ -26,6 +26,10 @@ class BotRegistry:
             "_current_bot", default=None
         )
 
+    @property
+    def bot_settings(self) -> dict:
+        return self._bot_settings
+
     def register(self, bot: Bot) -> None:
         self._storage[bot.id] = bot
 

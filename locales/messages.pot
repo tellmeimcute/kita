@@ -260,10 +260,10 @@ msgstr ""
 msgid "reg_bot_token_invalid"
 msgstr ""
 
-msgid "reg_bot_exception"
+msgid "reg_bot_bad_request"
 msgstr ""
 
-msgid "reg_bot_channel_not_enough_permission"
+msgid "reg_bot_permission_error"
 msgstr ""
 
 msgid "reg_bot_alredy_exist"

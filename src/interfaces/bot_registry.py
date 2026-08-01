@@ -8,6 +8,9 @@ from aiogram import Bot
 
 class BotRegistryProtocol(Protocol):
 
+    @property
+    def bot_settings(self) -> dict: ...
+
     @abstractmethod
     def register(self, bot: Bot) -> None: ...
 
