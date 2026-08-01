@@ -33,6 +33,16 @@ class UserBotRepository(BaseRepository):
         orm_models = result.scalars().all()
         return UserBotDTO.from_model_list(orm_models)
 
+    async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]:
+        stmt = (
+            select(UserBot)
+            .where(UserBot.owner_id == owner_id)
+        )
+
+        result = await self._session.execute(stmt)
+        orm_models = result.scalars().all()
+        return UserBotDTO.from_model_list(orm_models)
+
     async def create(
         self,
         token: str,

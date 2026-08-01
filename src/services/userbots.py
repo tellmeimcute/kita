@@ -17,6 +17,7 @@ class UserBotService(BaseService):
     __slots__ = (
         "redis",
         "repo",
+        "owner_userbots_key",
     )
 
     def __init__(
@@ -26,8 +27,11 @@ class UserBotService(BaseService):
         bot_registry: BotRegistryProtocol,
     ):
         super().__init__(bot_registry, KitaKeyBuilder(with_user_id=False))
+
         self.redis = redis
         self.repo = repo
+
+        self.owner_userbots_key = KitaKeyBuilder()
 
     def _get_key(self, bot_id: int):
         redis_key = RedisKey(bot_id=bot_id)
@@ -49,6 +53,18 @@ class UserBotService(BaseService):
         )
 
         return userbot_dto
+
+    async def get_by_owner_id(self, owner_id: int):
+        redis_key = RedisKey(user_id=owner_id)
+        key = self.owner_userbots_key.build(redis_key, "owner_userbots")
+
+        owner_userbots = await UserBotRedis.lrange(self.redis, key)
+        if owner_userbots:
+            return owner_userbots
+
+        userbots = await self.repo.get_by_owner_id(owner_id)
+        await UserBotRedis.rpush(self.redis, key, *userbots)
+        return userbots
 
     async def create(
         self,

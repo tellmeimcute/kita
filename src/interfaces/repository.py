@@ -144,6 +144,10 @@ class UserBotRepositoryProtocol(Protocol):
         ...
 
     @abstractmethod
+    async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]:
+        ...
+
+    @abstractmethod
     async def create(
         self,
         token: str,

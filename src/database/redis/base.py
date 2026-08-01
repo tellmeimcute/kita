@@ -1,9 +1,7 @@
 import json
 import logging
-from typing import Generic, Set, TypeVar
-
+from typing import Sequence, Generic, Set, TypeVar
 from pydantic import BaseModel, SecretStr
-
 from redis.asyncio import Redis
 
 T = TypeVar("T", bound=BaseModel)
@@ -55,9 +53,9 @@ class BaseRedisRepository(Generic[T]):
         logger.info("Cached key %s", key)
 
     @classmethod
-    async def rpush(cls, redis: Redis, key: str, data: T):
-        to_cache_data = cls._prepare_data(data)
-        await redis.rpush(key, to_cache_data)
+    async def rpush(cls, redis: Redis, key: str, *datas: T):
+        to_cache_data = (cls._prepare_data(data) for data in datas)
+        await redis.rpush(key, *to_cache_data)
         await redis.expire(key, cls.expiry)
 
         logger.debug("RPUSH key %s", key)
@@ -65,7 +63,7 @@ class BaseRedisRepository(Generic[T]):
     @classmethod
     async def lrange(
         cls, redis: Redis, key: str, start: int = 0, end: int = -1,
-    ):
+    ) -> Sequence[T]:
         raw_list = await redis.lrange(key, start, end)
         slice: list[T] = []
 
