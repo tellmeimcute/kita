@@ -2,10 +2,9 @@
 from contextlib import asynccontextmanager
 from logging import getLogger
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
+from aiogram.utils.token import extract_bot_id
+
 from dishka import AsyncContainer
 from fastapi import FastAPI
 
@@ -13,7 +12,7 @@ from core.config import Config
 from core.events import EventBus
 from interfaces import BotRegistryProtocol
 from services.webhooks import WebhookService
-from startup import register_all, register_events, setup_registrar_dp
+from startup import setup_slave_dp, register_events, setup_registrar_dp
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 logger = getLogger("kita.fastapi")
@@ -32,19 +31,17 @@ async def lifespan(app: FastAPI):
     config = await container.get(Config)
     webhooks_service = await container.get(WebhookService)
 
-    await register_all(container, dp)
+    await setup_slave_dp(container, dp)
+    await setup_registrar_dp(container, registrar_dp)
     await register_events(event_bus)
 
-    await setup_registrar_dp(container, registrar_dp)
-
-    main_bot = Bot(
-        token=config.tg_token.get_secret_value(),
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-        session=AiohttpSession(proxy=config.PROXY),
-    )
-
     registry: BotRegistryProtocol = await container.get(BotRegistryProtocol)
-    registry.register(main_bot)
+
+    main_bot_token = config.tg_token.get_secret_value()
+    main_bot = registry.get_or_create(
+        bot_id=extract_bot_id(main_bot_token),
+        token=main_bot_token,
+    )
 
     telegram_webhook.assign_registry(registry)
 
@@ -56,7 +53,7 @@ async def lifespan(app: FastAPI):
 
     await webhooks_service.set_webhook(main_bot, url=config.webhook_base_url)
 
-    logger.info("FastAPI startup complete, webhooks registered")
+    logger.info("FastAPI startup complete")
 
     yield
 
@@ -64,4 +61,4 @@ async def lifespan(app: FastAPI):
     await registrar_webhook.shutdown()
 
     await registry.close()
-    logger.info("FastAPI shutdown complete, webhooks removed")
+    logger.info("FastAPI shutdown complete")

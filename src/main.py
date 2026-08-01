@@ -21,7 +21,7 @@ from di import (
     RedisProvider,
     UtilsProvider,
 )
-from web.app import get_app
+from web import get_app
 
 logger = logging.getLogger("kita.main")
 
@@ -38,15 +38,16 @@ def create_container() -> AsyncContainer:
     )
 
 
-def get_dispatcher(config: Config):
-    storage = RedisStorage.from_url(
+def get_storage(config: Config):
+    return RedisStorage.from_url(
         url=config.redis.redis_url,
         key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True),
     )
-    dp = Dispatcher(storage=storage, name="dispatcher")
-    logger.info("Initialized Dispatcher with Redis storage")
-    return dp
 
+def get_dispatcher(storage: RedisStorage):
+    dp = Dispatcher(storage=storage, name="dispatcher")
+    logger.info("Initialized Dispatcher with %s Redis storage", id(storage))
+    return dp
 
 def application() -> FastAPI:
     config = Config.get()
@@ -54,11 +55,12 @@ def application() -> FastAPI:
     setup_logging(config.log_level.upper())
 
     container = create_container()
+    storage = get_storage(config)
 
-    registrar_dp = get_dispatcher(config)
+    registrar_dp = get_dispatcher(storage)
     setup_dishka_aiogram(container, registrar_dp, auto_inject=True)
 
-    dp = get_dispatcher(config)
+    dp = get_dispatcher(storage)
     setup_dishka_aiogram(container, dp, auto_inject=True)
 
     app = get_app(config, registrar_dp, dp, container)

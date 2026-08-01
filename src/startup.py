@@ -101,7 +101,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     logger.info("Routers successfully registered")
 
 
-async def register_all(
+async def setup_slave_dp(
     container: AsyncContainer,
     dp: Dispatcher,
 ):
