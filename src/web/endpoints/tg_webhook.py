@@ -17,7 +17,7 @@ from pydantic import SecretStr
 
 from core.config import Config
 from database.dto import UserBotDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import UnitOfWorkProtocol
 from services import UserBotService
 
 from .tg_webhook_base import BaseTgWebhookEndpoint
@@ -89,14 +89,8 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
         config: Config,
         container: AsyncContainer,
     ):
-        self.bot_registry: BotRegistryProtocol = None
+        super().__init__(dp, secret_token, config, container)
         self.bot = None
-
-        self.dp = dp
-        self.secret_token = secret_token
-        self.config = config
-        self._container = container
-        self.tasks = set()
 
     def assign_bot(self, bot: Bot):
         self.bot = bot

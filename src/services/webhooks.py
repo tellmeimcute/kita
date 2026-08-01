@@ -5,6 +5,7 @@ from aiogram import Bot
 from aiogram.methods import SetWebhook
 
 from core.config import Config
+from services import Cryptographer
 
 logger = getLogger("kita.webhook")
 
@@ -12,6 +13,8 @@ class WebhookService:
 
     def __init__(self, config: Config):
         self.config = config
+
+        self.cryptographer = Cryptographer(config)
 
     async def set_webhook(self, bot: Bot, url: str | None = None) -> None:
         if not url:
@@ -25,9 +28,10 @@ class WebhookService:
         if self.config.webhook_force_update:
             logger.info("Webhook force update enabled. Set/update webhook for bot %s", bot.id)
 
+        secret_token = self.cryptographer.generate_bot_secret(bot.id)
         webhook_request = SetWebhook(
             url=url,
-            secret_token=self.config.webhook_secret.get_secret_value(),
+            secret_token=secret_token,
             drop_pending_updates=True,
         )
 

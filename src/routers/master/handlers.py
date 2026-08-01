@@ -1,3 +1,4 @@
+from logging import getLogger
 from aiogram import Bot, Router
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramUnauthorizedError
@@ -16,6 +17,8 @@ from services import UserBotService, WebhookService
 from ui.state_groups import RegistrarMenuSG
 
 router = Router(name="registrar_start")
+
+logger = getLogger("kita.master_reg_userbot")
 
 @inject
 async def bot_token_handler(
@@ -61,9 +64,11 @@ async def channel_id_handler(
             channel = await tmp_bot.get_chat(channel_id)
             channel_member = await tmp_bot.get_chat_member(channel_id, bot_info.id)
     except TelegramUnauthorizedError:
+        logger.info("Userbot registration failed: invalid token")
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
         return
-    except:
+    except Exception as e:
+        logger.exception("Userbot registration failed: something went wrong")
         manager.dialog_data["something_wrong"] = "reg_bot_exception"
         return
 

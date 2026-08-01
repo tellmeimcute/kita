@@ -1,5 +1,4 @@
 import asyncio
-import secrets
 from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Annotated
@@ -13,6 +12,7 @@ from pydantic import SecretStr
 
 from core.config import Config
 from database.dto import UserBotDTO
+from services import Cryptographer
 from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.fastapi")
@@ -34,6 +34,8 @@ class BaseTgWebhookEndpoint(ABC):
         self.config = config
         self._container = container
         self.tasks = set()
+
+        self.cryptographer = Cryptographer(config)
 
     def assign_registry(self, registry: BotRegistryProtocol):
         self.bot_registry = registry
@@ -65,9 +67,6 @@ class BaseTgWebhookEndpoint(ABC):
             "Dispatcher shutdown and %s tasks cleaned up", len(self.tasks)
         )
 
-    def _verify_secret(self, token: str) -> bool:
-        return secrets.compare_digest(token, self.secret_token.get_secret_value())
-
     def verify_secret(self, bot_id: int, token: str) -> bool:
         if not token:
             logger.warning("Missing secret token header for bot %s", bot_id)
@@ -75,8 +74,9 @@ class BaseTgWebhookEndpoint(ABC):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token header is missing",
             )
+        
+        is_valid_token = self.cryptographer.verify_bot_secret(token, bot_id)
 
-        is_valid_token = self._verify_secret(token)
         if not is_valid_token:
             logger.warning("Invalid secret token for bot %s", bot_id)
             raise HTTPException(
