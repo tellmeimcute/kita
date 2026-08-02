@@ -66,7 +66,8 @@ class UserBotService(BaseService):
             return owner_userbots
 
         userbots = await self.repo.get_by_owner_id(owner_id)
-        await UserBotRedis.rpush(self.redis, key, *userbots)
+        if userbots:
+            await UserBotRedis.rpush(self.redis, key, *userbots)
         return userbots
 
     async def create(
