@@ -20,14 +20,12 @@ def get_app(
 ) -> FastAPI:
     endpoint = TelegramWebhookEndpoint(
         dp=dispatcher,
-        secret_token=config.webhook_secret,
         config=config,
         container=container,
     )
 
     registrar_endpoint = UserBotRegistrarEndpoint(
         dp=registrar_dp,
-        secret_token=config.webhook_secret,
         config=config,
         container=container,
     )

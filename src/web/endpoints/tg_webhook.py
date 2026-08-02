@@ -87,11 +87,10 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
     def __init__(
         self,
         dp: Dispatcher,
-        secret_token: SecretStr,
         config: Config,
         container: AsyncContainer,
     ):
-        super().__init__(dp, secret_token, config, container)
+        super().__init__(dp, config, container)
         self.bot = None
 
     def assign_bot(self, bot: Bot):

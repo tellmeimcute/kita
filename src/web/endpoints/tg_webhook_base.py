@@ -44,14 +44,12 @@ class BaseTgWebhookEndpoint(ABC):
     def __init__(
         self,
         dp: Dispatcher,
-        secret_token: SecretStr,
         config: Config,
         container: AsyncContainer,
     ):
         self.bot_registry: BotRegistryProtocol = None
 
         self.dp = dp
-        self.secret_token = secret_token
         self.config = config
         self._container = container
         self.tasks = set()
