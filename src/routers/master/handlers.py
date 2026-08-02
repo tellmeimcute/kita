@@ -48,15 +48,24 @@ async def bot_token_handler(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
+    uow: FromDishka[UnitOfWorkProtocol],
+    userbot_service: FromDishka[UserBotService],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
     token = message.text.strip()
-    
+
     try:
         bot_id = extract_bot_id(token)
     except TokenValidationError:
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
         return
     
+    async with uow.transaction():
+        if await userbot_service.get(bot_id):
+            await notifier.send_text(user_dto, "reg_bot_alredy_exist")
+            return await manager.start(RegistrarMenuSG.menu)
+
     manager.dialog_data["new_userbot_token"] = token
     manager.dialog_data["new_userbot_bot_id"] = bot_id
 
@@ -101,13 +110,6 @@ async def channel_id_handler(
         return
 
     async with uow.transaction():
-        if await userbot_service.get(bot_info.id):
-            await notifier.send_text(user_dto, "reg_bot_alredy_exist")
-            return await manager.start(
-                RegistrarMenuSG.menu,
-                show_mode=ShowMode.DELETE_AND_SEND,
-            )
-        
         await userbot_service.create(
             token=token,
             bot_id=bot_info.id,
