@@ -58,7 +58,7 @@ class UserProfileRepository(BaseRepository):
                 UserProfile.user_id == user_id,
                 UserProfile.bot_id == self.bot.id,
             )
-            .values(data)
+            .values(**data)
         )
         await self._session.execute(stmt)
 

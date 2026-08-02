@@ -37,7 +37,7 @@ class SuggestionRepository(BaseRepository):
         stmt = update(Suggestion).where(
             Suggestion.id == suggestion_id,
             Suggestion.bot_id == self.bot.id,
-        ).values(data)
+        ).values(**data)
         await self._session.execute(stmt)
 
     async def save(self, dto: SuggestionBaseDTO):

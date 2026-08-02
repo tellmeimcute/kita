@@ -43,7 +43,7 @@ class UserRepository(BaseRepository):
         return UserDTO.model_validate(orm_model)
 
     async def update(self, user_id: int, **data: Any):
-        stmt = update(UserAlchemy).where(UserAlchemy.user_id == user_id).values(data)
+        stmt = update(UserAlchemy).where(UserAlchemy.user_id == user_id).values(**data)
         await self._session.execute(stmt)
 
     async def create(self, dto: UserDTO):

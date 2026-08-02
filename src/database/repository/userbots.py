@@ -68,7 +68,7 @@ class UserBotRepository(BaseRepository):
         stmt = (
             update(UserBot)
             .where(UserBot.bot_id == bot_id)
-            .values(data)
+            .values(**data)
         )
         await self._session.execute(stmt)
 
