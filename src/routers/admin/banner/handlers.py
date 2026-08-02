@@ -34,7 +34,7 @@ async def get_banner_text(
         return
 
     if isinstance(media, list):
-        media = media[0]
+        media = media[-1]
         await message.bot.send_photo(
             userbot_dto.channel_id,
             photo=media.file_id,

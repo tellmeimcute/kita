@@ -31,7 +31,7 @@ class UserBotService(BaseService):
         self.redis = redis
         self.repo = repo
 
-        self.owner_userbots_key = KitaKeyBuilder()
+        self.owner_userbots_key = KitaKeyBuilder(with_bot_id=False)
 
     def _get_key(self, bot_id: int):
         redis_key = RedisKey(bot_id=bot_id)
@@ -50,7 +50,7 @@ class UserBotService(BaseService):
         if not userbot_dto:
             return None
 
-        await UserBotRedis.set(
+        await UserBotRedis.set_cache(
             redis=self.redis,
             key=self._get_key(bot_id),
             data=userbot_dto,

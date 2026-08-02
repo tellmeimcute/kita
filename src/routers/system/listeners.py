@@ -93,17 +93,21 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
             )
 
 async def copy_to_user_notify_both(
-    event: CopyMessagesToUserEvent, container: AsyncContainer
+    event: CopyMessagesToUserEvent,
+    container: AsyncContainer,
 ):
-        notifier = await container.get(NotifierServiceProtocol)
+    notifier = await container.get(NotifierServiceProtocol)
+    sent = await notifier.copy_messages(
+        user_dto=event.user_dto, 
+        messages=event.album_ids, 
+        source=event.source_chat_id
+    )
+    
+    await notifier.send_text(event.user_dto, "notify_you_receive_message")
 
-        sent = await notifier.copy_messages(
-            user_dto=event.user_dto, 
-            messages=event.album_ids, 
-            source=event.source_chat_id
-        )
-        
-        await notifier.send_text(event.user_dto, "notify_you_receive_message")
+    i18n = await container.get(I18n)
 
-        i18n_key = "message_delivered" if sent else "message_not_delivered"
-        await notifier.send_text(event.caller_dto, i18n_key)
+    with i18n.context():
+        with i18n.use_locale(event.caller_dto.language_code):
+            i18n_key = "message_delivered" if sent else "message_not_delivered"
+            await notifier.send_text(event.caller_dto, i18n_key)

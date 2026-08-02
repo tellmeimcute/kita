@@ -56,7 +56,7 @@ class SuggestionService(BaseService):
             return stats_row
 
         user_stats = await self.repo.user_stats(user_dto.user_id)
-        await UserStatsRedis.set(self.redis, key, user_stats)
+        await UserStatsRedis.set_cache(self.redis, key, user_stats)
         return user_stats
 
     async def get(self, suggestion_id: int):

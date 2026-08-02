@@ -34,7 +34,7 @@ class UserProfileService(BaseService):
 
         profile_dto = await self.repo.get_or_create(user_id)
 
-        await UserProfileRedis.set(
+        await UserProfileRedis.set_cache(
             redis=self.redis,
             key=self._get_key(user_id),
             data=profile_dto,
@@ -50,7 +50,7 @@ class UserProfileService(BaseService):
         if not profile_dto:
             return None
 
-        await UserProfileRedis.set(
+        await UserProfileRedis.set_cache(
             redis=self.redis,
             key=self._get_key(user_id),
             data=profile_dto,
@@ -59,7 +59,7 @@ class UserProfileService(BaseService):
 
     async def create(self, user_id: int) -> UserProfileDTO:
         profile_dto = await self.repo.create(user_id)
-        await UserProfileRedis.set(
+        await UserProfileRedis.set_cache(
             redis=self.redis,
             key=self._get_key(user_id),
             data=profile_dto,
