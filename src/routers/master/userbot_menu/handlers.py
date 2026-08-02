@@ -95,7 +95,7 @@ async def update_token(
     try:
         token = message.text.strip()
         token_bot_id = extract_bot_id(token)
-    except TokenValidationError:
+    except (TokenValidationError, AttributeError):
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
         return
 
