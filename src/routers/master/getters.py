@@ -11,5 +11,5 @@ async def get_error_text(
     translator: FromDishka[Translator],
     **kwargs,
 ):
-    something_wrong_i18n_key = dialog_manager.dialog_data.pop("something_wrong", None)
-    return {"error": translator.translate(something_wrong_i18n_key)}
+    i18n_key = dialog_manager.dialog_data.pop("something_wrong", None)
+    return {"error": translator.translate(i18n_key)}
