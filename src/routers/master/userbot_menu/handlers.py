@@ -19,4 +19,4 @@ async def on_bot_selected(
     item_id: str,
 ):
     manager.dialog_data["selected_bot_id"] = item_id
-    return manager.switch_to(UserBotSelectSG.moderation)
+    return await manager.switch_to(UserBotSelectSG.moderation)

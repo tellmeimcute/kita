@@ -33,11 +33,6 @@ userbot_moderation_window = Window(
         id="main_menu",
         state=RegistrarMenuSG.menu,
     ),
-    Start(
-        I18nText("menu_btn"),
-        id="main_menu",
-        state=RegistrarMenuSG.menu,
-    ),
     state=UserBotSelectSG.moderation,
     getter=get_selected_userbot,
 )
