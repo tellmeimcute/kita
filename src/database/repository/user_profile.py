@@ -147,6 +147,7 @@ class UserProfileRepository(BaseRepository):
             .where(
                 Suggestion.author_id == user_id,
                 Suggestion.bot_id == self.bot.id,
+                Suggestion.status == SuggestionStatus.PENDING,
             )
             .values(status=SuggestionStatus.DECLINED)
         )
