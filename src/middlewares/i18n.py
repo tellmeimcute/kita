@@ -39,6 +39,9 @@ class KitaI18nMiddleware(KitaMiddleware):
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
         aiogram_user: AiogramUser = data.get("event_from_user")
 
+        if not aiogram_user:
+            return None
+
         uow = await container.get(UnitOfWorkProtocol)
         user_service = await container.get(UserServiceProtocol)
         async with uow.transaction():
