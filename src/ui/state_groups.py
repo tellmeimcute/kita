@@ -49,4 +49,8 @@ class RegistrarMenuSG(StatesGroup):
 class UserBotRegisterSG(StatesGroup):
     wait_token = State()
     wait_channel_id = State()
-    
+
+
+class UserBotSelectSG(StatesGroup):
+    select = State()
+    moderation = State()

@@ -29,6 +29,7 @@ from routers.master import (
     userbot_registrar_dialog,
     userbot_registrar_menu_dialog,
     userbot_registrar_router,
+    userbot_select_dialog,
 )
 from routers.system import get_error_router
 from routers.system.listeners import (
@@ -126,5 +127,6 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
         userbot_registrar_router,
         userbot_registrar_dialog,
         userbot_registrar_menu_dialog,
+        userbot_select_dialog,
         get_error_router(),
     )

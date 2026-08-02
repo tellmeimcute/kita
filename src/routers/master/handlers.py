@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.token import TokenValidationError, extract_bot_id
 
-from aiogram_dialog import DialogManager, ShowMode, StartMode
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput
 
@@ -18,7 +18,7 @@ from dishka.integrations.aiogram_dialog import inject
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
-from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
+from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG, UserBotSelectSG
 
 router = Router(name="registrar")
 
@@ -125,7 +125,6 @@ async def channel_id_handler(
 
     await manager.start(
         RegistrarMenuSG.menu,
-        mode=StartMode.RESET_STACK,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
 
@@ -138,6 +137,5 @@ async def registrar_start_menu(message: Message, state: FSMContext, dialog_manag
 
     await dialog_manager.start(
         RegistrarMenuSG.menu,
-        mode=StartMode.RESET_STACK,
         show_mode=ShowMode.DELETE_AND_SEND,
     )

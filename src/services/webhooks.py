@@ -5,7 +5,7 @@ from aiogram import Bot
 from aiogram.methods import SetWebhook
 
 from core.config import Config
-from services import Cryptographer
+from .cryptographer import Cryptographer
 
 logger = getLogger("kita.webhook")
 

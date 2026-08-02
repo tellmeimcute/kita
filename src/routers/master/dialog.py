@@ -3,7 +3,7 @@ from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Start, Button
 from aiogram_dialog.widgets.text import Format
 
-from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
+from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG, UserBotSelectSG
 from ui.widgets.i18n_text import I18nText
 
 from .getters import get_error_text
@@ -16,6 +16,11 @@ menu_window = Window(
         id="start_register",
         on_click=start_registration,
     ),
+    Start(
+        I18nText("start_userbot_selection"),
+        id="userbots_select",
+        state=UserBotSelectSG.select,
+    ),
     state=RegistrarMenuSG.menu,
 )
 
@@ -26,7 +31,6 @@ get_bot_token_window = Window(
     Start(
         I18nText("menu_btn"),
         id="main_menu",
-        mode=StartMode.RESET_STACK,
         state=RegistrarMenuSG.menu,
     ),
     state=UserBotRegisterSG.wait_token,
@@ -40,7 +44,6 @@ get_channel_id_window = Window(
     Start(
         I18nText("menu_btn"),
         id="main_menu",
-        mode=StartMode.RESET_STACK,
         state=RegistrarMenuSG.menu,
     ),
     state=UserBotRegisterSG.wait_channel_id,
