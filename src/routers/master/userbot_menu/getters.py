@@ -29,6 +29,9 @@ async def get_selected_userbot(
     **kwargs,
 ):
     bot_id = dialog_manager.dialog_data.get("selected_bot_id")
+    if not bot_id:
+        return {"selected_userbot": None}
+
     async with uow.transaction():
         userbot = await userbot_service.get(int(bot_id))
 
