@@ -47,7 +47,7 @@ async def userbot_set_toggle(
         userbot.active = not userbot.active
         await userbot_service.save(userbot)
 
-    bot = await bot_registry.get_or_create(
+    bot = bot_registry.get_or_create(
         bot_id, userbot.token.get_secret_value()
     )
 
