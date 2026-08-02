@@ -2,6 +2,7 @@ from logging import getLogger
 from typing import Any
 
 from aiogram import Router, Bot
+from aiogram.enums import ChatMemberStatus
 from aiogram.types import CallbackQuery, Message
 from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
 from aiogram.utils.token import TokenValidationError, extract_bot_id
@@ -60,6 +61,8 @@ async def userbot_set_toggle(
             await webhook_service.remove_webhook(bot)
         if userbot.active:
             await webhook_service.set_webhook(bot)
+
+        await callback.answer("Userbot active state changed.")
     except TelegramUnauthorizedError:
         async with uow.transaction():
             userbot.active = False
@@ -112,7 +115,6 @@ async def update_token(
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     await notifier.send_text(user_dto, "userbot_token_updated")
 
-    await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
 
 @inject
@@ -146,9 +148,14 @@ async def update_channel(
 
     try:
         channel = await bot.get_chat(channel_id)
+        channel_member = await bot.get_chat_member(channel_id, bot.id)
     except TelegramBadRequest as e:
         logger.exception("Userbot channel_id change failed: %s", e.message)
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
+        return
+    
+    if channel_member.status != ChatMemberStatus.ADMINISTRATOR or not channel_member.can_post_messages:
+        manager.dialog_data["something_wrong"] = "reg_bot_permission_error"
         return
 
     async with uow.transaction():
@@ -159,5 +166,4 @@ async def update_channel(
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     await notifier.send_text(user_dto, "userbot_channel_updated")
 
-    await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
