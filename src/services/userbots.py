@@ -37,6 +37,10 @@ class UserBotService(BaseService):
         redis_key = RedisKey(bot_id=bot_id)
         return self._key_builder.build(redis_key, self.REDIS_KEY_PART)
 
+    def _get_owner_key(self, owner_id: int):
+        redis_key = RedisKey(user_id=owner_id)
+        return self.owner_userbots_key.build(redis_key, "owner_userbots")
+
     async def get(self, bot_id: int) -> UserBotDTO | None:
         cached_bot = await UserBotRedis.get(self.redis, self._get_key(bot_id))
         if cached_bot:
@@ -55,8 +59,7 @@ class UserBotService(BaseService):
         return userbot_dto
 
     async def get_by_owner_id(self, owner_id: int):
-        redis_key = RedisKey(user_id=owner_id)
-        key = self.owner_userbots_key.build(redis_key, "owner_userbots")
+        key = self._get_owner_key(owner_id)
 
         owner_userbots = await UserBotRedis.lrange(self.redis, key)
         if owner_userbots:
@@ -75,7 +78,11 @@ class UserBotService(BaseService):
         channel_id: int,
         channel_name: str,
     ):
+        await UserBotRedis.delete(
+            redis=self.redis, key=self._get_owner_key(owner_id)
+        )
         await UserBotRedis.delete(redis=self.redis, key=self._get_key(bot_id))
+        
         return await self.repo.create(
             token, bot_id, username, owner_id, channel_id, channel_name
         )
