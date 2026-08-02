@@ -103,9 +103,10 @@ async def update_token(
         await userbot_service.update(bot_id, token=token)
         userbot = await userbot_service.get(bot_id)
 
-    bot_registry.remove(bot_id)
-    bot = bot_registry.get_or_create(bot_id, token)
-    await webhook_service.set_webhook(bot)
+    if userbot.active:
+        bot_registry.remove(bot_id)
+        bot = bot_registry.get_or_create(bot_id, token)
+        await webhook_service.set_webhook(bot)
 
     await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
@@ -143,4 +144,3 @@ async def update_channel(
 
     await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
-    
