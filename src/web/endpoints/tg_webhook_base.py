@@ -3,12 +3,16 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Annotated
 
+from pydantic import SecretStr
+
 from aiogram import Bot, Dispatcher
 from aiogram.methods import TelegramMethod
 from aiogram.types import Update
+
+from fastapi import Body, FastAPI, Header, HTTPException, Path, status, Depends
+
 from dishka import AsyncContainer
-from fastapi import Body, FastAPI, Header, HTTPException, Path, status
-from pydantic import SecretStr
+from dishka.integrations.fastapi import FromDishka, inject
 
 from core.config import Config
 from database.dto import UserBotDTO
@@ -16,6 +20,23 @@ from services import Cryptographer
 from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.fastapi")
+
+
+@inject
+async def verify_secret_token(
+    cryptographer: FromDishka[Cryptographer],
+    bot_id: Annotated[int, Path()],
+    x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
+):
+    if not cryptographer.verify_bot_secret(
+        x_telegram_bot_api_secret_token, bot_id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid secret token",
+        )
+    
+    return True
 
 
 class BaseTgWebhookEndpoint(ABC):
@@ -68,23 +89,14 @@ class BaseTgWebhookEndpoint(ABC):
         )
 
     def verify_secret(self, bot_id: int, token: str) -> bool:
-        if not token:
-            logger.warning("Missing secret token header for bot %s", bot_id)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token header is missing",
-            )
-        
-        is_valid_token = self.cryptographer.verify_bot_secret(token, bot_id)
-
-        if not is_valid_token:
+        if not self.cryptographer.verify_bot_secret(token, bot_id):
             logger.warning("Invalid secret token for bot %s", bot_id)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid secret token",
             )
-
-        return is_valid_token
+        
+        return True
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
         token = None
@@ -106,8 +118,8 @@ class BaseTgWebhookEndpoint(ABC):
     async def _handle(
         self,
         bot_id: Annotated[int, Path()],
+        is_token_valid: Annotated[bool, Depends(verify_secret_token)],
         update: Annotated[Update, Body()],
-        x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
     ):
         raise NotImplementedError
     

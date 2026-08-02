@@ -2,9 +2,11 @@ import asyncio
 from logging import getLogger
 from typing import Annotated
 
+from pydantic import SecretStr
+
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update
-from dishka import AsyncContainer
+
 from fastapi import (
     Body,
     Header,
@@ -12,15 +14,17 @@ from fastapi import (
     Path,
     Response,
     status,
+    Depends,
 )
-from pydantic import SecretStr
+
+from dishka import AsyncContainer
 
 from core.config import Config
 from database.dto import UserBotDTO
 from interfaces import UnitOfWorkProtocol
 from services import UserBotService
 
-from .tg_webhook_base import BaseTgWebhookEndpoint
+from .tg_webhook_base import BaseTgWebhookEndpoint, verify_secret_token
 
 logger = getLogger("kita.fastapi")
 
@@ -66,11 +70,9 @@ class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
     async def _handle(
         self,
         bot_id: Annotated[int, Path()],
+        is_token_valid: Annotated[bool, Depends(verify_secret_token)],
         update: Annotated[Update, Body()],
-        x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
     ):
-        self.verify_secret(bot_id, x_telegram_bot_api_secret_token)
-        
         bot, userbot = await self._resolve_bot(bot_id)
 
         task = asyncio.create_task(self._feed_update(bot, update, userbot))
@@ -101,7 +103,7 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
         x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
     ):
         self.verify_secret(self.bot.id, x_telegram_bot_api_secret_token)
-
+        
         task = asyncio.create_task(self._feed_update(self.bot, update, None))
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)

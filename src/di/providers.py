@@ -37,6 +37,7 @@ from services.user import UserService
 from services.user_profile import UserProfileService
 from services.userbots import UserBotService
 from services.webhooks import WebhookService
+from services.cryptographer import Cryptographer
 from ui.suggestion_utils import SuggestionUtils
 from usecases import (
     BroadcastUseCase,
@@ -46,6 +47,8 @@ from usecases import (
 
 
 class InfraProvider(Provider):
+    cryptographer = provide(Cryptographer, scope=Scope.APP)
+
     event_bus = provide(EventBus, scope=Scope.APP)
 
     webhook_service = provide(WebhookService, scope=Scope.APP)
