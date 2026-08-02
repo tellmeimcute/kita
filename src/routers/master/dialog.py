@@ -17,7 +17,7 @@ menu_window = Window(
         on_click=start_registration,
     ),
     Start(
-        I18nText("start_userbot_selection"),
+        I18nText("my_userbots_selection_btn"),
         id="userbots_select",
         state=UserBotSelectSG.select,
     ),

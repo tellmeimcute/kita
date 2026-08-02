@@ -330,8 +330,7 @@ msgstr ""
 "<code>{new_user_dto[user_id]}</code>"
 
 msgid "registrar_menu"
-msgstr ""
-"<b>✨ Hi! This is Suggestions Bot Creation Menu</b>"
+msgstr "<b>✨ Hi! This is Suggestions Bot Creation Menu</b>"
 
 msgid "start_userbot_register_btn"
 msgstr "Register"
@@ -345,21 +344,55 @@ msgstr "Send your bot TOKEN."
 msgid "reg_bot_token_invalid"
 msgstr "The token is invalid. Send a valid token."
 
+msgid "reg_bot_token_from_another_bot"
+msgstr "<b>This token is from another bot</b>"
+
+msgid "reg_bot_channel_id_should_be_int"
+msgstr "<b>Channel ID must be a number.</b>"
+
 msgid "reg_bot_bad_request"
 msgstr ""
 "\n"
-"Channel not found."
-"Check whether your bot has been added to the channel you specified.\n"
+"<b>Channel not found. Check if the bot has been added to the channel.</b>"
+"\n"
 
 msgid "reg_bot_permission_error"
 msgstr ""
-"<b>Bot does not have permissions to post messages in your channel.</b>\n"
+"\n"
+"<b>The bot does not have sufficient permissions to post messages in the "
+"channel.</b>\n"
 
 msgid "reg_bot_alredy_exist"
-msgstr "The bot is already registered."
+msgstr "Bot is already registered."
 
 msgid "reg_bot_userbot_registered"
-msgstr "🎉 <b>Your bot is registered, you can use the suggestion!</b>"
+msgstr ""
+"🎉 <b>Your bot has been successfully registered, you can use the "
+"suggestion feature!</b>"
+
+msgid "userbots_moderation_select"
+msgstr "🤖 <b>List of your bots below</b>"
+
+msgid "userbot_set_inactive_btn"
+msgstr "✨ Disable bot"
+
+msgid "userbot_set_active_btn"
+msgstr "✨ Enable bot"
+
+msgid "userbot_update_token_btn"
+msgstr "🔏 Update token"
+
+msgid "userbot_update_channel_btn"
+msgstr "🎨 Update channel"
+
+msgid "my_userbots_selection_btn"
+msgstr "🤖 My bots"
+
+msgid "userbot_update_token"
+msgstr "<b>Send the new token.</b>"
+
+msgid "userbot_update_channel"
+msgstr "<b>Send the ID of the new channel.</b>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"

@@ -35,24 +35,24 @@ userbot_moderation_window = Window(
     Format("{error}", when="error"),
     Format("{selected_userbot.username}"),
     Button(
-        I18nText("userbot_set_inactive"),
+        I18nText("userbot_set_inactive_btn"),
         id="userbot_set_inactive",
         on_click=userbot_set_toggle,
         when=F["selected_userbot"].active
     ),
     Button(
-        I18nText("userbot_set_active"),
+        I18nText("userbot_set_active_btn"),
         id="userbot_set_active",
         on_click=userbot_set_toggle,
         when=~F["selected_userbot"].active
     ),
     SwitchTo(
-        I18nText("userbot_update_token"),
+        I18nText("userbot_update_token_btn"),
         id="userbot_update_token",
         state=UserBotSelectSG.update_token,
     ),
     SwitchTo(
-        I18nText("userbot_update_channel"),
+        I18nText("userbot_update_channel_btn"),
         id="userbot_update_chanell",
         state=UserBotSelectSG.update_channel,
     ),

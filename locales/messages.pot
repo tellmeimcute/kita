@@ -260,6 +260,12 @@ msgstr ""
 msgid "reg_bot_token_invalid"
 msgstr ""
 
+msgid "reg_bot_token_from_another_bot"
+msgstr ""
+
+msgid "reg_bot_channel_id_should_be_int"
+msgstr ""
+
 msgid "reg_bot_bad_request"
 msgstr ""
 
@@ -270,6 +276,30 @@ msgid "reg_bot_alredy_exist"
 msgstr ""
 
 msgid "reg_bot_userbot_registered"
+msgstr ""
+
+msgid "userbots_moderation_select"
+msgstr ""
+
+msgid "userbot_set_inactive_btn"
+msgstr ""
+
+msgid "userbot_set_active_btn"
+msgstr ""
+
+msgid "userbot_update_token_btn"
+msgstr ""
+
+msgid "userbot_update_channel_btn"
+msgstr ""
+
+msgid "my_userbots_selection_btn"
+msgstr ""
+
+msgid "userbot_update_token"
+msgstr ""
+
+msgid "userbot_update_channel"
 msgstr ""
 
 msgid "locale_ru_string"

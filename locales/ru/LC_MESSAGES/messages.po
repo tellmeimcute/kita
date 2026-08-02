@@ -314,7 +314,8 @@ msgstr ""
 "<b>Роль</b> <code>{target_profile_i18n[role]}</code>\n"
 "\n"
 "<b>Дата регистрации</b> <code>{target_profile_i18n[created_at]}</code>\n"
-"<b>Последнее обновление</b> <code>{target_profile_i18n[updated_at]}</code>\n"
+"<b>Последнее обновление</b> "
+"<code>{target_profile_i18n[updated_at]}</code>\n"
 
 msgid "rate_limited_warning"
 msgstr "RateLimited. Подождите пару секунд 😴"
@@ -336,8 +337,7 @@ msgstr ""
 "<code>{new_user_dto[user_id]}</code>"
 
 msgid "registrar_menu"
-msgstr ""
-"<b>✨ Привет! Это регистратор предложки для твоего канала!</b>"
+msgstr "<b>✨ Привет! Это регистратор предложки для твоего канала!</b>"
 
 msgid "start_userbot_register_btn"
 msgstr "Регистрация"
@@ -351,22 +351,51 @@ msgstr "Отправьте ТОКЕН совего бота."
 msgid "reg_bot_token_invalid"
 msgstr "Токен инвалидный. Отправьте валидный токен."
 
+msgid "reg_bot_token_from_another_bot"
+msgstr "<b>Этот токен от другого бота</b>"
+
+msgid "reg_bot_channel_id_should_be_int"
+msgstr "<b>ID канала должно быть числом.</b>"
+
 msgid "reg_bot_bad_request"
 msgstr ""
 "\n"
-"Канал не найден."
-"Проверьте добавлен ли ваш бот в указанный вами канал.\n"
+"<b>Канал не найден. Проверьте добавлен ли бот в канал.</b>\n"
 
 msgid "reg_bot_permission_error"
 msgstr ""
 "\n"
-"<b>У бота не достаточно прав для публикации сообщений в вашем канале.</b>\n"
+"<b>У бота не достаточно прав для публикации сообщений в канале.</b>\n"
 
 msgid "reg_bot_alredy_exist"
 msgstr "Бот уже зарегистрирован."
 
 msgid "reg_bot_userbot_registered"
-msgstr "🎉 <b>Ваш бот зарегистрирован, можете пользоваться предложкой!</b>"
+msgstr "🎉 <b>Ваш бот успешно зарегистрирован, можете пользоваться предложкой!</b>"
+
+msgid "userbots_moderation_select"
+msgstr "🤖 <b>Список ваших ботов ниже</b>"
+
+msgid "userbot_set_inactive_btn"
+msgstr "✨ Отключить бота"
+
+msgid "userbot_set_active_btn"
+msgstr "✨ Включить бота"
+
+msgid "userbot_update_token_btn"
+msgstr "🔏 Обновить токен"
+
+msgid "userbot_update_channel_btn"
+msgstr "🎨 Обновить канал"
+
+msgid "my_userbots_selection_btn"
+msgstr "🤖 Мои боты"
+
+msgid "userbot_update_token"
+msgstr "<b>Отправьте новый токен.</b>"
+
+msgid "userbot_update_channel"
+msgstr "<b>Отправьте ID нового канала.</b>"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
