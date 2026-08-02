@@ -19,6 +19,8 @@ class Config(BaseConfig):
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
 
+    max_userbots_per_user: int = 1
+
     domain: SecretStr
     webhook_port: int = 443
     webhook_secret: SecretStr

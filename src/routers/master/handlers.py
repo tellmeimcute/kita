@@ -15,6 +15,7 @@ from aiogram_dialog.widgets.input import MessageInput
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
+from core.config import Config
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
@@ -32,13 +33,14 @@ async def start_registration(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
+    config: FromDishka[Config],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
     async with uow.transaction():
         userbots = await userbot_service.get_by_owner_id(user_dto.user_id)
 
-    if len(userbots) > 1:
+    if len(userbots) >= config.max_userbots_per_user:
         return await callback.answer("Userbot limit exceeded!")
     
     await manager.start(UserBotRegisterSG.wait_token)
