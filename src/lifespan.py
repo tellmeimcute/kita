@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
     await register_events(event_bus)
 
     registry: BotRegistryProtocol = await container.get(BotRegistryProtocol)
+    registry.allowed_updates = dp.resolve_used_update_types()
 
     main_bot_token = config.tg_token.get_secret_value()
     main_bot = registry.get_or_create(
@@ -51,7 +52,12 @@ async def lifespan(app: FastAPI):
     await telegram_webhook.startup()
     await registrar_webhook.startup()
 
-    await webhooks_service.set_webhook(main_bot, url=config.webhook_base_url)
+    allowed_updates = registrar_dp.resolve_used_update_types()
+    await webhooks_service.set_webhook(
+        main_bot,
+        url=config.webhook_base_url,
+        allowed_updates=allowed_updates,
+    )
 
     logger.info("FastAPI startup complete")
 

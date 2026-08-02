@@ -14,6 +14,7 @@ logger = getLogger("kita.bot_registry")
 
 class BotRegistry:
     def __init__(self, config: Config):
+        self._slaves_allowed_updates = []
         self._storage: dict[int, Bot] = {}
 
         self._session = AiohttpSession(proxy=config.PROXY)
@@ -29,6 +30,16 @@ class BotRegistry:
     @property
     def bot_settings(self) -> dict:
         return self._bot_settings
+
+    @property
+    def allowed_updates(self) -> list[str]:
+        return self._slaves_allowed_updates
+
+    @allowed_updates.setter
+    def allowed_updates(self, value):
+        if not isinstance(value, list):
+            raise ValueError("allowed updates should be list.")
+        self._slaves_allowed_updates = value
 
     def register(self, bot: Bot) -> None:
         self._storage[bot.id] = bot

@@ -1,37 +1,48 @@
 
 from logging import getLogger
+from typing import Sequence
 
 from aiogram import Bot
+from aiogram.types import WebhookInfo
 from aiogram.methods import SetWebhook
 
 from core.config import Config
+from interfaces import BotRegistryProtocol
 from .cryptographer import Cryptographer
 
 logger = getLogger("kita.webhook")
 
 class WebhookService:
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, bot_registry: BotRegistryProtocol):
         self.config = config
-
+        self.bot_registry = bot_registry
         self.cryptographer = Cryptographer(config)
 
-    async def set_webhook(self, bot: Bot, url: str | None = None) -> None:
-        if not url:
-            url = f"{self.config.webhook_base_url}/{bot.id}"
+    async def set_webhook(
+        self,
+        bot: Bot,
+        url: str | None = None,
+        force_update: bool = False,
+        allowed_updates: Sequence[str] | None = None
+    ) -> WebhookInfo:
 
+        webhook_url = url or f"{self.config.webhook_base_url}/{bot.id}"
+        should_force = force_update or self.config.webhook_force_update
         current_webhook = await bot.get_webhook_info()
-        if current_webhook.url == url and not self.config.webhook_force_update:
-            logger.debug("Webhook already set for bot %s: %s", bot.id, url)
+
+        if current_webhook.url == webhook_url and not should_force:
+            logger.debug("Webhook already set for bot %s: %s", bot.id, webhook_url)
             return current_webhook
 
-        if self.config.webhook_force_update:
+        if should_force:
             logger.info("Webhook force update enabled. Set/update webhook for bot %s", bot.id)
 
         secret_token = self.cryptographer.generate_bot_secret(bot.id)
         webhook_request = SetWebhook(
-            url=url,
+            url=webhook_url,
             secret_token=secret_token,
+            allowed_updates=allowed_updates or self.bot_registry.allowed_updates,
             drop_pending_updates=True,
         )
 
