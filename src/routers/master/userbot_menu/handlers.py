@@ -118,11 +118,20 @@ async def update_channel(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
-    webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
 ):
+    if not message.text:
+        manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
+        return
+    
+    try:
+        provided_channel_id = message.text.strip()
+        channel_id = int("-100" + provided_channel_id)
+    except ValueError:
+        logger.exception("Userbot channel_id to '%s' change failed", provided_channel_id)
+        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_should_be_int"
+        return
 
-    channel_id = int("-100" + message.text.strip())
     bot_id = int(manager.dialog_data["selected_bot_id"])
 
     async with uow.transaction():
