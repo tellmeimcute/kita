@@ -302,6 +302,12 @@ msgstr ""
 msgid "userbot_update_channel"
 msgstr ""
 
+msgid "userbot_token_updated"
+msgstr ""
+
+msgid "userbot_channel_updated"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 

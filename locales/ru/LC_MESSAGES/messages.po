@@ -397,6 +397,12 @@ msgstr "<b>Отправьте новый токен.</b>"
 msgid "userbot_update_channel"
 msgstr "<b>Отправьте ID нового канала.</b>"
 
+msgid "userbot_token_updated"
+msgstr "🟢 <b>Токен успешно обновлен</b>"
+
+msgid "userbot_channel_updated"
+msgstr "🟢 <b>Канал успешно обновлен</b>"
+
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
 

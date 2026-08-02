@@ -18,7 +18,7 @@ from dishka.integrations.aiogram_dialog import inject
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
-from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG, UserBotSelectSG
+from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 
 router = Router(name="registrar")
 
@@ -53,9 +53,9 @@ async def bot_token_handler(
     notifier: FromDishka[NotifierServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    token = message.text.strip()
 
     try:
+        token = message.text.strip()
         bot_id = extract_bot_id(token)
     except TokenValidationError:
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"

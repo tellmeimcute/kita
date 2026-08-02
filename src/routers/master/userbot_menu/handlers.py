@@ -16,7 +16,7 @@ from aiogram_dialog.widgets.kbd import Select, Button
 from ui.state_groups import UserBotSelectSG
 from database.dto import UserDTO
 from services import UserBotService, WebhookService
-from interfaces import UnitOfWorkProtocol, BotRegistryProtocol
+from interfaces import UnitOfWorkProtocol, BotRegistryProtocol, NotifierServiceProtocol
 
 router = Router(name="registrar")
 
@@ -85,11 +85,12 @@ async def update_token(
     userbot_service: FromDishka[UserBotService],
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
-    token = message.text.strip()
     bot_id = int(manager.dialog_data["selected_bot_id"])
 
     try:
+        token = message.text.strip()
         token_bot_id = extract_bot_id(token)
     except TokenValidationError:
         manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
@@ -108,6 +109,9 @@ async def update_token(
         bot = bot_registry.get_or_create(bot_id, token)
         await webhook_service.set_webhook(bot)
 
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    await notifier.send_text(user_dto, "userbot_token_updated")
+
     await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
 
@@ -119,6 +123,7 @@ async def update_channel(
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
     bot_registry: FromDishka[BotRegistryProtocol],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
@@ -150,6 +155,9 @@ async def update_channel(
         userbot.channel_id = channel.id
         userbot.channel_name = channel.full_name
         await userbot_service.save(userbot)
+
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    await notifier.send_text(user_dto, "userbot_channel_updated")
 
     await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
     await manager.switch_to(UserBotSelectSG.moderation)
