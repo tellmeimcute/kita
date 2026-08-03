@@ -104,8 +104,7 @@ async def update_token(
     )
 
     if not check_result.success:
-        await notifier.send_text(user_dto, check_result.detail_i18n_key)
-        await manager.switch_to(UserBotSelectSG.moderation)
+        manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
         return
 
     async with uow.transaction():
