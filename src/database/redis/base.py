@@ -42,14 +42,17 @@ class BaseRedisRepository[T: BaseModel]:
     @classmethod
     def _prepare_cache(cls, data: T) -> dict:
         data_dict = data.model_dump(
-            mode="json",
+            mode="python",
             exclude=cls.exclude,
             include=cls.include,
         )
 
         for k, v in data_dict.items():
             if v is not None and cls._is_secret_field(k):
-                data_dict[k] = cls.crypto.encrypt(str(v))
+                if isinstance(v, SecretStr):
+                    data_dict[k] = cls.crypto.encrypt(str(v.get_secret_value()))
+                else:
+                    data_dict[k] = cls.crypto.encrypt(str(v))
 
         return json.dumps(data_dict, default=str)
 
