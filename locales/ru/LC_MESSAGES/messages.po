@@ -343,7 +343,7 @@ msgid "start_userbot_register_btn"
 msgstr "Регистрация"
 
 msgid "reg_bot_wait_for_channel_id"
-msgstr "Отправьте ID своего канала."
+msgstr "<b>Отправьте @username или ID своего канала.</b>"
 
 msgid "reg_bot_wait_for_token"
 msgstr "Отправьте ТОКЕН совего бота."
@@ -395,7 +395,7 @@ msgid "userbot_update_token"
 msgstr "<b>Отправьте новый токен.</b>"
 
 msgid "userbot_update_channel"
-msgstr "<b>Отправьте ID нового канала.</b>"
+msgstr "<b>Отправьте @username или ID нового канала.</b>"
 
 msgid "userbot_token_updated"
 msgstr "🟢 <b>Токен успешно обновлен</b>"

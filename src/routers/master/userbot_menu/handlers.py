@@ -136,7 +136,7 @@ async def update_channel(
     try:
         channel_id = checker.get_channel_id(message.text)
     except ValueError:
-        logger.exception("Userbot channel_id to '%s' change failed", channel_id)
+        logger.exception("Userbot channel_id to '%s' change failed", message.text.strip())
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
 

@@ -336,7 +336,7 @@ msgid "start_userbot_register_btn"
 msgstr "Register"
 
 msgid "reg_bot_wait_for_channel_id"
-msgstr "Send your channel ID."
+msgstr "<b>Send channel @username or ID.</b>"
 
 msgid "reg_bot_wait_for_token"
 msgstr "Send your bot TOKEN."
@@ -392,7 +392,7 @@ msgid "userbot_update_token"
 msgstr "<b>Send the new token.</b>"
 
 msgid "userbot_update_channel"
-msgstr "<b>Send the ID of the new channel.</b>"
+msgstr "<b>Send new channel @username or ID.</b>"
 
 msgid "userbot_token_updated"
 msgstr "<b>Token updated.</b>"
