@@ -1,4 +1,3 @@
-
 from pydantic import SecretStr
 
 from core.consts import T_ME
@@ -20,4 +19,3 @@ class UserBotDTO(TrackableDto):
     @property
     def bot_url(self) -> str:
         return T_ME + self.username
-    

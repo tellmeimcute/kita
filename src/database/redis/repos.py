@@ -21,7 +21,7 @@ class UserProfileRedis(BaseRedisRepository[UserProfileDTO]):
 class UserBotRedis(BaseRedisRepository[UserBotDTO]):
     model = UserBotDTO
     _secret_fields = {"token"}
-    
+
 
 class TgMessageRedis(BaseRedisRepository[Message]):
     model = Message

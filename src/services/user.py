@@ -1,4 +1,3 @@
-
 from logging import getLogger
 from typing import Any
 
@@ -6,13 +5,14 @@ from redis.asyncio import Redis
 
 from database.dto import UserDTO
 from database.redis import KitaKeyBuilder, UserRedis
-from interfaces import UserRepositoryProtocol, BotRegistryProtocol
+from interfaces import BotRegistryProtocol, UserRepositoryProtocol
+
 from .base import BaseService
 
 logger = getLogger("kita.user_service")
 
-class UserService(BaseService):
 
+class UserService(BaseService):
     REDIS_KEY_PART = "user"
 
     __slots__ = (
@@ -63,9 +63,7 @@ class UserService(BaseService):
         return user_dto
 
     async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
-        cached = await UserRedis.get(
-            self.redis, self._get_key(prep_user_dto.user_id)
-        )
+        cached = await UserRedis.get(self.redis, self._get_key(prep_user_dto.user_id))
         if cached:
             return cached
 
@@ -88,7 +86,7 @@ class UserService(BaseService):
         changed = user_dto.prepare_changed_data()
         if not changed:
             return
-        
+
         await self.repo.update(user_dto.user_id, **changed)
         await UserRedis.delete(redis=self.redis, key=self._get_key(user_dto.user_id))
         logger.info("Update database info for user %s", user_dto.user_id)

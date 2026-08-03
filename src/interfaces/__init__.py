@@ -1,15 +1,29 @@
-from .bot_registry import BotRegistryProtocol
+from .bot_registry import BotRegistryProtocol as BotRegistryProtocol
 from .repository import (
-    MediaRepositoryProtocol,
-    SuggestionRepositoryProtocol,
-    UserBotRepositoryProtocol,
-    UserProfileRepositoryProtocol,
-    UserRepositoryProtocol,
+    MediaRepositoryProtocol as MediaRepositoryProtocol,
+)
+from .repository import (
+    SuggestionRepositoryProtocol as SuggestionRepositoryProtocol,
+)
+from .repository import (
+    UserBotRepositoryProtocol as UserBotRepositoryProtocol,
+)
+from .repository import (
+    UserProfileRepositoryProtocol as UserProfileRepositoryProtocol,
+)
+from .repository import (
+    UserRepositoryProtocol as UserRepositoryProtocol,
 )
 from .services import (
-    NotifierServiceProtocol,
-    SuggestionServiceProtocol,
-    UserProfileServiceProtocol,
-    UserServiceProtocol,
+    NotifierServiceProtocol as NotifierServiceProtocol,
 )
-from .uow import UnitOfWorkProtocol
+from .services import (
+    SuggestionServiceProtocol as SuggestionServiceProtocol,
+)
+from .services import (
+    UserProfileServiceProtocol as UserProfileServiceProtocol,
+)
+from .services import (
+    UserServiceProtocol as UserServiceProtocol,
+)
+from .uow import UnitOfWorkProtocol as UnitOfWorkProtocol

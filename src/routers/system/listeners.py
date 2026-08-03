@@ -1,11 +1,9 @@
-
 import asyncio
 from logging import getLogger
 
 from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
 
-from core.config import Config
 from core.events import (
     CopyMessagesToUserEvent,
     NewSuggestionEvent,
@@ -23,13 +21,14 @@ from ui.suggestion_utils import SuggestionUtils
 
 logger = getLogger("kita.event")
 
+
 async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
     userbot_dto = await container.get(UserBotDTO)
-    
+
     if not userbot_dto:
         logger.info("Userbot not found. Skip new_user notification")
         return
-    
+
     uow = await container.get(UnitOfWorkProtocol)
     user_service = await container.get(UserServiceProtocol)
     notifier = await container.get(NotifierServiceProtocol)
@@ -38,13 +37,10 @@ async def notify_admin_new_user(event: NewUserEvent, container: AsyncContainer):
     async with uow.transaction():
         admin = await user_service.get(userbot_dto.owner_id)
 
-    with i18n.context():
-        with i18n.use_locale(admin.language_code):
-            i18n_kwargs=dict(new_user_dto=event.user_dto.to_i18n_kwargs())
-            await notifier.send_text(
-                admin, "new_user_registered",
-                i18n_kwargs=i18n_kwargs
-            )
+    with i18n.context(), i18n.use_locale(admin.language_code):
+        i18n_kwargs = dict(new_user_dto=event.user_dto.to_i18n_kwargs())
+        await notifier.send_text(admin, "new_user_registered", i18n_kwargs=i18n_kwargs)
+
 
 async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: AsyncContainer):
     uow = await container.get(UnitOfWorkProtocol)
@@ -64,10 +60,12 @@ async def notify_admin_new_suggestion(event: NewSuggestionEvent, container: Asyn
             with i18n.use_locale(admin.language_code):
                 i18n_kwargs = suggestion_utils.get_i18n_kwargs(event.suggestion_dto)
                 await notifier.send_text(
-                    admin, "suggestion_notify_admin_new",
+                    admin,
+                    "suggestion_notify_admin_new",
                     i18n_kwargs=i18n_kwargs,
                 )
                 await asyncio.sleep(0.2)
+
 
 async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncContainer):
     userbot_dto = await container.get(UserBotDTO)
@@ -81,16 +79,18 @@ async def suggestion_accepted(event: SuggestionAcceptedEvent, container: AsyncCo
 
         if isinstance(channel_post, list):
             channel_post = channel_post[0]
-        
+
         post_url = userbot_dto.bot_url
         if channel_post:
             post_url = channel_post.get_url()
-        
+
         with i18n.use_locale(event.suggestion_dto.author.language_code):
             await notifier.send_text(
-                event.suggestion_dto.author, "notify_author_suggestion_posted",
+                event.suggestion_dto.author,
+                "notify_author_suggestion_posted",
                 i18n_kwargs=dict(post_url=post_url),
             )
+
 
 async def copy_to_user_notify_both(
     event: CopyMessagesToUserEvent,
@@ -98,16 +98,13 @@ async def copy_to_user_notify_both(
 ):
     notifier = await container.get(NotifierServiceProtocol)
     sent = await notifier.copy_messages(
-        user_dto=event.user_dto, 
-        messages=event.album_ids, 
-        source=event.source_chat_id
+        user_dto=event.user_dto, messages=event.album_ids, source=event.source_chat_id
     )
-    
+
     await notifier.send_text(event.user_dto, "notify_you_receive_message")
 
     i18n = await container.get(I18n)
 
-    with i18n.context():
-        with i18n.use_locale(event.caller_dto.language_code):
-            i18n_key = "message_delivered" if sent else "message_not_delivered"
-            await notifier.send_text(event.caller_dto, i18n_key)
+    with i18n.context(), i18n.use_locale(event.caller_dto.language_code):
+        i18n_key = "message_delivered" if sent else "message_not_delivered"
+        await notifier.send_text(event.caller_dto, i18n_key)

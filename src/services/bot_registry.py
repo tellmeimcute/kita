@@ -1,5 +1,3 @@
-
-
 import contextvars
 from logging import getLogger
 
@@ -11,6 +9,7 @@ from aiogram.enums import ParseMode
 from core.config import Config
 
 logger = getLogger("kita.bot_registry")
+
 
 class BotRegistry:
     def __init__(self, config: Config):

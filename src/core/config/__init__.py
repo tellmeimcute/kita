@@ -1,2 +1,1 @@
-
-from .root import Config
+from .root import Config as Config

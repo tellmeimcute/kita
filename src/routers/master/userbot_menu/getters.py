@@ -1,12 +1,11 @@
-
-
-
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+
 from database.dto import UserDTO
-from services import UserBotService
 from interfaces import UnitOfWorkProtocol
+from services import UserBotService
+
 
 @inject
 async def owned_userbots(
@@ -20,6 +19,7 @@ async def owned_userbots(
         userbots = await userbot_service.get_by_owner_id(user_dto.user_id)
 
     return {"userbots": userbots}
+
 
 @inject
 async def get_selected_userbot(

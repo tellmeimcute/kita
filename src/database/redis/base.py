@@ -1,27 +1,27 @@
 import json
 import logging
-from typing import Sequence, Generic, Set, TypeVar, get_origin, get_args, Union
+from collections.abc import Sequence
 from types import UnionType
+from typing import Union, get_args, get_origin
 
 from pydantic import BaseModel, SecretStr
-from redis.asyncio import Redis
 
 from core.config import Config
-from services.cryptographer import Cryptographer
-
-T = TypeVar("T", bound=BaseModel)
+from core.cryptographer import Cryptographer
+from redis.asyncio import Redis
 
 logger = logging.getLogger("kita.redis")
 
-class BaseRedisRepository(Generic[T]):
+
+class BaseRedisRepository[T: BaseModel]:
     crypto = Cryptographer(Config.get())
     _secret_fields: set[str] = set()
 
     model: type[T]
     expiry: int = 3600
 
-    exclude: Set[str] | None = None
-    include: Set[str] | None = None
+    exclude: set[str] | None = None
+    include: set[str] | None = None
 
     @classmethod
     def _is_secret_field(cls, field_name: str):
@@ -31,12 +31,12 @@ class BaseRedisRepository(Generic[T]):
         field_info = cls.model.model_fields.get(field_name)
         if not field_info:
             return False
-        
+
         annotation = field_info.annotation
 
-        if get_origin(annotation) in (Union, UnionType):
+        if get_origin(annotation) in {Union, UnionType}:
             return SecretStr in get_args(annotation)
-        
+
         return annotation is SecretStr
 
     @classmethod
@@ -56,7 +56,7 @@ class BaseRedisRepository(Generic[T]):
     @classmethod
     def _from_cache(cls, cached_str: str):
         data_dict: dict = json.loads(cached_str)
-        
+
         for k, v in data_dict.items():
             if v is not None and cls._is_secret_field(k):
                 data_dict[k] = cls.crypto.decrypt(str(v))
@@ -96,19 +96,23 @@ class BaseRedisRepository(Generic[T]):
 
     @classmethod
     async def lrange(
-        cls, redis: Redis, key: str, start: int = 0, end: int = -1,
+        cls,
+        redis: Redis,
+        key: str,
+        start: int = 0,
+        end: int = -1,
     ) -> Sequence[T]:
         raw_list = await redis.lrange(key, start, end)
-        slice: list[T] = []
+        items: list[T] = []
 
         for raw in raw_list:
             try:
-                slice.append(cls._from_cache(raw))
+                items.append(cls._from_cache(raw))
             except Exception as e:
                 logger.error("Error validate model from redis cache: %s", e, exc_info=True)
                 continue
 
-        return slice
+        return items
 
     @classmethod
     async def delete(cls, redis: Redis, key: str):

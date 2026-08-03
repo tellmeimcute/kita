@@ -1,5 +1,3 @@
-
-
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import WhenCondition
 from aiogram_dialog.widgets.text import Text
@@ -29,16 +27,15 @@ class I18nText(Text):
         additional_data.pop("event")
 
         dialog_data = additional_data.pop("dialog_data")
-        
+
         i18n_kwargs = {
             "user_dto": user_dto.to_i18n_kwargs(),
-            "profile_dto": profile_dto.model_dump(mode="json")
+            "profile_dto": profile_dto.model_dump(mode="json"),
         }
 
         i18n_kwargs.update(**dialog_data)
         i18n_kwargs.update(additional_data)
         if userbot_dto:
             i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
-        
+
         return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
-    

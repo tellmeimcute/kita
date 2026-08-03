@@ -24,7 +24,9 @@ class Suggestion(AbstractModel, TimestampMixin):
 
     author_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), index=True)
 
-    anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"), nullable=False)
+    anonymous: Mapped[bool] = mapped_column(
+        default=False, server_default=text("false"), nullable=False
+    )
 
     status: Mapped[SuggestionStatus] = mapped_column(
         Enum(

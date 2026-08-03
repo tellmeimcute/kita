@@ -1,4 +1,3 @@
-
 from .bus import EventBus
 from .user import (
     CopyMessagesToUserEvent,
@@ -11,6 +10,6 @@ __all__ = (
     "EventBus",
     "NewUserEvent",
     "NewSuggestionEvent",
-    "SuggestionAcceptedEvent",   
+    "SuggestionAcceptedEvent",
     "CopyMessagesToUserEvent",
 )

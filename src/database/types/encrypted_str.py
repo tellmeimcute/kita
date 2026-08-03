@@ -5,8 +5,7 @@ from core.config import Config
 
 
 class EncryptedString(TypeDecorator):
-
-    impl = String 
+    impl = String
     cache_ok = True
 
     def __init__(self, length: int = 255, *args, **kwargs):
@@ -24,7 +23,7 @@ class EncryptedString(TypeDecorator):
         if value is None:
             return value
         return self.fernet.encrypt(value.encode("utf-8")).decode("utf-8")
-    
+
     def process_result_value(self, value: str, dialect):
         if value is None:
             return value

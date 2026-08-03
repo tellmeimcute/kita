@@ -1,6 +1,3 @@
-
-
-
 T_ME: str = "https://t.me/"
 
 SUGGESTION_TEXT_LIMIT: int = 3072

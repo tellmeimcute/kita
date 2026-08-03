@@ -1,19 +1,18 @@
-
+from collections.abc import Sequence
 from logging import getLogger
-from typing import Sequence
 
 from aiogram import Bot
-from aiogram.types import WebhookInfo
 from aiogram.methods import SetWebhook
+from aiogram.types import WebhookInfo
 
 from core.config import Config
+from core.cryptographer import Cryptographer
 from interfaces import BotRegistryProtocol
-from .cryptographer import Cryptographer
 
 logger = getLogger("kita.webhook")
 
-class WebhookService:
 
+class WebhookService:
     def __init__(self, config: Config, bot_registry: BotRegistryProtocol):
         self.config = config
         self.bot_registry = bot_registry
@@ -24,9 +23,8 @@ class WebhookService:
         bot: Bot,
         url: str | None = None,
         force_update: bool = False,
-        allowed_updates: Sequence[str] | None = None
+        allowed_updates: Sequence[str] | None = None,
     ) -> WebhookInfo:
-
         webhook_url = url or f"{self.config.webhook_base_url}/{bot.id}"
         should_force = force_update or self.config.webhook_force_update
         current_webhook = await bot.get_webhook_info()

@@ -1,6 +1,3 @@
-
-
-
 from pydantic import computed_field
 
 from database.dto.user_profile import UserProfileDTO

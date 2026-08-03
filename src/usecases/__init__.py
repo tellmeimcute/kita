@@ -1,4 +1,3 @@
-
-from .broadcast import BroadcastUseCase
-from .change_role import ChangeRoleUseCase
-from .moderate_suggestion import ModerateSuggestionUseCase
+from .broadcast import BroadcastUseCase as BroadcastUseCase
+from .change_role import ChangeRoleUseCase as ChangeRoleUseCase
+from .moderate_suggestion import ModerateSuggestionUseCase as ModerateSuggestionUseCase

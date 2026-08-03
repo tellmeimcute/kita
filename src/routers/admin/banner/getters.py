@@ -1,6 +1,3 @@
-
-
-
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -18,5 +15,5 @@ async def banner_text_getter(
         text = translator.translate("banner_wait_for_text_again")
     else:
         text = translator.translate("banner_wait_for_text")
-        
+
     return {"banner_text": text}

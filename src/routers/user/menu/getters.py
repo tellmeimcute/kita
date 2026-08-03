@@ -1,4 +1,3 @@
-
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -15,7 +14,7 @@ async def get_menu_i18n_kwargs(
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     translator: FromDishka[Translator],
-    **kwargs
+    **kwargs,
 ):
     user_dto: UserDTO = dialog_manager.middleware_data.get("user_dto")
     profile_dto: UserProfileDTO = dialog_manager.middleware_data.get("profile_dto")

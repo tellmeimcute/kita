@@ -1,4 +1,3 @@
-
 from functools import lru_cache
 
 from pydantic import Field, SecretStr
@@ -39,4 +38,3 @@ class Config(BaseConfig):
     @lru_cache
     def get(cls):
         return cls()
-    

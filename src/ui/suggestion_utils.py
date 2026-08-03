@@ -1,4 +1,3 @@
-
 from typing import Literal
 
 from aiogram.types import ReplyKeyboardMarkup
@@ -12,7 +11,6 @@ from database.dto import SuggestionFullDTO, UserBotDTO
 
 
 class SuggestionUtils:
-
     __slots__ = (
         "_userbot_dto",
         "_translator",
@@ -37,9 +35,7 @@ class SuggestionUtils:
         author_name = "Anonymous" if is_anon else author.name
 
         i18n_kwargs = dict(author_name=author_name, forwarded_from=dto.forwarded_from)
-        return self._translator.i18n_text(
-            i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs
-        )
+        return self._translator.i18n_text(i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs)
 
     def _get_input_media(self, dto: SuggestionFullDTO, i18n_key: str, i18n_kwargs: dict):
         caption = self._translator.i18n_text(i18n_key, i18n_kwargs)
@@ -74,7 +70,7 @@ class SuggestionUtils:
             raise UnsupportedPayload
 
         i18n_kwargs = self.get_i18n_kwargs(dto)
-        
+
         if dto.render_type == RenderType.MESSAGE:
             return MessagePayload(
                 i18n_key=i18n_key,

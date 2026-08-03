@@ -44,13 +44,15 @@ async def select_user(
         manager.dialog_data["user_not_found"] = True
         return
 
-    manager.dialog_data.update({
-        "user_not_found": False,
-        "target_dto": target_dto.model_dump(mode="json"),
-        "target_dto_i18n": target_dto.to_i18n_kwargs(),
-        "target_profile": target_profile.model_dump(mode="json") if target_profile else None,
-        "target_profile_i18n": target_profile.to_i18n_kwargs() if target_profile else None,
-    })
+    manager.dialog_data.update(
+        {
+            "user_not_found": False,
+            "target_dto": target_dto.model_dump(mode="json"),
+            "target_dto_i18n": target_dto.to_i18n_kwargs(),
+            "target_profile": target_profile.model_dump(mode="json") if target_profile else None,
+            "target_profile_i18n": target_profile.to_i18n_kwargs() if target_profile else None,
+        }
+    )
     await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
 
 
@@ -83,9 +85,11 @@ async def user_change_role(
             )
 
         await callback.answer()
-        await manager.update({
-            "target_profile": new_profile_dto.model_dump(mode="json"),
-        })
+        await manager.update(
+            {
+                "target_profile": new_profile_dto.model_dump(mode="json"),
+            }
+        )
     except UserImmuneError:
         error_msg = translator.translate("error_user_immune")
         await callback.answer(error_msg)

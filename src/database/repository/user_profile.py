@@ -1,5 +1,5 @@
-
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -12,16 +12,12 @@ from .base import BaseRepository
 
 
 class UserProfileRepository(BaseRepository):
-
     __slots__ = ()
 
     async def get(self, user_id: int) -> UserProfileDTO | None:
-        stmt = (
-            select(UserProfile)
-            .where(
-                UserProfile.user_id == user_id,
-                UserProfile.bot_id == self.bot.id,
-            )
+        stmt = select(UserProfile).where(
+            UserProfile.user_id == user_id,
+            UserProfile.bot_id == self.bot.id,
         )
 
         result = await self._session.execute(stmt)
@@ -63,12 +59,9 @@ class UserProfileRepository(BaseRepository):
         await self._session.execute(stmt)
 
     async def get_active(self) -> Sequence[UserProfileDTO]:
-        stmt = (
-            select(UserProfile)
-            .where(
-                UserProfile.bot_id == self.bot.id,
-                (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
-            )
+        stmt = select(UserProfile).where(
+            UserProfile.bot_id == self.bot.id,
+            (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
         )
 
         result = await self._session.execute(stmt)
@@ -76,12 +69,9 @@ class UserProfileRepository(BaseRepository):
         return UserProfileDTO.from_model_list(orm_models)
 
     async def get_admins(self) -> Sequence[UserProfileDTO]:
-        stmt = (
-            select(UserProfile)
-            .where(
-                UserProfile.bot_id == self.bot.id,
-                UserProfile.role == UserRole.ADMIN,
-            )
+        stmt = select(UserProfile).where(
+            UserProfile.bot_id == self.bot.id,
+            UserProfile.role == UserRole.ADMIN,
         )
 
         result = await self._session.execute(stmt)
@@ -89,12 +79,9 @@ class UserProfileRepository(BaseRepository):
         return UserProfileDTO.from_model_list(orm_models)
 
     async def get_banned(self) -> Sequence[UserProfileDTO]:
-        stmt = (
-            select(UserProfile)
-            .where(
-                UserProfile.bot_id == self.bot.id,
-                UserProfile.role == UserRole.BANNED,
-            )
+        stmt = select(UserProfile).where(
+            UserProfile.bot_id == self.bot.id,
+            UserProfile.role == UserRole.BANNED,
         )
 
         result = await self._session.execute(stmt)
@@ -102,31 +89,22 @@ class UserProfileRepository(BaseRepository):
         return UserProfileDTO.from_model_list(orm_models)
 
     async def count(self) -> int:
-        stmt = (
-            select(func.count(UserProfile.id))
-            .where(UserProfile.bot_id == self.bot.id)
-        )
+        stmt = select(func.count(UserProfile.id)).where(UserProfile.bot_id == self.bot.id)
         count = await self._session.scalar(stmt)
         return count or 0
 
     async def admins_count(self) -> int:
-        stmt = (
-            select(func.count(UserProfile.id))
-            .where(
-                UserProfile.bot_id == self.bot.id,
-                UserProfile.role == UserRole.ADMIN,
-            )
+        stmt = select(func.count(UserProfile.id)).where(
+            UserProfile.bot_id == self.bot.id,
+            UserProfile.role == UserRole.ADMIN,
         )
         count = await self._session.scalar(stmt)
         return count or 0
 
     async def banned_count(self) -> int:
-        stmt = (
-            select(func.count(UserProfile.id))
-            .where(
-                UserProfile.bot_id == self.bot.id,
-                UserProfile.role == UserRole.BANNED,
-            )
+        stmt = select(func.count(UserProfile.id)).where(
+            UserProfile.bot_id == self.bot.id,
+            UserProfile.role == UserRole.BANNED,
         )
         count = await self._session.scalar(stmt)
         return count or 0

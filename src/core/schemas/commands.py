@@ -1,5 +1,3 @@
-
-
 from pydantic import Field
 
 from .base import BaseData

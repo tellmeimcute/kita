@@ -1,5 +1,4 @@
 import asyncio
-import json
 from logging import getLogger
 from typing import ClassVar
 
@@ -12,13 +11,13 @@ from .base import KitaMiddleware
 
 logger = getLogger(name="kita.media_group_middleware")
 
-class MediaGroupMiddleware(KitaMiddleware):
 
+class MediaGroupMiddleware(KitaMiddleware):
     __event__types__: ClassVar[set[str]] = {"message"}
 
     __slots__ = (
         "redis",
-        'latency',
+        "latency",
         "key_builder",
     )
 
@@ -31,11 +30,9 @@ class MediaGroupMiddleware(KitaMiddleware):
     async def __call__(self, handler, event: Message, data: dict):
         if not isinstance(event, Message) or not event.media_group_id:
             return await handler(event, data)
-        
+
         redis_key = MediaGroupKey(
-            bot_id=event.bot.id,
-            user_id=event.from_user.id,
-            media_group_id=event.media_group_id
+            bot_id=event.bot.id, user_id=event.from_user.id, media_group_id=event.media_group_id
         )
 
         key = self.key_builder.build(key=redis_key, part="media_group")
@@ -50,7 +47,7 @@ class MediaGroupMiddleware(KitaMiddleware):
             finally:
                 await TgMessageRedis.delete(self.redis, key)
                 await TgMessageRedis.delete(self.redis, lock_key)
-            
+
     async def _process_album(self, key: str, handler, original_event: Message, data: dict):
         await asyncio.sleep(self.latency + 0.05)
 

@@ -1,5 +1,5 @@
-
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sqlalchemy import select, update
 
@@ -10,14 +10,10 @@ from .base import BaseRepository
 
 
 class UserBotRepository(BaseRepository):
-
     __slots__ = ()
 
     async def get(self, bot_id: int) -> UserBotDTO | None:
-        stmt = (
-            select(UserBot)
-            .where(UserBot.bot_id == bot_id)
-        )
+        stmt = select(UserBot).where(UserBot.bot_id == bot_id)
         result = await self._session.execute(stmt)
         orm_model = result.scalar()
         if not orm_model:
@@ -25,19 +21,13 @@ class UserBotRepository(BaseRepository):
         return UserBotDTO.model_validate(orm_model)
 
     async def get_active(self) -> Sequence[UserBotDTO]:
-        stmt = (
-            select(UserBot)
-            .where(UserBot.active.is_(True))
-        )
+        stmt = select(UserBot).where(UserBot.active.is_(True))
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
         return UserBotDTO.from_model_list(orm_models)
 
     async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]:
-        stmt = (
-            select(UserBot)
-            .where(UserBot.owner_id == owner_id)
-        )
+        stmt = select(UserBot).where(UserBot.owner_id == owner_id)
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
@@ -65,11 +55,7 @@ class UserBotRepository(BaseRepository):
         await self._session.flush()
 
     async def update(self, bot_id: int, **data: Any):
-        stmt = (
-            update(UserBot)
-            .where(UserBot.bot_id == bot_id)
-            .values(**data)
-        )
+        stmt = update(UserBot).where(UserBot.bot_id == bot_id).values(**data)
         await self._session.execute(stmt)
 
     async def save(self, dto: UserBotDTO):

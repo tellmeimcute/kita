@@ -1,6 +1,5 @@
-
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging import getLogger
 from typing import Literal
 
@@ -53,13 +52,14 @@ return { allowed, math.floor(remaining) }
 
 logger = getLogger("kita.rate_limit")
 
+
 @dataclass
 class TokenBucketResult:
     allowed: int
     remains: int
 
-class TokenBucketLimiter:
 
+class TokenBucketLimiter:
     def __init__(
         self,
         redis: Redis,
@@ -73,18 +73,15 @@ class TokenBucketLimiter:
         self._refill_rate = refill_rate
         self._key_builder = KitaKeyBuilder()
 
-        self.WARNED_TTL =  int((1 / refill_rate) + 1)
+        self.WARNED_TTL = int((1 / refill_rate) + 1)
         self._script = SCRIPT
-    
+
     def get_user_key(
-        self,
-        user_dto: UserDTO,
-        action: Literal["ALL", "CALLBACK", "MESSAGE", "WARNED"]
+        self, user_dto: UserDTO, action: Literal["ALL", "CALLBACK", "MESSAGE", "WARNED"]
     ):
         bot = self._bot_registry.get_current()
-        return  self._key_builder.build(
-            RedisKey(bot_id=bot.id, user_id=user_dto.user_id),
-            f"rate_limit_{action.lower()}"
+        return self._key_builder.build(
+            RedisKey(bot_id=bot.id, user_id=user_dto.user_id), f"rate_limit_{action.lower()}"
         )
 
     async def mark_warned(self, user_dto: UserDTO):
@@ -101,12 +98,10 @@ class TokenBucketLimiter:
         return await self._redis.sismember(key, "1")
 
     async def attempt(
-        self,
-        user_dto: UserDTO,
-        action: Literal["ALL", "CALLBACK", "MESSAGE"] = "ALL"
+        self, user_dto: UserDTO, action: Literal["ALL", "CALLBACK", "MESSAGE"] = "ALL"
     ) -> TokenBucketResult:
         key = self.get_user_key(user_dto, action)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         result = await self._redis.eval(
             self._script, 1, key, self._max_tokens, self._refill_rate, now.timestamp()

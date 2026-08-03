@@ -1,4 +1,3 @@
-
 import logging
 from abc import ABC
 from typing import ClassVar
@@ -6,6 +5,7 @@ from typing import ClassVar
 from aiogram import BaseMiddleware, Router
 
 logger = logging.getLogger("kita.middleware")
+
 
 class KitaMiddleware(BaseMiddleware, ABC):
     __event__types__: ClassVar[set[str]] = {"message", "callback_query"}
@@ -16,6 +16,8 @@ class KitaMiddleware(BaseMiddleware, ABC):
                 observer.outer_middleware(self)
                 logger.debug(
                     "%s registered to event %s on router: %s",
-                    self.__class__.__qualname__, event_name, router.name
+                    self.__class__.__qualname__,
+                    event_name,
+                    router.name,
                 )
         return self

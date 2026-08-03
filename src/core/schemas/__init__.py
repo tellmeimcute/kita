@@ -1,5 +1,3 @@
-
-
 from .broadcast import BroadcastData
 from .commands import IDCommand
 from .message_payload import MessagePayload

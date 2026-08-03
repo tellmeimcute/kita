@@ -1,4 +1,3 @@
-
 from .banner.dialog import dialog as banner_dialog
 from .broadcast.dialog import dialog as broadcast_dialog
 from .menu.dialog import dialog as menu_dialog

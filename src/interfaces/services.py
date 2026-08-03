@@ -1,5 +1,6 @@
 from abc import abstractmethod
-from typing import Any, Literal, Protocol, Sequence
+from collections.abc import Sequence
+from typing import Any, Literal, Protocol
 
 from aiogram.types import InlineKeyboardMarkup, Message
 
@@ -10,49 +11,37 @@ from ui.senders.base import BaseSender
 
 
 class UserServiceProtocol(Protocol):
+    @abstractmethod
+    async def get(self, user_id: int) -> UserDTO | None: ...
 
     @abstractmethod
-    async def get(self, user_id: int) -> UserDTO | None:
-        ...
+    async def create(self, prep_user_dto: UserDTO) -> UserDTO: ...
 
     @abstractmethod
-    async def create(self, prep_user_dto: UserDTO) -> UserDTO:
-        ...
+    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO: ...
 
     @abstractmethod
-    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
-        ...
+    async def update(self, user_id: int, **data: Any) -> None: ...
 
     @abstractmethod
-    async def update(self, user_id: int, **data: Any) -> None:
-        ...
-
-    @abstractmethod
-    async def save(self, user_dto: UserDTO) -> None:
-        ...
+    async def save(self, user_dto: UserDTO) -> None: ...
 
 
 class UserProfileServiceProtocol(Protocol):
+    @abstractmethod
+    async def get_or_create(self, user_id: int) -> UserProfileDTO: ...
 
     @abstractmethod
-    async def get_or_create(self, user_id: int) -> UserProfileDTO:
-        ...
+    async def create(self, user_id: int) -> UserProfileDTO: ...
 
     @abstractmethod
-    async def create(self, user_id: int) -> UserProfileDTO:
-        ...
+    async def get(self, user_id: int) -> UserProfileDTO | None: ...
 
     @abstractmethod
-    async def get(self, user_id: int) -> UserProfileDTO | None:
-        ...
+    async def update(self, user_id: int, **data: Any) -> None: ...
 
     @abstractmethod
-    async def update(self, user_id: int, **data: Any) -> None:
-        ...
-
-    @abstractmethod
-    async def save(self, profile_dto: UserProfileDTO) -> None:
-        ...
+    async def save(self, profile_dto: UserProfileDTO) -> None: ...
 
     @abstractmethod
     async def get_active(self) -> Sequence[UserProfileDTO]: ...
@@ -65,34 +54,28 @@ class UserProfileServiceProtocol(Protocol):
 
 
 class SuggestionServiceProtocol(Protocol):
+    @abstractmethod
+    async def get(self, suggestion_id: int) -> SuggestionFullDTO: ...
 
     @abstractmethod
-    async def get(self, suggestion_id: int) -> SuggestionFullDTO:
-        ...
+    async def get_active(self) -> Sequence[SuggestionFullDTO]: ...
 
     @abstractmethod
-    async def get_active(self) -> Sequence[SuggestionFullDTO]:
-        ...
+    async def create(
+        self, author_dto: UserDTO, album: Sequence[Message], anonymous: bool = False
+    ) -> SuggestionFullDTO: ...
 
     @abstractmethod
-    async def create(self, author_dto: UserDTO, album: Sequence[Message], anonymous: bool = False) -> SuggestionFullDTO:
-        ...
+    async def update(self, suggestion_dto: SuggestionBaseDTO) -> None: ...
 
     @abstractmethod
-    async def update(self, suggestion_dto: SuggestionBaseDTO) -> None:
-        ...
+    async def update_by_id(self, suggestion_id: int, **data: Any) -> None: ...
 
     @abstractmethod
-    async def update_by_id(self, suggestion_id: int, **data: Any) -> None:
-        ...
-
-    @abstractmethod
-    async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        ...
+    async def get_user_stats(self, user_dto: UserDTO) -> UserStats: ...
 
 
 class NotifierServiceProtocol:
-
     @abstractmethod
     def strategy_factory(
         self, target_id: int, payload: MessagePayload, silent: bool = True

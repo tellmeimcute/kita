@@ -1,6 +1,3 @@
-
-
-
 from core.config import Config
 from core.exceptions import UserImmuneError
 from database.dto import UserDTO
@@ -9,7 +6,6 @@ from interfaces import UserProfileServiceProtocol, UserServiceProtocol
 
 
 class ChangeRoleUseCase:
-
     __slots__ = (
         "_config",
         "_user_service",
@@ -20,7 +16,7 @@ class ChangeRoleUseCase:
         self,
         config: Config,
         user_service: UserServiceProtocol,
-        user_profile_service: UserProfileServiceProtocol
+        user_profile_service: UserProfileServiceProtocol,
     ):
         self._config = config
         self._user_service = user_service
@@ -32,7 +28,7 @@ class ChangeRoleUseCase:
         target_role: UserRole,
         caller: UserDTO,
     ):
-        if target_id == self._config.admin_id or caller.user_id == target_id:
+        if target_id in {self._config.admin_id, caller.user_id}:
             raise UserImmuneError()
 
         profile_dto = await self._user_profile_service.get_or_create(target_id)

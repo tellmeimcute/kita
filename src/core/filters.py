@@ -3,6 +3,7 @@ from aiogram.types import Message
 from aiogram.utils.i18n import gettext as _
 from pydantic import BaseModel
 
+
 class BaseI18nFilter(Filter):
     def __init__(self, i18n_key: str, **return_data):
         self.i18n_key = i18n_key
@@ -22,7 +23,7 @@ class I18nTextFilter(BaseI18nFilter):
         text = self._prepare_text(message)
         if not text:
             return False
-        
+
         if text == self._get_expected():
             return self.return_data or True
         return False
@@ -49,9 +50,9 @@ class TextArgsFilter(BaseI18nFilter):
             return False
 
         try:
-            data = dict(zip(field_names, args))
+            data = dict(zip(field_names, args, strict=True))
             cmd_data = self.schema(**data)
         except Exception:
             return False
-        
+
         return {**self.return_data, "command": cmd_data}

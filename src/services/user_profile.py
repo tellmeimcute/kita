@@ -1,4 +1,3 @@
-
 from logging import getLogger
 from typing import Any
 
@@ -7,12 +6,13 @@ from redis.asyncio import Redis
 from database.dto import UserProfileDTO
 from database.redis import UserProfileRedis
 from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
+
 from .base import BaseService
 
 logger = getLogger("kita.user_profile_service")
 
+
 class UserProfileService(BaseService):
-    
     REDIS_KEY_PART = "user_profile"
 
     __slots__ = ("redis", "repo")
@@ -75,7 +75,7 @@ class UserProfileService(BaseService):
         changed = profile_dto.prepare_changed_data()
         if not changed:
             return
-        
+
         await self.repo.update(profile_dto.user_id, **changed)
         await UserProfileRedis.delete(redis=self.redis, key=self._get_key(profile_dto.user_id))
         logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot.id)

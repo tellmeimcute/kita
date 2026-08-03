@@ -1,10 +1,10 @@
-from abc import ABC
-
 from aiogram import Bot
-from database.redis import RedisKey, KitaKeyBuilder
+
+from database.redis import KitaKeyBuilder, RedisKey
 from interfaces import BotRegistryProtocol
 
-class BaseService(ABC):
+
+class BaseService:
     REDIS_KEY_PART = "base_key"
 
     __slots__ = (
@@ -14,9 +14,7 @@ class BaseService(ABC):
     )
 
     def __init__(
-        self,
-        bot_registry: BotRegistryProtocol,
-        key_builder: KitaKeyBuilder | None = None
+        self, bot_registry: BotRegistryProtocol, key_builder: KitaKeyBuilder | None = None
     ):
         self._bot_registry = bot_registry
         self._bot = None
@@ -38,4 +36,3 @@ class BaseService(ABC):
     def _get_key(self, user_id: int):
         redis_key = RedisKey(bot_id=self.bot.id, user_id=user_id)
         return self._key_builder.build(redis_key, self.REDIS_KEY_PART)
-    

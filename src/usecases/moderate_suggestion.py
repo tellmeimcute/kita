@@ -1,5 +1,3 @@
-
-
 from dataclasses import dataclass
 
 from core.events import EventBus, SuggestionAcceptedEvent
@@ -13,16 +11,14 @@ class ModerationResult:
     suggestion_dto: SuggestionFullDTO
     verdict_exists: bool
 
-class ModerateSuggestionUseCase:
 
+class ModerateSuggestionUseCase:
     __slots__ = (
         "_suggestion_service",
         "_event_bus",
     )
 
-    def __init__(
-        self, suggestion_service: SuggestionServiceProtocol, event_bus: EventBus
-    ):
+    def __init__(self, suggestion_service: SuggestionServiceProtocol, event_bus: EventBus):
         self._suggestion_service = suggestion_service
         self._event_bus = event_bus
 
@@ -33,7 +29,6 @@ class ModerateSuggestionUseCase:
         force_update: bool = False,
         bot_id: int | None = None,
     ) -> ModerationResult:
-        
         if suggestion_dto.status != Status.PENDING and not force_update:
             return ModerationResult(suggestion_dto, True)
 
@@ -41,10 +36,11 @@ class ModerateSuggestionUseCase:
         await self._suggestion_service.update(suggestion_dto)
 
         if verdict == Status.ACCEPTED:
-            self._event_bus.dispatch(SuggestionAcceptedEvent(
-                suggestion_dto=suggestion_dto,
-                bot_id=bot_id,
-            ))
+            self._event_bus.dispatch(
+                SuggestionAcceptedEvent(
+                    suggestion_dto=suggestion_dto,
+                    bot_id=bot_id,
+                )
+            )
 
         return ModerationResult(suggestion_dto, False)
-    

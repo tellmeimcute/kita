@@ -17,7 +17,6 @@ logger = getLogger("kita.middleware")
 
 
 class RateLimitMiddleware(KitaMiddleware):
-
     async def __call__(
         self,
         handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
@@ -42,11 +41,11 @@ class RateLimitMiddleware(KitaMiddleware):
         if await limiter.is_warned(user_dto):
             if isinstance(event, CallbackQuery):
                 return await event.answer()
-            return
+            return None
 
         i18n: I18n = await container.get(I18n)
         translator: Translator = await container.get(Translator)
-        
+
         with i18n.use_locale(user_dto.language_code):
             msg = translator.translate("rate_limited_warning")
 

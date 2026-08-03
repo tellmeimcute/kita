@@ -1,4 +1,3 @@
-
 import contextvars
 from abc import abstractmethod
 from typing import Protocol
@@ -7,7 +6,6 @@ from aiogram import Bot
 
 
 class BotRegistryProtocol(Protocol):
-
     @property
     def bot_settings(self) -> dict: ...
 

@@ -1,5 +1,3 @@
-
-
 from aiogram_dialog import Dialog, LaunchMode, StartMode, Window
 from aiogram_dialog.widgets.kbd import Row, Start, SwitchTo
 

@@ -1,4 +1,3 @@
-
 from contextlib import asynccontextmanager
 from logging import getLogger
 
@@ -13,8 +12,8 @@ from interfaces import (
 
 logger = getLogger("kita.uow")
 
-class UnitOfWork:
 
+class UnitOfWork:
     __slots__ = (
         "_session",
         "users",

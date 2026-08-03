@@ -5,7 +5,6 @@ from .user import UserService
 from .user_profile import UserProfileService
 from .userbots import UserBotService
 from .webhooks import WebhookService
-from .cryptographer import Cryptographer
 
 __all__ = (
     "NotifierService",
@@ -15,5 +14,4 @@ __all__ = (
     "BotRegistry",
     "UserBotService",
     "WebhookService",
-    "Cryptographer",
 )

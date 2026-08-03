@@ -1,4 +1,3 @@
-
 import asyncio
 from itertools import batched
 
@@ -10,7 +9,6 @@ from interfaces import NotifierServiceProtocol, UserProfileServiceProtocol
 
 
 class BroadcastUseCase:
-
     __slots__ = (
         "_user_profile_service",
         "_notifier",
@@ -52,9 +50,7 @@ class BroadcastUseCase:
         status_message: Message,
     ):
         send_func = (
-            self._notifier.forward_messages
-            if data.is_forwarded
-            else self._notifier.copy_messages
+            self._notifier.forward_messages if data.is_forwarded else self._notifier.copy_messages
         )
 
         for chunk in batched(data.users, self._chunk_size, strict=False):

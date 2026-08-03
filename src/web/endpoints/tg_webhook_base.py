@@ -3,20 +3,16 @@ from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import Annotated
 
-from pydantic import SecretStr
-
 from aiogram import Bot, Dispatcher
 from aiogram.methods import TelegramMethod
 from aiogram.types import Update
-
-from fastapi import Body, FastAPI, Header, HTTPException, Path, status, Depends
-
 from dishka import AsyncContainer
 from dishka.integrations.fastapi import FromDishka, inject
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, status
 
 from core.config import Config
+from core.cryptographer import Cryptographer
 from database.dto import UserBotDTO
-from services import Cryptographer
 from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.fastapi")
@@ -28,19 +24,16 @@ async def verify_secret_token(
     bot_id: Annotated[int, Path()],
     x_telegram_bot_api_secret_token: Annotated[str, Header()] = "",
 ):
-    if not cryptographer.verify_bot_secret(
-        x_telegram_bot_api_secret_token, bot_id
-    ):
+    if not cryptographer.verify_bot_secret(x_telegram_bot_api_secret_token, bot_id):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid secret token",
         )
-    
+
     return True
 
 
 class BaseTgWebhookEndpoint(ABC):
-
     def __init__(
         self,
         dp: Dispatcher,
@@ -82,9 +75,7 @@ class BaseTgWebhookEndpoint(ABC):
                 task.cancel()
             await asyncio.gather(*self.tasks, return_exceptions=True)
 
-        logger.info(
-            "Dispatcher shutdown and %s tasks cleaned up", len(self.tasks)
-        )
+        logger.info("Dispatcher shutdown and %s tasks cleaned up", len(self.tasks))
 
     def verify_secret(self, bot_id: int, token: str) -> bool:
         if not self.cryptographer.verify_bot_secret(token, bot_id):
@@ -93,7 +84,7 @@ class BaseTgWebhookEndpoint(ABC):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid secret token",
             )
-        
+
         return True
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
@@ -106,7 +97,9 @@ class BaseTgWebhookEndpoint(ABC):
         except Exception as e:
             logger.exception(
                 "Failed to process update '%s' for bot '%s': %s",
-                update.update_id, bot.id, e,
+                update.update_id,
+                bot.id,
+                e,
             )
         finally:
             if token is not None:
@@ -120,4 +113,3 @@ class BaseTgWebhookEndpoint(ABC):
         update: Annotated[Update, Body()],
     ):
         raise NotImplementedError
-    

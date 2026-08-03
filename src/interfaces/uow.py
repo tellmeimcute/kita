@@ -1,4 +1,3 @@
-
 from abc import abstractmethod
 from typing import Protocol
 
@@ -11,7 +10,6 @@ from interfaces import (
 
 
 class UnitOfWorkProtocol(Protocol):
-
     users: UserRepositoryProtocol
     profiles: UserProfileRepositoryProtocol
     suggestions: SuggestionRepositoryProtocol

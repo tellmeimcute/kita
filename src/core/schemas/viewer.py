@@ -1,5 +1,3 @@
-
-
 from database.dto.suggestion import SuggestionFullDTO
 from database.dto.user import UserDTO
 

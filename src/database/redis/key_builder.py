@@ -1,4 +1,3 @@
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Literal
@@ -24,7 +23,6 @@ class KeyBuilder(ABC):
 
 
 class KitaKeyBuilder(KeyBuilder):
-    
     def __init__(
         self,
         *,
@@ -72,4 +70,3 @@ class MediaGroupKeyBulder(KitaKeyBuilder):
             parts.append(part)
 
         return self.separator.join(parts)
-    

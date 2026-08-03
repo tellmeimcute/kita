@@ -1,4 +1,3 @@
-
 from logging import getLogger
 from typing import Any
 
@@ -19,7 +18,6 @@ logger = getLogger("kita.suggestion_service")
 
 
 class SuggestionService(BaseService):
-
     REDIS_KEY_PART = "suggestion"
 
     __slots__ = (
@@ -42,14 +40,9 @@ class SuggestionService(BaseService):
         self.parser = parser
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        redis_key = RedisKey(
-            bot_id=self.bot.id,
-            user_id=user_dto.user_id
-        )
+        redis_key = RedisKey(bot_id=self.bot.id, user_id=user_dto.user_id)
 
-        key = self._key_builder.build(
-            key=redis_key, part="user_stats"
-        )
+        key = self._key_builder.build(key=redis_key, part="user_stats")
 
         stats_row = await UserStatsRedis.get(self.redis, key)
         if stats_row:
@@ -69,26 +62,24 @@ class SuggestionService(BaseService):
         await self.repo.save(suggestion_dto)
 
         key = self._key_builder.build(
-            key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id),
-            part="user_stats"
+            key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id), part="user_stats"
         )
         await self.redis.delete(key)
-        
+
         logger.info("Update suggestion %s", suggestion_dto.id)
 
     async def update_by_id(self, suggestion_id: int, **data: Any):
         await self.repo.update(suggestion_id, **data)
         logger.info("Update suggestion %s", suggestion_id)
 
-    async def create(self, author_dto: UserDTO, album: list[Message], anonymous: bool = False) -> SuggestionFullDTO:
+    async def create(
+        self, author_dto: UserDTO, album: list[Message], anonymous: bool = False
+    ) -> SuggestionFullDTO:
         first_msg = album[0]
         caption = first_msg.caption or first_msg.text
         media_group_id = first_msg.media_group_id
         forwarded_from = self.parser.parse_forward_origin(first_msg)
-        media_info = [
-            info for msg in album
-            if (info := self.parser.parse_media(msg))
-        ]
+        media_info = [info for msg in album if (info := self.parser.parse_media(msg))]
 
         if not caption and not media_info:
             raise UnsupportedPayload

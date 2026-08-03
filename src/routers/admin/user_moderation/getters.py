@@ -1,6 +1,3 @@
-
-
-
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -18,5 +15,5 @@ async def user_select_getter(
         text = translator.translate("user_not_found_wait_next_id")
     else:
         text = translator.translate("wait_user_id_text")
-        
+
     return {"user_select_text": text}

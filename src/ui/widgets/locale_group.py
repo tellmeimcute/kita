@@ -1,7 +1,6 @@
-
-
+from collections.abc import Sequence
 from itertools import chain
-from typing import Any, Sequence
+from typing import Any
 
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import I18n
@@ -18,7 +17,7 @@ from ui.widgets.i18n_text import I18nText
 class LocaleGroup(Group):
     def __init__(
         self,
-        id: str | None = None,
+        id: str | None = None,  # noqa: A002
         on_click: Any | None = None,
         width: int | None = None,
         when: WhenCondition = None,

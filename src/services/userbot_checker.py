@@ -1,11 +1,12 @@
-from logging import getLogger
 from dataclasses import dataclass
+from logging import getLogger
 
 from aiogram import Bot
 from aiogram.enums import ChatMemberStatus
-from aiogram.types import User, ChatFullInfo, ChatMemberAdministrator
-from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
-from aiogram.utils.token import extract_bot_id, TokenValidationError
+from aiogram.exceptions import TelegramBadRequest, TelegramUnauthorizedError
+from aiogram.types import ChatFullInfo, ChatMemberAdministrator, User
+from aiogram.utils.token import TokenValidationError, extract_bot_id
+
 
 @dataclass(frozen=True)
 class UserBotCheckResult:
@@ -18,13 +19,14 @@ class UserBotCheckResult:
     token: str | None = None
     bot_id: int | None = None
 
+
 logger = getLogger("kita.userbot_service")
 
 
 class UserBotChecker:
-
-    async def check_token(self, target_bot_id: int | None, token: str, bot_settings: dict) -> UserBotCheckResult:
-
+    async def check_token(
+        self, target_bot_id: int | None, token: str, bot_settings: dict
+    ) -> UserBotCheckResult:
         try:
             token = token.strip()
             token_bot_id = extract_bot_id(token)
@@ -63,7 +65,6 @@ class UserBotChecker:
             return None
         return channel_member
 
-
     async def full_check(self, bot: Bot, channel_id: int) -> UserBotCheckResult:
         status = None
 
@@ -78,11 +79,13 @@ class UserBotChecker:
         except TelegramBadRequest as e:
             logger.exception("Userbot check failed: %s", e.message)
             detail_i18n_key = "reg_bot_bad_request"
-            status = UserBotCheckResult(success=False, detail_i18n_key=detail_i18n_key, bot_info=bot_info)
+            status = UserBotCheckResult(
+                success=False, detail_i18n_key=detail_i18n_key, bot_info=bot_info
+            )
 
         if status:
             return status
-        
+
         if not channel_admin:
             return UserBotCheckResult(
                 success=False,

@@ -1,4 +1,3 @@
-
 from aiogram import Bot
 from aiogram.types import Message
 
@@ -15,7 +14,7 @@ class MessageSender(BaseSender):
         target_id: int,
         payload: MessagePayload,
         silent: bool = True,
-        translator: Translator | None = None
+        translator: Translator | None = None,
     ):
         self.bot = bot
         self.target_id = target_id
@@ -24,15 +23,19 @@ class MessageSender(BaseSender):
 
         self.translator = translator
 
+
 class MediaGroupSender(MessageSender):
     async def _send(self) -> list[Message]:
-        return await self.bot.send_media_group(self.target_id, self.payload.media, disable_notification=self.silent)
+        return await self.bot.send_media_group(
+            self.target_id, self.payload.media, disable_notification=self.silent
+        )
+
 
 class TextSender(MessageSender):
     async def _send(self) -> Message:
         if not self.translator:
             raise ValueError("Translator is required for TextSender")
-        
+
         content = self.translator.i18n_text(self.payload.i18n_key, self.payload.i18n_kwargs)
         return await self.bot.send_message(
             chat_id=self.target_id,

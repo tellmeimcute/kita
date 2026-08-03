@@ -1,13 +1,13 @@
-from aiogram_dialog import Dialog, LaunchMode, StartMode, Window
+from aiogram_dialog import Dialog, LaunchMode, Window
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Start, Button
+from aiogram_dialog.widgets.kbd import Button, Start
 from aiogram_dialog.widgets.text import Format
 
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG, UserBotSelectSG
 from ui.widgets.i18n_text import I18nText
 
 from .getters import get_error_text
-from .handlers import start_registration, bot_token_handler, channel_id_handler
+from .handlers import bot_token_handler, channel_id_handler, start_registration
 
 menu_window = Window(
     I18nText("registrar_menu"),

@@ -1,5 +1,6 @@
+from collections.abc import Awaitable, Callable
 from logging import getLogger
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
@@ -11,12 +12,11 @@ logger = getLogger("kita.ban_middleware")
 
 
 class BanCheckMiddleware(KitaMiddleware):
-
     async def __call__(
         self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
         event: Message | CallbackQuery,
-        data: Dict[str, Any],
+        data: dict[str, Any],
     ) -> Any:
         profile_dto: UserProfileDTO = data.get("profile_dto")
 

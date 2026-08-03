@@ -25,6 +25,7 @@ from web import get_app
 
 logger = logging.getLogger("kita.main")
 
+
 def create_container() -> AsyncContainer:
     return make_async_container(
         InfraProvider(),
@@ -44,10 +45,12 @@ def get_storage(config: Config):
         key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True),
     )
 
+
 def get_dispatcher(storage: RedisStorage):
     dp = Dispatcher(storage=storage, name="dispatcher")
     logger.info("Initialized Dispatcher with %s Redis storage", id(storage))
     return dp
+
 
 def application() -> FastAPI:
     config = Config.get()

@@ -7,10 +7,10 @@ from .base import BaseData
 
 AnyKeyboard = ReplyKeyboardMarkup | InlineKeyboardMarkup | ReplyKeyboardRemove
 
+
 class MessagePayload(BaseData):
     i18n_key: str | None = None
     i18n_kwargs: dict[str, Any] = {}
 
     reply_markup: AnyKeyboard | None = None
     media: list[MediaType] | None = None
-    

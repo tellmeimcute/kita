@@ -1,5 +1,3 @@
-
-from aiogram import Bot
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -32,13 +30,15 @@ async def on_album_received(
     try:
         async with uow.transaction():
             suggestion_dto = await suggestion_service.create(
-                user_dto, album, anonymous=profile_dto.prefer_anonymous,
+                user_dto,
+                album,
+                anonymous=profile_dto.prefer_anonymous,
             )
     except UnsupportedPayload:
-        return await manager.switch_to(SuggestionSG.media_error, show_mode=ShowMode.DELETE_AND_SEND)
+        return await manager.switch_to(
+            SuggestionSG.media_error, show_mode=ShowMode.DELETE_AND_SEND
+        )
 
     await manager.switch_to(SuggestionSG.on_moderation)
 
-    event_bus.dispatch(
-        NewSuggestionEvent(suggestion_dto=suggestion_dto, bot_id=message.bot.id)
-    )
+    event_bus.dispatch(NewSuggestionEvent(suggestion_dto=suggestion_dto, bot_id=message.bot.id))

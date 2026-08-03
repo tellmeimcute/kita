@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 
 from database.dto import SuggestionFullDTO, UserDTO
@@ -7,8 +6,8 @@ from .base import KitaEvent, UserEvent
 
 
 @dataclass(frozen=True, kw_only=True, slots=True)
-class NewUserEvent(UserEvent):
-    ...
+class NewUserEvent(UserEvent): ...
+
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class CopyMessagesToUserEvent(UserEvent):
@@ -16,9 +15,11 @@ class CopyMessagesToUserEvent(UserEvent):
     source_chat_id: int
     album_ids: list[int]
 
+
 @dataclass(frozen=True, kw_only=True, slots=True)
 class NewSuggestionEvent(KitaEvent):
     suggestion_dto: SuggestionFullDTO
+
 
 @dataclass(frozen=True, kw_only=True, slots=True)
 class SuggestionAcceptedEvent(KitaEvent):

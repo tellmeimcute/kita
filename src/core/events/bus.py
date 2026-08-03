@@ -1,8 +1,6 @@
-
-
 import asyncio
+from collections.abc import Callable, Sequence
 from logging import getLogger
-from typing import Callable, Sequence
 
 from dishka import AsyncContainer
 
@@ -67,4 +65,3 @@ class EventBus:
         task.add_done_callback(self.background_tasks.discard)
 
         logger.debug("Event %s dispatched to %s listeners", event_name, len(listeners))
-        

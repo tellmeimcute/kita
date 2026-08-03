@@ -1,13 +1,13 @@
-
 import hashlib
 import hmac
 import secrets
 
 from cryptography.fernet import Fernet
+
 from core.config import Config
 
-class Cryptographer:
 
+class Cryptographer:
     def __init__(self, config: Config):
         self._config = config
         self._master_secret = self._config.webhook_secret.get_secret_value().encode("utf-8")
@@ -28,4 +28,3 @@ class Cryptographer:
 
     def decrypt(self, value: str):
         return self.fernet.decrypt(value.encode("utf-8")).decode("utf-8")
-    

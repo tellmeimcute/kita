@@ -1,4 +1,3 @@
-
 import logging
 
 from aiogram import Dispatcher, Router
@@ -50,9 +49,10 @@ async def register_events(event_bus: EventBus):
     event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
     event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
     event_bus.sub(CopyMessagesToUserEvent, copy_to_user_notify_both)
-    
+
     logger.debug("%s", event_bus.listeners)
     logger.info("Event Bus events successfully registered")
+
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
     user_middleware = await container.get(UserMiddleware)
@@ -74,11 +74,7 @@ async def register_routers(container: AsyncContainer, dp: Dispatcher):
     # Order is important!!
 
     user_routers = Router(name="user_root")
-    user_routers.include_routers(
-        user_menu_router,
-        user_menu_dialog,
-        user_suggestion_dialog
-    )
+    user_routers.include_routers(user_menu_router, user_menu_dialog, user_suggestion_dialog)
 
     admin_routers = Router(name="admin_root")
     admin_routers.include_routers(

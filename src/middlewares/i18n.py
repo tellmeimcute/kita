@@ -80,6 +80,8 @@ class KitaI18nMiddleware(KitaMiddleware):
                 observer.outer_middleware(self)
                 logger.debug(
                     "%s registered to event %s on router: %s",
-                    self.__class__.__name__, event_name, router.name,
+                    self.__class__.__name__,
+                    event_name,
+                    router.name,
                 )
         return self

@@ -1,5 +1,3 @@
-
-
 from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Row, Start, SwitchTo
@@ -11,7 +9,13 @@ from ui.widgets.i18n_text import I18nText
 from .handlers import on_album_received
 
 back_or_suggest_again = Row(
-    Start(I18nText("menu_btn"), id="menu", state=UserMenuSG.main, show_mode=ShowMode.AUTO, style=Style("danger")),
+    Start(
+        I18nText("menu_btn"),
+        id="menu",
+        state=UserMenuSG.main,
+        show_mode=ShowMode.AUTO,
+        style=Style("danger"),
+    ),
     SwitchTo(
         I18nText("make_suggestion_btn"),
         id="make_suggestion",

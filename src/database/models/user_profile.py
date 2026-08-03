@@ -14,9 +14,7 @@ if TYPE_CHECKING:
 
 class UserProfile(AbstractModel, TimestampMixin):
     __tablename__ = "user_profile"
-    __table_args__ = (
-        UniqueConstraint("bot_id", "user_id", name="uq_user_profile_bot_user"),
-    )
+    __table_args__ = (UniqueConstraint("bot_id", "user_id", name="uq_user_profile_bot_user"),)
 
     bot_id: Mapped[int] = mapped_column(BigInteger)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)

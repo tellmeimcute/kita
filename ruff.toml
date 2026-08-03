@@ -36,6 +36,7 @@ ignore = [
     "PLR0917", # too-many-positional-arguments (Telegram API design)
     "RET503", # Ignore Missing explicit `return`
     "PLR0913", # Ignore Too many arguments in function definition
+    "PLR6301",
 ]
 
 fixable = [

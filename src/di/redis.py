@@ -1,5 +1,3 @@
-
-
 from collections.abc import AsyncIterable
 from logging import getLogger
 
@@ -14,8 +12,9 @@ logger = getLogger("kita.providers")
 
 
 class RedisProvider(Provider):
-    
-    @provide(scope=Scope.APP)
+    scope = Scope.APP
+
+    @provide
     async def redis(self, config: Config) -> AsyncIterable[Redis]:
         logger.info("Initializing Redis instance")
         connection_pool = ConnectionPool.from_url(config.redis.redis_url, decode_responses=True)
@@ -24,7 +23,7 @@ class RedisProvider(Provider):
         try:
             await redis.ping()
             logger.info("Redis connected")
-        except Exception as e:
+        except Exception:
             logger.error("Redis connection failed")
             raise
 
@@ -33,8 +32,10 @@ class RedisProvider(Provider):
         logger.info("Closing Redis connection")
         await redis.aclose()
 
-    @provide(scope=Scope.APP)
-    def token_bucket(self, config: Config, redis: Redis, bot_registry: BotRegistryProtocol) -> TokenBucketLimiter:
+    @provide
+    def token_bucket(
+        self, config: Config, redis: Redis, bot_registry: BotRegistryProtocol
+    ) -> TokenBucketLimiter:
         logger.info("Initializing TokenBucketLimiter instance")
         kwargs = config.rate_limit.model_dump()
         return TokenBucketLimiter(redis, bot_registry, **kwargs)

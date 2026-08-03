@@ -1,5 +1,3 @@
-
-
 from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -10,9 +8,7 @@ from usecases.broadcast import BroadcastUseCase
 
 @inject
 async def get_broadcast_info(
-    dialog_manager: DialogManager,
-    broadcast: FromDishka[BroadcastUseCase],
-    **kwargs
+    dialog_manager: DialogManager, broadcast: FromDishka[BroadcastUseCase], **kwargs
 ):
     data_raw = dialog_manager.dialog_data.get("broadcast_data")
     broadcast_data = BroadcastData.model_validate(data_raw)
@@ -22,4 +18,3 @@ async def get_broadcast_info(
         "users_count": broadcast_data.users_count,
         "estimated_time": estimated_time,
     }
-

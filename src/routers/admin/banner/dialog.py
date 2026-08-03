@@ -12,7 +12,12 @@ from .handlers import get_banner_text
 get_banner_text_window = Window(
     Format("{banner_text}"),
     MessageInput(get_banner_text),
-    Start(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main, show_mode=ShowMode.AUTO),
+    Start(
+        I18nText("back_admin_menu_btn"),
+        id="admin_menu",
+        state=AdminMenuSG.main,
+        show_mode=ShowMode.AUTO,
+    ),
     state=BannerMenuSG.prepare_banner,
     getter=banner_text_getter,
 )

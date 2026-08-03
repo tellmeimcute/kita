@@ -1,6 +1,6 @@
-
+from collections.abc import Sequence
 from dataclasses import asdict
-from typing import Any, Sequence
+from typing import Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.orm import selectinload
@@ -14,7 +14,6 @@ from .base import BaseRepository
 
 
 class SuggestionRepository(BaseRepository):
-
     __slots__ = ()
 
     async def get_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
@@ -32,18 +31,22 @@ class SuggestionRepository(BaseRepository):
         if not orm_model:
             return None
         return SuggestionFullDTO.model_validate(orm_model)
-    
+
     async def update(self, suggestion_id: int, **data: Any):
-        stmt = update(Suggestion).where(
-            Suggestion.id == suggestion_id,
-            Suggestion.bot_id == self.bot.id,
-        ).values(**data)
+        stmt = (
+            update(Suggestion)
+            .where(
+                Suggestion.id == suggestion_id,
+                Suggestion.bot_id == self.bot.id,
+            )
+            .values(**data)
+        )
         await self._session.execute(stmt)
 
     async def save(self, dto: SuggestionBaseDTO):
         if changed := dto.prepare_changed_data():
             return await self.update(dto.id, **changed)
-    
+
     async def create(
         self,
         author_id: int,
@@ -61,7 +64,7 @@ class SuggestionRepository(BaseRepository):
             media_group_id=media_group_id,
             caption=caption,
             forwarded_from=forwarded_from,
-            media=[Media(bot_id=bot_id, **asdict(info)) for info in mediainfo]
+            media=[Media(bot_id=bot_id, **asdict(info)) for info in mediainfo],
         )
 
         self._session.add(suggestion_orm)
@@ -93,8 +96,12 @@ class SuggestionRepository(BaseRepository):
     async def user_stats(self, user_id: int) -> UserStats | None:
         stmt = select(
             func.count(Suggestion.id).label("total"),
-            func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.ACCEPTED).label("accepted"),
-            func.count(Suggestion.id).filter(Suggestion.status == SuggestionStatus.DECLINED).label("declined"),
+            func.count(Suggestion.id)
+            .filter(Suggestion.status == SuggestionStatus.ACCEPTED)
+            .label("accepted"),
+            func.count(Suggestion.id)
+            .filter(Suggestion.status == SuggestionStatus.DECLINED)
+            .label("declined"),
         ).where(
             Suggestion.author_id == user_id,
             Suggestion.bot_id == self.bot.id,
@@ -107,10 +114,7 @@ class SuggestionRepository(BaseRepository):
         return UserStats.model_validate(row)
 
     async def count(self) -> int:
-        stmt = select(
-            func.count(Suggestion.id)
-        ).where(Suggestion.bot_id == self.bot.id)
-        
+        stmt = select(func.count(Suggestion.id)).where(Suggestion.bot_id == self.bot.id)
+
         count = await self._session.scalar(stmt)
         return count or 0
-    

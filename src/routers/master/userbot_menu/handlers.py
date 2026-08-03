@@ -1,20 +1,19 @@
 from logging import getLogger
-from aiogram import Router, Bot
-from aiogram.types import CallbackQuery, Message
 
+from aiogram import Bot, Router
+from aiogram.types import CallbackQuery, Message
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.input import MessageInput
+from aiogram_dialog.widgets.kbd import Button, Select
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from aiogram_dialog import DialogManager
-from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Select, Button
-
 from core.i18n_translator import Translator
-from ui.state_groups import UserBotSelectSG
 from database.dto import UserDTO
+from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
 from services.userbot_checker import UserBotChecker, UserBotCheckResult
-from interfaces import UnitOfWorkProtocol, BotRegistryProtocol, NotifierServiceProtocol
+from ui.state_groups import UserBotSelectSG
 
 router = Router(name="registrar")
 
@@ -50,9 +49,7 @@ async def userbot_set_toggle(
 
     userbot.active = not userbot.active
 
-    bot = bot_registry.get_or_create(
-        bot_id, userbot.token.get_secret_value()
-    )
+    bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
 
     checker = UserBotChecker()
     check_result: UserBotCheckResult = await checker.full_check(bot, userbot.channel_id)
@@ -77,12 +74,13 @@ async def userbot_set_toggle(
     except Exception:
         logger.exception(
             "Something went wrong when user %s trying toggle userbot %s active state:",
-            user_dto.user_id, userbot.bot_id,
+            user_dto.user_id,
+            userbot.bot_id,
         )
 
     await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
 
-        
+
 @inject
 async def update_token(
     message: Message,
@@ -95,13 +93,11 @@ async def update_token(
     notifier: FromDishka[NotifierServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    
+
     bot_id = int(manager.dialog_data["selected_bot_id"])
 
     checker = UserBotChecker()
-    check_result = await checker.check_token(
-        bot_id, message.text, bot_registry.bot_settings
-    )
+    check_result = await checker.check_token(bot_id, message.text, bot_registry.bot_settings)
 
     if not check_result.success:
         manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
@@ -120,6 +116,7 @@ async def update_token(
 
     await manager.switch_to(UserBotSelectSG.moderation)
 
+
 @inject
 async def update_channel(
     message: Message,
@@ -133,7 +130,7 @@ async def update_channel(
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
-    
+
     try:
         provided_channel_id = message.text.strip()
         channel_id = int("-100" + provided_channel_id)

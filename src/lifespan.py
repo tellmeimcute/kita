@@ -1,10 +1,8 @@
-
 from contextlib import asynccontextmanager
 from logging import getLogger
 
 from aiogram import Dispatcher
 from aiogram.utils.token import extract_bot_id
-
 from dishka import AsyncContainer
 from fastapi import FastAPI
 
@@ -12,7 +10,7 @@ from core.config import Config
 from core.events import EventBus
 from interfaces import BotRegistryProtocol
 from services.webhooks import WebhookService
-from startup import setup_slave_dp, register_events, setup_registrar_dp
+from startup import register_events, setup_registrar_dp, setup_slave_dp
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 logger = getLogger("kita.fastapi")
@@ -68,5 +66,5 @@ async def lifespan(app: FastAPI):
 
     await container.close()
     await registry.close()
-    
+
     logger.info("FastAPI shutdown complete")

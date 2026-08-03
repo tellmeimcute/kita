@@ -1,17 +1,15 @@
-
 from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Start, Select, Button, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, Select, Start, SwitchTo
 from aiogram_dialog.widgets.text import Format
 
-from ui.state_groups import UserBotSelectSG, RegistrarMenuSG
+from ui.state_groups import RegistrarMenuSG, UserBotSelectSG
 from ui.widgets.i18n_text import I18nText
 
-from .getters import owned_userbots, get_selected_userbot
-from .handlers import on_bot_selected, userbot_set_toggle, update_token, update_channel
-
 from ..getters import get_error_text
+from .getters import get_selected_userbot, owned_userbots
+from .handlers import on_bot_selected, update_channel, update_token, userbot_set_toggle
 
 userbot_main_window = Window(
     I18nText("userbots_moderation_select"),
@@ -38,13 +36,13 @@ userbot_moderation_window = Window(
         I18nText("userbot_set_inactive_btn"),
         id="userbot_set_inactive",
         on_click=userbot_set_toggle,
-        when=F["selected_userbot"].active
+        when=F["selected_userbot"].active,
     ),
     Button(
         I18nText("userbot_set_active_btn"),
         id="userbot_set_active",
         on_click=userbot_set_toggle,
-        when=~F["selected_userbot"].active
+        when=~F["selected_userbot"].active,
     ),
     SwitchTo(
         I18nText("userbot_update_token_btn"),

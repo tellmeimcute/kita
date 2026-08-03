@@ -1,4 +1,3 @@
-
 from aiogram import Bot
 
 from .base import BaseSender
@@ -18,6 +17,7 @@ class MessageTransfer(BaseSender):
         self.from_chat_id = from_chat_id
         self.message_ids = message_ids
 
+
 class CopyTransfer(MessageTransfer):
     async def _send(self):
         return await self.bot.copy_messages(
@@ -25,7 +25,8 @@ class CopyTransfer(MessageTransfer):
             from_chat_id=self.from_chat_id,
             message_ids=self.message_ids,
         )
-    
+
+
 class ForwardTransfer(MessageTransfer):
     async def _send(self):
         return await self.bot.forward_messages(

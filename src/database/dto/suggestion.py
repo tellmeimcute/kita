@@ -1,8 +1,6 @@
-
-
 from datetime import datetime
 
-from pydantic import Field, computed_field
+from pydantic import computed_field
 
 from core.enums import RenderType
 from database.enums import SuggestionStatus
@@ -36,7 +34,7 @@ class SuggestionFullDTO(SuggestionBaseDTO):
         if not self.media and self.caption:
             return RenderType.MESSAGE
         return RenderType.MEDIAGROUP
-    
+
     def to_i18n_kwargs(self) -> dict:
         data = self.model_dump(
             mode="json",
@@ -53,5 +51,5 @@ class SuggestionFullDTO(SuggestionBaseDTO):
             updated_at=updated_at,
             created_at=created_at,
         )
-        
+
         return data

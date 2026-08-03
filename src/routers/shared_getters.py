@@ -1,5 +1,3 @@
-
-
 from typing import Literal
 
 from aiogram_dialog import DialogManager
@@ -30,6 +28,7 @@ def role_condition(
             return target_role == role
         if mode == "not":
             return target_role != role
+
     return _factory
 
 

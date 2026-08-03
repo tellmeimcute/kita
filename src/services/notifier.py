@@ -1,14 +1,13 @@
-
 from logging import getLogger
 from typing import Literal
 
-from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
 from database.dto import SuggestionFullDTO, UserDTO, UserProfileDTO
+from interfaces import BotRegistryProtocol
 from ui.keyboards import ReplyKeyboard
 from ui.senders import (
     CopyTransfer,
@@ -16,21 +15,16 @@ from ui.senders import (
     MediaGroupSender,
     TextSender,
 )
-
 from ui.senders.base import BaseSender
 from ui.suggestion_utils import SuggestionUtils
-from interfaces import BotRegistryProtocol
+
 from .base import BaseService
 
 logger = getLogger("kita.notifier_service")
 
 
 class NotifierService(BaseService):
-
-    __slots__ = (
-        "_tl",
-        "_suggestion_utils"
-    )
+    __slots__ = ("_tl", "_suggestion_utils")
 
     def __init__(
         self,
@@ -66,10 +60,7 @@ class NotifierService(BaseService):
             raise ValueError("target arg should be UserDTO or INT")
 
         i18n_key: Literal["suggestion_caption", "channel_post_message"]
-        if mode == "admin_viewer":
-            i18n_key = "suggestion_caption"
-        else:
-            i18n_key = "channel_post_message"
+        i18n_key = "suggestion_caption" if mode == "admin_viewer" else "channel_post_message"
 
         payload = self._suggestion_utils.payload_factory(dto, i18n_key)
         strategy = self.strategy_factory(target_id, payload)
@@ -105,7 +96,9 @@ class NotifierService(BaseService):
             strategy = self.strategy_factory(target, payload)
             return await strategy.send()
 
-    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload, profile_dto: UserProfileDTO | None = None):
+    async def notify_user(
+        self, user_dto: UserDTO, payload: MessagePayload, profile_dto: UserProfileDTO | None = None
+    ):
         if profile_dto and profile_dto.is_bot_blocked:
             return logger.info("UserID %s has blocked the bot. Skip.", user_dto.user_id)
 

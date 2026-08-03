@@ -1,4 +1,5 @@
-from typing import Any, Awaitable, Callable, Dict, Union
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from dishka import AsyncContainer
@@ -13,12 +14,11 @@ from .base import KitaMiddleware
 
 
 class AdminMiddleware(KitaMiddleware):
-
     async def __call__(
         self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event: Union[Message, CallbackQuery],
-        data: Dict[str, Any],
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
+        event: Message | CallbackQuery,
+        data: dict[str, Any],
     ) -> Any:
         profile_dto: UserProfileDTO = data.get("profile_dto")
         if profile_dto and profile_dto.is_admin:

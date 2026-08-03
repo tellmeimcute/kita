@@ -1,5 +1,3 @@
-
-
 from aiogram_dialog import Dialog, LaunchMode, StartMode, Window
 from aiogram_dialog.widgets.kbd import Button, Cancel, Start, SwitchTo
 from aiogram_dialog.widgets.style import Style
@@ -48,8 +46,9 @@ main_window = Window(
 settings_window = Window(
     I18nText("settings_menu_text"),
     SwitchTo(I18nText("locale_settings_btn"), id="locale", state=UserMenuSG.language),
-    Button(I18nText("prefer_anon_toggle_btn"), id="prefer_anon_toggle", on_click=prefer_anon_toggle),
-
+    Button(
+        I18nText("prefer_anon_toggle_btn"), id="prefer_anon_toggle", on_click=prefer_anon_toggle
+    ),
     SwitchTo(I18nText("menu_btn"), id="menu", state=UserMenuSG.main),
     state=UserMenuSG.settings,
 )

@@ -1,4 +1,3 @@
-
 from typing import Any
 
 from sqlalchemy import func, select, update
@@ -11,14 +10,10 @@ from .base import BaseRepository
 
 
 class UserRepository(BaseRepository):
-
     __slots__ = ()
 
     async def get_by_id(self, user_id: int) -> UserDTO | None:
-        stmt = (
-            select(UserAlchemy)
-            .where(UserAlchemy.user_id == user_id)
-        )
+        stmt = select(UserAlchemy).where(UserAlchemy.user_id == user_id)
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
@@ -28,12 +23,7 @@ class UserRepository(BaseRepository):
 
     async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
         values = prep_user_dto.model_dump(exclude={"created_at", "updated_at"})
-        stmt = (
-            insert(UserAlchemy)
-            .values(**values)
-            .on_conflict_do_nothing()
-            .returning(UserAlchemy)
-        )
+        stmt = insert(UserAlchemy).values(**values).on_conflict_do_nothing().returning(UserAlchemy)
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()

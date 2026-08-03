@@ -12,7 +12,7 @@ class AbstractModel(Base):
     id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
 
     @declared_attr
-    def __tablename__(cls) -> str:
+    def __tablename__(cls) -> str:  # noqa: PLW3201
         return cls.__name__.lower()
 
     def __repr__(self) -> str:

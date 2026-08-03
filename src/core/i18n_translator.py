@@ -1,4 +1,3 @@
-
 from aiogram.utils.i18n import gettext as _
 
 

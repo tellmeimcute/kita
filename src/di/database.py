@@ -1,4 +1,3 @@
-
 from collections.abc import AsyncIterable
 from logging import getLogger
 
@@ -16,8 +15,9 @@ logger = getLogger("kita.providers")
 
 
 class DatabaseProvider(Provider):
+    scope = Scope.APP
 
-    @provide(scope=Scope.APP)
+    @provide
     async def get_async_engine(self, config: Config) -> AsyncIterable[AsyncEngine]:
         logger.info("Initializing AsyncEngine instance")
         engine = create_async_engine(
@@ -34,15 +34,15 @@ class DatabaseProvider(Provider):
         logger.debug("Disposing AsyncEngine")
         await engine.dispose()
 
-    @provide(scope=Scope.APP)
+    @provide
     def get_session_maker(self, engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
         logger.info("Initializing async_sessionmaker instance")
         return async_sessionmaker(engine, expire_on_commit=False)
 
     @provide(scope=Scope.REQUEST)
-    async def get_session(self, session_maker: async_sessionmaker[AsyncSession]) -> AsyncIterable[AsyncSession]:
+    async def get_session(
+        self, session_maker: async_sessionmaker[AsyncSession]
+    ) -> AsyncIterable[AsyncSession]:
         logger.debug("Initializing AsyncSession instance")
         async with session_maker() as session:
             yield session
-
-

@@ -1,4 +1,3 @@
-
 from aiogram.types import Message, MessageOriginChannel
 
 from core.schemas import MediaInfo
@@ -23,4 +22,3 @@ class MessageParser:
         if isinstance(origin, MessageOriginChannel):
             return origin.chat.full_name
         return None
-    
