@@ -94,6 +94,8 @@ async def update_token(
     bot_registry: FromDishka[BotRegistryProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
 ):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    
     bot_id = int(manager.dialog_data["selected_bot_id"])
 
     checker = UserBotChecker()
@@ -115,7 +117,6 @@ async def update_token(
         bot = bot_registry.get_or_create(bot_id, check_result.token)
         await webhook_service.set_webhook(bot)
 
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
     await notifier.send_text(user_dto, "userbot_token_updated")
 
     await manager.switch_to(UserBotSelectSG.moderation)
