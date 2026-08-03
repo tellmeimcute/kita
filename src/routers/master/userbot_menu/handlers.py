@@ -55,7 +55,7 @@ async def userbot_set_toggle(
     )
 
     checker = UserBotChecker()
-    check_result: UserBotCheckResult = checker.full_check(bot, userbot.channel_id)
+    check_result: UserBotCheckResult = await checker.full_check(bot, userbot.channel_id)
 
     if not check_result.success:
         await callback.answer(tl.translate(check_result.detail_i18n_key))
@@ -150,7 +150,7 @@ async def update_channel(
     bot: Bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
 
     checker = UserBotChecker()
-    check_result: UserBotCheckResult = checker.full_check(bot, channel_id)
+    check_result: UserBotCheckResult = await checker.full_check(bot, channel_id)
 
     if not check_result.success:
         manager.dialog_data["something_wrong"] = check_result.detail_i18n_key

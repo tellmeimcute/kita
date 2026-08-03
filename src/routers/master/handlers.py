@@ -104,7 +104,7 @@ async def channel_id_handler(
 
     checker = UserBotChecker()
     async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
-        check_result: UserBotCheckResult = checker.full_check(tmp_bot, channel_id)
+        check_result: UserBotCheckResult = await checker.full_check(tmp_bot, channel_id)
 
     if not check_result.success:
         manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
