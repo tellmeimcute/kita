@@ -16,7 +16,7 @@ class UserBotCheckResult:
     channel: ChatFullInfo | None = None
     channel_admin: ChatMemberAdministrator | None = None
     token: str | None = None
-    bot_id: int | None
+    bot_id: int | None = None
 
 logger = getLogger("kita.userbot_service")
 
