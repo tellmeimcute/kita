@@ -394,13 +394,14 @@ msgstr "<b>Send the new token.</b>"
 msgid "userbot_update_channel"
 msgstr "<b>Send the ID of the new channel.</b>"
 
-#, fuzzy
 msgid "userbot_token_updated"
-msgstr "<b>Send the new token.</b>"
+msgstr "<b>Token updated.</b>"
 
-#, fuzzy
 msgid "userbot_channel_updated"
-msgstr "🎨 Update channel"
+msgstr "<b>Channel updated.</b>"
+
+msgid "your_bot_deactivated"
+msgstr "Your bot @{bot_username} ({bot_id}) deactivated: {detail}"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"

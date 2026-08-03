@@ -308,6 +308,9 @@ msgstr ""
 msgid "userbot_channel_updated"
 msgstr ""
 
+msgid "your_bot_deactivated"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 

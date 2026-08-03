@@ -42,6 +42,7 @@ async def on_userbot_demoted(
     notifier: FromDishka[NotifierServiceProtocol],
     config: FromDishka[Config],
     i18n: FromDishka[I18n],
+    tl: FromDishka[Translator],
 ):
     new = event.new_chat_member
 
@@ -71,7 +72,7 @@ async def on_userbot_demoted(
                 i18n_key="your_bot_deactivated",
                 i18n_kwargs={
                     "bot_id": bot.id,
-                    "detail": "Not enough channel permissions",
+                    "detail": tl.translate("reg_bot_permission_error"),
                     "bot_username": userbot.username,
                 },
             )

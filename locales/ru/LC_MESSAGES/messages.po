@@ -403,6 +403,9 @@ msgstr "🟢 <b>Токен успешно обновлен</b>"
 msgid "userbot_channel_updated"
 msgstr "🟢 <b>Канал успешно обновлен</b>"
 
+msgid "your_bot_deactivated"
+msgstr "Твой бот @{bot_username} ({bot_id}) деактивирован: {detail}"
+
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
 
