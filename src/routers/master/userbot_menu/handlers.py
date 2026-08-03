@@ -131,12 +131,13 @@ async def update_channel(
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
 
+    checker = UserBotChecker()
+
     try:
-        provided_channel_id = message.text.strip()
-        channel_id = int("-100" + provided_channel_id)
+        channel_id = checker.get_channel_id(message.text)
     except ValueError:
-        logger.exception("Userbot channel_id to '%s' change failed", provided_channel_id)
-        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_should_be_int"
+        logger.exception("Userbot channel_id to '%s' change failed", channel_id)
+        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
 
     bot_id = int(manager.dialog_data["selected_bot_id"])
@@ -146,9 +147,7 @@ async def update_channel(
 
     bot: Bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
 
-    checker = UserBotChecker()
     check_result: UserBotCheckResult = await checker.full_check(bot, channel_id)
-
     if not check_result.success:
         manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
         return

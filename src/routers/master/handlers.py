@@ -87,20 +87,18 @@ async def channel_id_handler(
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
 
+    checker = UserBotChecker()
+
     try:
-        provided_channel_id = message.text.strip()
-        channel_id = int("-100" + provided_channel_id)
+        channel_id = checker.get_channel_id(message.text)
     except ValueError:
-        logger.exception(
-            "Userbot registration failed. Trying channel_id '%s'", provided_channel_id
-        )
-        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_should_be_int"
+        logger.exception("Userbot registration failed. Trying channel_id '%s'", channel_id)
+        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
 
     token = manager.dialog_data.get("new_userbot_token")
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
-    checker = UserBotChecker()
     async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
         check_result: UserBotCheckResult = await checker.full_check(tmp_bot, channel_id)
 

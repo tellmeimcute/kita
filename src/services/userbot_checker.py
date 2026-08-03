@@ -24,6 +24,10 @@ logger = getLogger("kita.userbot_service")
 
 
 class UserBotChecker:
+    def get_channel_id(self, input_str: str):
+        provided = input_str.strip()
+        return provided if provided.startswith("@") else int("-100" + provided)
+
     async def check_token(
         self, target_bot_id: int | None, token: str, bot_settings: dict
     ) -> UserBotCheckResult:
@@ -54,7 +58,7 @@ class UserBotChecker:
             bot_id=token_bot_id,
         )
 
-    async def check_channel_rights(self, bot: Bot, channel_id: int):
+    async def check_channel_rights(self, bot: Bot, channel_id: int | str):
         try:
             channel_member = await bot.get_chat_member(channel_id, bot.id)
         except TelegramBadRequest:
@@ -65,13 +69,13 @@ class UserBotChecker:
             return None
         return channel_member
 
-    async def full_check(self, bot: Bot, channel_id: int) -> UserBotCheckResult:
+    async def full_check(self, bot: Bot, channel_id: int | str) -> UserBotCheckResult:
         status = None
 
         try:
             bot_info = await bot.get_me()
             channel = await bot.get_chat(channel_id)
-            channel_admin = await self.check_channel_rights(bot, channel_id)
+            channel_admin = await self.check_channel_rights(bot, channel.id)
         except TelegramUnauthorizedError:
             logger.info("Userbot check failed: invalid token")
             detail_i18n_key = "reg_bot_token_invalid"

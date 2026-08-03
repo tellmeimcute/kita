@@ -347,8 +347,8 @@ msgstr "The token is invalid. Send a valid token."
 msgid "reg_bot_token_from_another_bot"
 msgstr "<b>This token is from another bot</b>"
 
-msgid "reg_bot_channel_id_should_be_int"
-msgstr "<b>Channel ID must be a number.</b>"
+msgid "reg_bot_channel_id_error"
+msgstr "<b>Channel ID should be @username else numeric channel ID.</b>"
 
 msgid "reg_bot_bad_request"
 msgstr ""

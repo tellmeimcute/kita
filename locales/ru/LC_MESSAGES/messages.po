@@ -354,8 +354,8 @@ msgstr "Токен инвалидный. Отправьте валидный т�
 msgid "reg_bot_token_from_another_bot"
 msgstr "<b>Этот токен от другого бота</b>"
 
-msgid "reg_bot_channel_id_should_be_int"
-msgstr "<b>ID канала должно быть числом.</b>"
+msgid "reg_bot_channel_id_error"
+msgstr "<b>ID канала должно быть @username либо числовое ID канала.</b>"
 
 msgid "reg_bot_bad_request"
 msgstr ""

@@ -263,7 +263,7 @@ msgstr ""
 msgid "reg_bot_token_from_another_bot"
 msgstr ""
 
-msgid "reg_bot_channel_id_should_be_int"
+msgid "reg_bot_channel_id_error"
 msgstr ""
 
 msgid "reg_bot_bad_request"
