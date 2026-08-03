@@ -5,7 +5,7 @@ from .key_builder import (
     MediaGroupKey as MediaGroupKey,
 )
 from .key_builder import (
-    MediaGroupKeyBulder as MediaGroupKeyBulder,
+    MediaGroupKeyBuilder as MediaGroupKeyBuilder,
 )
 from .key_builder import (
     RedisKey as RedisKey,

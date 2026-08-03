@@ -52,7 +52,7 @@ class KitaKeyBuilder(KeyBuilder):
         return self.separator.join(parts)
 
 
-class MediaGroupKeyBulder(KitaKeyBuilder):
+class MediaGroupKeyBuilder(KitaKeyBuilder):
     def build(
         self,
         key: MediaGroupKey,

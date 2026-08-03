@@ -58,11 +58,11 @@ class UserMiddleware(KitaMiddleware):
             user_dto.update_from_data(user_tg)
             await user_service.save(user_dto)
 
-            alredy_admin = profile_dto.role == UserRole.ADMIN
+            already_admin = profile_dto.role == UserRole.ADMIN
             is_userbot_admin = userbot_dto and profile_dto.user_id == userbot_dto.owner_id
             is_global_admin = profile_dto.user_id == self.admin_id
 
-            if not alredy_admin and (is_global_admin or is_userbot_admin):
+            if not already_admin and (is_global_admin or is_userbot_admin):
                 profile_dto.role = UserRole.ADMIN
 
             if profile_dto.is_bot_blocked:

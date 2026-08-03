@@ -92,7 +92,9 @@ async def channel_id_handler(
     try:
         channel_id = checker.get_channel_id(message.text)
     except ValueError:
-        logger.exception("Userbot registration failed. Trying channel_id '%s'", message.text.strip())
+        logger.exception(
+            "Userbot registration failed. Trying channel_id '%s'", message.text.strip()
+        )
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
 

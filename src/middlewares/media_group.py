@@ -5,7 +5,7 @@ from typing import ClassVar
 from aiogram.types import Message
 from redis.asyncio import Redis
 
-from database.redis import MediaGroupKey, MediaGroupKeyBulder, TgMessageRedis
+from database.redis import MediaGroupKey, MediaGroupKeyBuilder, TgMessageRedis
 
 from .base import KitaMiddleware
 
@@ -25,7 +25,7 @@ class MediaGroupMiddleware(KitaMiddleware):
         self.redis = redis
         self.latency = latency
 
-        self.key_builder = MediaGroupKeyBulder()
+        self.key_builder = MediaGroupKeyBuilder()
 
     async def __call__(self, handler, event: Message, data: dict):
         if not isinstance(event, Message) or not event.media_group_id:
