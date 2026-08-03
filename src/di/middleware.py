@@ -2,6 +2,7 @@ from aiogram.utils.i18n import I18n
 from dishka import Provider, Scope, provide
 from redis.asyncio import Redis
 
+from database.redis import TgMessageRedis
 from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
@@ -25,5 +26,7 @@ class MiddlewareProvider(Provider):
         return KitaI18nMiddleware(i18n=i18n)
 
     @provide
-    async def media_group_middleware(self, redis: Redis) -> MediaGroupMiddleware:
-        return MediaGroupMiddleware(redis)
+    async def media_group_middleware(
+        self, redis: Redis, tg_message_redis: TgMessageRedis
+    ) -> MediaGroupMiddleware:
+        return MediaGroupMiddleware(redis=redis, tg_message_redis=tg_message_redis)

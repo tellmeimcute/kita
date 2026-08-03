@@ -6,6 +6,13 @@ from redis.asyncio import ConnectionPool, Redis
 
 from core.config import Config
 from core.rate_limiters import TokenBucketLimiter
+from database.redis import (
+    TgMessageRedis,
+    UserBotRedis,
+    UserProfileRedis,
+    UserRedis,
+    UserStatsRedis,
+)
 from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.providers")
@@ -13,6 +20,12 @@ logger = getLogger("kita.providers")
 
 class RedisProvider(Provider):
     scope = Scope.APP
+
+    user_stats_redis = provide(UserStatsRedis)
+    user_redis = provide(UserRedis)
+    user_profile_redis = provide(UserProfileRedis)
+    user_bot_redis = provide(UserBotRedis)
+    tg_message_redis = provide(TgMessageRedis)
 
     @provide
     async def redis(self, config: Config) -> AsyncIterable[Redis]:
@@ -39,3 +52,4 @@ class RedisProvider(Provider):
         logger.info("Initializing TokenBucketLimiter instance")
         kwargs = config.rate_limit.model_dump()
         return TokenBucketLimiter(redis, bot_registry, **kwargs)
+

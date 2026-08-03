@@ -1,8 +1,6 @@
 from logging import getLogger
 from typing import Any
 
-from redis.asyncio import Redis
-
 from database.dto import UserProfileDTO
 from database.redis import UserProfileRedis
 from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
@@ -15,34 +13,33 @@ logger = getLogger("kita.user_profile_service")
 class UserProfileService(BaseService):
     REDIS_KEY_PART = "user_profile"
 
-    __slots__ = ("redis", "repo")
+    __slots__ = ("user_profile_redis", "repo")
 
     def __init__(
         self,
-        redis: Redis,
+        user_profile_redis: UserProfileRedis,
         repo: UserProfileRepositoryProtocol,
         bot_registry: BotRegistryProtocol,
     ):
         super().__init__(bot_registry)
-        self.redis = redis
+        self.user_profile_redis = user_profile_redis
         self.repo = repo
 
     async def get_or_create(self, user_id: int) -> UserProfileDTO:
-        cached = await UserProfileRedis.get(self.redis, self._get_key(user_id))
+        cached = await self.user_profile_redis.get(self._get_key(user_id))
         if cached:
             return cached
 
         profile_dto = await self.repo.get_or_create(user_id)
 
-        await UserProfileRedis.set_cache(
-            redis=self.redis,
+        await self.user_profile_redis.set_cache(
             key=self._get_key(user_id),
             data=profile_dto,
         )
         return profile_dto
 
     async def get(self, user_id: int) -> UserProfileDTO | None:
-        cached = await UserProfileRedis.get(self.redis, self._get_key(user_id))
+        cached = await self.user_profile_redis.get(self._get_key(user_id))
         if cached:
             return cached
 
@@ -50,8 +47,7 @@ class UserProfileService(BaseService):
         if not profile_dto:
             return None
 
-        await UserProfileRedis.set_cache(
-            redis=self.redis,
+        await self.user_profile_redis.set_cache(
             key=self._get_key(user_id),
             data=profile_dto,
         )
@@ -59,8 +55,7 @@ class UserProfileService(BaseService):
 
     async def create(self, user_id: int) -> UserProfileDTO:
         profile_dto = await self.repo.create(user_id)
-        await UserProfileRedis.set_cache(
-            redis=self.redis,
+        await self.user_profile_redis.set_cache(
             key=self._get_key(user_id),
             data=profile_dto,
         )
@@ -68,7 +63,7 @@ class UserProfileService(BaseService):
 
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)
-        await UserProfileRedis.delete(redis=self.redis, key=self._get_key(user_id))
+        await self.user_profile_redis.delete(self._get_key(user_id))
         logger.info("Update user profile %s for bot %s", user_id, self.bot.id)
 
     async def save(self, profile_dto: UserProfileDTO):
@@ -77,7 +72,7 @@ class UserProfileService(BaseService):
             return
 
         await self.repo.update(profile_dto.user_id, **changed)
-        await UserProfileRedis.delete(redis=self.redis, key=self._get_key(profile_dto.user_id))
+        await self.user_profile_redis.delete(self._get_key(profile_dto.user_id))
         logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot.id)
 
     async def get_active(self):

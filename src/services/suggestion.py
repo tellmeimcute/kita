@@ -21,21 +21,21 @@ class SuggestionService(BaseService):
     REDIS_KEY_PART = "suggestion"
 
     __slots__ = (
-        "redis",
+        "user_stats_redis",
         "repo",
         "parser",
     )
 
     def __init__(
         self,
-        redis: Redis,
+        user_stats_redis: UserStatsRedis,
         repo: SuggestionRepositoryProtocol,
         bot_registry: BotRegistryProtocol,
         parser: MessageParser,
     ):
         super().__init__(bot_registry)
 
-        self.redis = redis
+        self.user_stats_redis = user_stats_redis
         self.repo = repo
         self.parser = parser
 
@@ -44,12 +44,12 @@ class SuggestionService(BaseService):
 
         key = self._key_builder.build(key=redis_key, part="user_stats")
 
-        stats_row = await UserStatsRedis.get(self.redis, key)
+        stats_row = await self.user_stats_redis.get(key)
         if stats_row:
             return stats_row
 
         user_stats = await self.repo.user_stats(user_dto.user_id)
-        await UserStatsRedis.set_cache(self.redis, key, user_stats)
+        await self.user_stats_redis.set_cache(key, user_stats)
         return user_stats
 
     async def get(self, suggestion_id: int):
@@ -64,7 +64,7 @@ class SuggestionService(BaseService):
         key = self._key_builder.build(
             key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id), part="user_stats"
         )
-        await self.redis.delete(key)
+        await self.user_stats_redis.delete(key)
 
         logger.info("Update suggestion %s", suggestion_dto.id)
 
