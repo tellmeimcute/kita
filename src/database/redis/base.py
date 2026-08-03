@@ -1,6 +1,8 @@
 import json
 import logging
-from typing import Sequence, Generic, Set, TypeVar
+from typing import Sequence, Generic, Set, TypeVar, get_origin, get_args, Union
+from types import UnionType
+
 from pydantic import BaseModel, SecretStr
 from redis.asyncio import Redis
 
@@ -22,20 +24,31 @@ class BaseRedisRepository(Generic[T]):
     include: Set[str] | None = None
 
     @classmethod
+    def _is_secret_field(cls, field_name: str):
+        if field_name in cls._secret_fields:
+            return True
+
+        field_info = cls.model.model_fields.get(field_name)
+        if not field_info:
+            return False
+        
+        annotation = field_info.annotation
+
+        if get_origin(annotation) in (Union, UnionType):
+            return SecretStr in get_args(annotation)
+        
+        return annotation is SecretStr
+
+    @classmethod
     def _prepare_cache(cls, data: T) -> dict:
         data_dict = data.model_dump(
-            mode="python",
+            mode="json",
             exclude=cls.exclude,
             include=cls.include,
         )
 
         for k, v in data_dict.items():
-            is_secret = k in cls._secret_fields
-            
-            if isinstance(v, SecretStr):
-                plain = v.get_secret_value()
-                data_dict[k] = cls.crypto.encrypt(plain) if is_secret else plain
-            elif is_secret and v is not None:
+            if v is not None and cls._is_secret_field(k):
                 data_dict[k] = cls.crypto.encrypt(str(v))
 
         return json.dumps(data_dict, default=str)
@@ -45,8 +58,8 @@ class BaseRedisRepository(Generic[T]):
         data_dict: dict = json.loads(cached_str)
         
         for k, v in data_dict.items():
-            if isinstance(v, str) and k in cls._secret_fields:
-                data_dict[k] = cls.crypto.decrypt(v)
+            if v is not None and cls._is_secret_field(k):
+                data_dict[k] = cls.crypto.decrypt(str(v))
 
         return cls.model.model_validate(data_dict)
 
