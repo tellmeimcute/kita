@@ -1,16 +1,21 @@
 from logging import getLogger
 
 from aiogram import F, Router
+from aiogram.utils.i18n import I18n
+from aiogram.utils.token import extract_bot_id
+from aiogram.enums import ChatType
 from aiogram.exceptions import TelegramUnauthorizedError
-from aiogram.filters import IS_MEMBER, IS_NOT_MEMBER, ChatMemberUpdatedFilter, ExceptionTypeFilter
+from aiogram.filters import ChatMemberUpdatedFilter, ExceptionTypeFilter, LEAVE_TRANSITION, IS_ADMIN
 from aiogram.types import CallbackQuery, ChatMemberUpdated, ErrorEvent
+
 from aiogram_dialog.api.exceptions import UnknownIntent
 from dishka import FromDishka
 
+from core.config import Config
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol
-from services import UserBotService
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol, NotifierServiceProtocol, UserServiceProtocol
+from services import UserBotService, WebhookService
 from ui.senders.payload import TextSender
 
 logger = getLogger("kita.errors")
@@ -26,6 +31,55 @@ async def on_user_block_bot(
         await user_profile_service.update(user_id, is_bot_blocked=True)
 
     logger.info("UserID %s blocked the bot.", user_id)
+
+async def on_userbot_demoted(
+    event: ChatMemberUpdated,
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
+    userbot_service: FromDishka[UserBotService],
+    bot_registry: FromDishka[BotRegistryProtocol],
+    webhook_service: FromDishka[WebhookService],
+    notifier: FromDishka[NotifierServiceProtocol],
+    config: FromDishka[Config],
+    i18n: FromDishka[I18n],
+):
+    new = event.new_chat_member
+
+    if new.can_post_messages:
+        return
+    
+    registrar_token = config.tg_token.get_secret_value()
+    registrar_bot_id = extract_bot_id(registrar_token)
+    registrar_bot = bot_registry.get_or_create(
+        registrar_bot_id, registrar_token
+    )
+
+    bot = bot_registry.get_current()
+    async with uow.transaction():
+        await userbot_service.update(bot.id, active=False)
+        userbot = await userbot_service.get(bot.id)
+        owner_dto = await user_service.get(userbot.owner_id)
+
+    await webhook_service.remove_webhook(bot)
+    bot_registry.remove(bot.id)
+
+    with i18n.context():
+        with i18n.use_locale(owner_dto.language_code):
+            notifier.assign_bot(registrar_bot)
+            await notifier.send_text(
+                owner_dto,
+                i18n_key="your_bot_deactivated",
+                i18n_kwargs={
+                    "bot_id": bot.id,
+                    "detail": "Not enough channel permissions",
+                    "bot_username": userbot.username,
+                },
+            )
+
+    logger.info(
+        "Bot %s permission in channel %s has been revoked, deactivate userbot",
+        bot.id, event.chat.title,
+    )
 
 async def unknown_intent(
     event: ErrorEvent,
@@ -74,7 +128,14 @@ def get_error_router():
 
     router.my_chat_member.register(
         on_user_block_bot,
-        ChatMemberUpdatedFilter(IS_MEMBER >> IS_NOT_MEMBER),
+        ChatMemberUpdatedFilter(LEAVE_TRANSITION),
+        F.chat.type == ChatType.PRIVATE,
+    )
+
+    router.my_chat_member.register(
+        on_userbot_demoted,
+        ChatMemberUpdatedFilter(IS_ADMIN),
+        F.chat.type == ChatType.CHANNEL,
     )
 
     router.error.register(

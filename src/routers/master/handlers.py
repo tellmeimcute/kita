@@ -1,8 +1,6 @@
 from logging import getLogger
 
 from aiogram import Bot, Router
-from aiogram.enums import ChatMemberStatus
-from aiogram.exceptions import TelegramUnauthorizedError, TelegramBadRequest
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
@@ -19,6 +17,8 @@ from core.config import Config
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
+from services.userbot_checker import UserBotChecker, UserBotCheckResult
+
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 
 router = Router(name="registrar")
@@ -53,23 +53,26 @@ async def bot_token_handler(
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
     notifier: FromDishka[NotifierServiceProtocol],
+    bot_registry: FromDishka[BotRegistryProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
-    try:
-        token = message.text.strip()
-        bot_id = extract_bot_id(token)
-    except (TokenValidationError, AttributeError):
-        manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
+    checker = UserBotChecker()
+    check_result = await checker.check_token(
+        None, message.text, bot_registry.bot_settings
+    )
+
+    if not check_result.success:
+        manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
         return
-    
+
     async with uow.transaction():
-        if await userbot_service.get(bot_id):
+        if await userbot_service.get(check_result.bot_id):
             await notifier.send_text(user_dto, "reg_bot_alredy_exist")
             return await manager.start(RegistrarMenuSG.menu)
 
-    manager.dialog_data["new_userbot_token"] = token
-    manager.dialog_data["new_userbot_bot_id"] = bot_id
+    manager.dialog_data["new_userbot_token"] = check_result.token
+    manager.dialog_data["new_userbot_bot_id"] = check_result.bot_id
 
     await manager.next(ShowMode.DELETE_AND_SEND)
     
@@ -99,36 +102,25 @@ async def channel_id_handler(
     token = manager.dialog_data.get("new_userbot_token")
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
-    try:
-        async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
-            bot_info = await tmp_bot.get_me()
-            channel = await tmp_bot.get_chat(channel_id)
-            channel_member = await tmp_bot.get_chat_member(channel_id, bot_info.id)
-    except TelegramUnauthorizedError:
-        logger.info("Userbot registration failed: invalid token")
-        manager.dialog_data["something_wrong"] = "reg_bot_token_invalid"
-        await manager.switch_to(UserBotRegisterSG.wait_token)
-        return
-    except TelegramBadRequest as e:
-        logger.exception("Userbot registration failed: %s", e.message)
-        manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
-        return
+    checker = UserBotChecker()
+    async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
+        check_result: UserBotCheckResult = checker.full_check(tmp_bot, channel_id)
 
-    if channel_member.status != ChatMemberStatus.ADMINISTRATOR or not channel_member.can_post_messages:
-        manager.dialog_data["something_wrong"] = "reg_bot_permission_error"
+    if not check_result.success:
+        manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
         return
 
     async with uow.transaction():
         await userbot_service.create(
             token=token,
-            bot_id=bot_info.id,
-            username=bot_info.username,
+            bot_id=check_result.bot_info.id,
+            username=check_result.bot_info.username,
             owner_id=message.from_user.id,
-            channel_id=channel.id,
-            channel_name=channel.full_name,
+            channel_id=check_result.channel.id,
+            channel_name=check_result.channel.full_name,
         )
         
-    bot_registry.remove(bot_info.id)
+    bot_registry.remove(check_result.bot_info.id)
     async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
         await webhook_service.set_webhook(tmp_bot)
 
