@@ -2,7 +2,7 @@ from .admin import AdminMiddleware
 from .ban import BanCheckMiddleware
 from .i18n import KitaI18nMiddleware
 from .media_group import MediaGroupMiddleware
-from .rate_limit import RateLimitMiddleware
+from .rate_limit import RateLimitMiddleware, UserBotRateLimitMiddleware
 from .user import UserMiddleware
 
 __all__ = (
@@ -12,4 +12,5 @@ __all__ = (
     "BanCheckMiddleware",
     "KitaI18nMiddleware",
     "RateLimitMiddleware",
+    "UserBotRateLimitMiddleware",
 )

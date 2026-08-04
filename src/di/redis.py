@@ -5,7 +5,6 @@ from dishka import Provider, Scope, provide
 from redis.asyncio import ConnectionPool, Redis
 
 from core.config import Config
-from core.rate_limiters import TokenBucketLimiter
 from database.redis import (
     TgMessageRedis,
     UserBotRedis,
@@ -13,7 +12,6 @@ from database.redis import (
     UserRedis,
     UserStatsRedis,
 )
-from interfaces import BotRegistryProtocol
 
 logger = getLogger("kita.providers")
 
@@ -44,11 +42,3 @@ class RedisProvider(Provider):
 
         logger.info("Closing Redis connection")
         await redis.aclose()
-
-    @provide
-    def token_bucket(
-        self, config: Config, redis: Redis, bot_registry: BotRegistryProtocol
-    ) -> TokenBucketLimiter:
-        logger.info("Initializing TokenBucketLimiter instance")
-        kwargs = config.rate_limit.model_dump()
-        return TokenBucketLimiter(redis, bot_registry, **kwargs)

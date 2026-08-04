@@ -4,12 +4,13 @@ from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.utils.i18n import I18n
-from dishka import AsyncContainer
+from redis.asyncio import Redis
 
-from core.consts import DISHKA_CONTAINER_KEY
+from core.config import Config
 from core.i18n_translator import Translator
 from core.rate_limiters import TokenBucketLimiter
 from database.dto import UserDTO
+from interfaces import BotRegistryProtocol
 
 from .base import KitaMiddleware
 
@@ -17,6 +18,22 @@ logger = getLogger("kita.middleware")
 
 
 class RateLimitMiddleware(KitaMiddleware):
+    _attemp_action: str = "TG_UPDATE"
+    _warn_key: str = "WARNED"
+
+    def __init__(
+        self,
+        redis: Redis,
+        config: Config,
+        bot_registry: BotRegistryProtocol,
+        i18n: I18n,
+        translator: Translator,
+    ):
+        self.i18n = i18n
+        self.translator = translator
+
+        self.limiter = TokenBucketLimiter(redis, bot_registry, **config.rate_limit.model_dump())
+
     async def __call__(
         self,
         handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
@@ -27,27 +44,43 @@ class RateLimitMiddleware(KitaMiddleware):
         if not user_dto or not event.from_user:
             return logger.warning("No user in event. Stop")
 
-        container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        limiter: TokenBucketLimiter = await container.get(TokenBucketLimiter)
-
-        res = await limiter.attempt(user_dto)
+        res = await self.limiter.attempt(user_dto, self._attemp_action)
 
         if res.allowed:
-            await limiter.unmark_warned(user_dto)
+            await self.limiter.unmark_warned(user_dto, self._warn_key)
             return await handler(event, data)
 
         logger.info("RateLimiting UserID %s", user_dto.user_id)
 
-        if await limiter.is_warned(user_dto):
+        if await self.limiter.is_warned(user_dto, self._warn_key):
             if isinstance(event, CallbackQuery):
                 return await event.answer()
             return None
 
-        i18n: I18n = await container.get(I18n)
-        translator: Translator = await container.get(Translator)
+        with self.i18n.use_locale(user_dto.language_code):
+            msg = self.translator.translate("rate_limited_warning")
 
-        with i18n.use_locale(user_dto.language_code):
-            msg = translator.translate("rate_limited_warning")
-
-        await limiter.mark_warned(user_dto)
+        await self.limiter.mark_warned(user_dto, self._warn_key)
         await event.answer(msg)
+
+
+class UserBotRateLimitMiddleware(RateLimitMiddleware):
+    _attemp_action: str = "USERBOT_ACTION"
+    _warn_key: str = "USERBOT_WARNED"
+
+    def __init__(
+        self,
+        redis: Redis,
+        bot_registry: BotRegistryProtocol,
+        i18n: I18n,
+        translator: Translator,
+    ):
+        self.i18n = i18n
+        self.translator = translator
+
+        self.limiter = TokenBucketLimiter(
+            redis,
+            bot_registry,
+            max_tokens=1,
+            refill_rate=0.05,
+        )

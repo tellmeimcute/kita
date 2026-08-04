@@ -9,6 +9,7 @@ from middlewares import (
     KitaI18nMiddleware,
     MediaGroupMiddleware,
     RateLimitMiddleware,
+    UserBotRateLimitMiddleware,
     UserMiddleware,
 )
 
@@ -20,6 +21,7 @@ class MiddlewareProvider(Provider):
     bancheck_middleware = provide(BanCheckMiddleware)
     admin_middleware = provide(AdminMiddleware)
     rate_limit_middleware = provide(RateLimitMiddleware)
+    userbot_limit_middleware = provide(UserBotRateLimitMiddleware)
 
     @provide
     async def kita_i18n_middleware(self, i18n: I18n) -> KitaI18nMiddleware:
