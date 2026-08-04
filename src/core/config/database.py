@@ -16,6 +16,8 @@ class DatabaseConfig(BaseConfig, env_prefix="POSTGRES_"):
     max_overflow: int = 10
     pool_timeout: int = 30
     pool_recycle: int = 1800
+    pool_pre_ping: bool = True
+    pool_use_lifo: bool = True
 
     @property
     def db_url(self) -> str:

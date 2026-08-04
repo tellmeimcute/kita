@@ -26,6 +26,8 @@ class DatabaseProvider(Provider):
             max_overflow=config.database.max_overflow,
             pool_timeout=config.database.pool_timeout,
             pool_recycle=config.database.pool_recycle,
+            pool_pre_ping=config.database.pool_pre_ping,
+            pool_use_lifo=config.database.pool_use_lifo,
             echo=config.database.echo,
         )
 
