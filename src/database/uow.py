@@ -39,9 +39,14 @@ class UnitOfWork:
 
     @asynccontextmanager
     async def transaction(self):
-        async with self._session.begin():
-            logger.debug("Transaction begin")
+        logger.debug("Transaction begin")
+        try:
             yield
+            await self._session.commit()
+        except Exception:
+            await self._session.rollback()
+            logger.warning("Transaction rollback")
+            raise
         logger.debug("Transaction close")
 
     async def commit(self):
