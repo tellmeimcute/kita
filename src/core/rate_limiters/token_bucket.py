@@ -76,29 +76,35 @@ class TokenBucketLimiter:
         self.WARNED_TTL = int((1 / refill_rate) + 1)
         self._script = SCRIPT
 
-    def get_user_key(
-        self, user_dto: UserDTO, action: Literal["ALL", "CALLBACK", "MESSAGE", "WARNED"]
-    ):
+    def get_user_key(self, user_dto: UserDTO, action: str):
         bot = self._bot_registry.get_current()
         return self._key_builder.build(
             RedisKey(bot_id=bot.id, user_id=user_dto.user_id), f"rate_limit_{action.lower()}"
         )
 
-    async def mark_warned(self, user_dto: UserDTO):
-        key = self.get_user_key(user_dto, "WARNED")
+    async def mark_warned(
+        self, user_dto: UserDTO, warn_key: Literal["WARNED", "USERBOT_WARNED"] = "WARNED"
+    ):
+        key = self.get_user_key(user_dto, warn_key)
         await self._redis.sadd(key, "1")
         await self._redis.expire(key, self.WARNED_TTL)
 
-    async def unmark_warned(self, user_dto: UserDTO):
-        key = self.get_user_key(user_dto, "WARNED")
+    async def unmark_warned(
+        self, user_dto: UserDTO, warn_key: Literal["WARNED", "USERBOT_WARNED"] = "WARNED"
+    ):
+        key = self.get_user_key(user_dto, warn_key)
         await self._redis.srem(key, "1")
 
-    async def is_warned(self, user_dto: UserDTO) -> bool:
-        key = self.get_user_key(user_dto, "WARNED")
+    async def is_warned(
+        self, user_dto: UserDTO, warn_key: Literal["WARNED", "USERBOT_WARNED"] = "WARNED"
+    ) -> bool:
+        key = self.get_user_key(user_dto, warn_key)
         return await self._redis.sismember(key, "1")
 
     async def attempt(
-        self, user_dto: UserDTO, action: Literal["ALL", "CALLBACK", "MESSAGE"] = "ALL"
+        self,
+        user_dto: UserDTO,
+        action: Literal["ALL", "TG_UPDATE", "USERBOT_ACTION"] = "TG_UPDATE",
     ) -> TokenBucketResult:
         key = self.get_user_key(user_dto, action)
         now = datetime.now(UTC)
