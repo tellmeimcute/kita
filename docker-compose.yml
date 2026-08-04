@@ -3,8 +3,8 @@ x-logging: &logging
   logging:
     driver: json-file
     options:
-      max-size: 50m
-      max-file: 5
+      max-size: 20m
+      max-file: 3
 
 x-env: &env
   env_file:
@@ -81,5 +81,4 @@ networks:
 
   kita-proxy:
     name: kita-proxy
-    driver: bridge
     external: true

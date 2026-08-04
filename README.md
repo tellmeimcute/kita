@@ -1,6 +1,6 @@
-## kita - telegram suggestions bot
+## kita - telegram suggestions service bot
 
-Telegram бот для быстрого запуска пользовательских Telegram-ботов предложкек c автопостингом в канал, рассылками и модерацией.
+Telegram бот для быстрого запуска пользовательских Telegram-ботов предложек c автопостингом в канал, рассылками и модерацией.
 
 ---
 
@@ -15,20 +15,38 @@ Telegram бот для быстрого запуска пользователь�
 ## 🚀 Быстрый старт (Docker)
 
 ### Предварительные требования
-Установите на хост [Docker Engine](https://docs.docker.com/engine/install/)
+- Наличие зарегистрированого домена
+- A/AAAA DNS запись указывающая на IP вашего сервера
+- Установленный на сервере [Docker Engine](https://docs.docker.com/engine/install/)
+- Открытые порты: 80 (ACME challenge) и WEBHOOK_PORT (по умолчанию 8443)
 
 ### Установка и запуск
 1. **Склонируйте репозиторий**
 ```sh
-git clone https://github.com/tellmeimcute/kita.git
-cd kita
+git clone https://github.com/tellmeimcute/kita.git && cd kita
 ```
 
 2. **Создайте .env файл в корне на основе .env.example**
 ```sh
 cp .env.example .env
-vim .env
 ```
+
+Генирируем пароль БД
+```sh
+sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(openssl rand -hex 32)/" .env
+```
+
+Редактируем оставшиеся переменные
+```sh
+nano .env
+```
+
+Обязательно заполните следующие:
+| Переменная     | Описание                           | Пример        |
+| -------------- | ---------------------------------- | ------------- |
+| `ADMIN_ID`     | Telegram ID администратора         | `123456789`   |
+| `DOMAIN`       | Домен                              | `example.com` |
+| `WEBHOOK_PORT` | Опционально: принимается 8443, 443 | `8443`        |
 
 3. **Создайте папку secrets**
 ```sh
@@ -40,9 +58,12 @@ mkdir -p secrets
 echo YOUR_TOKEN > secrets/.tg_token
 ```
 
-5. **Сгенирируйте ключ шифрования и secret_token для телеграм вебхука**
+5. **Сгенерируйте ключ шифрования и secret_token для телеграм вебхука**
 ```sh
 openssl rand -base64 32 > secrets/.encryption_key
+```
+
+```sh
 openssl rand -hex 32 > secrets/.webhook_secret
 ```
 
@@ -61,10 +82,15 @@ docker compose up -d
 docker compose logs -f -t
 ```
 
-> [!CAUTION]
-> Бот обязательно должен работать через реверс прокси.
->
-> *Рекомендуемое:* **Caddy** (или Nginx).
+### Запуск Caddy реверс прокси
+
+```sh
+cd caddy
+```
+
+```sh
+docker compose --env-file ../.env up -d
+```
 
 ## 🛠 Разработка
 
