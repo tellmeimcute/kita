@@ -44,8 +44,10 @@ class BaseTgWebhookEndpoint(ABC):
 
         self.dp = dp
         self.config = config
-        self._container = container
         self.tasks = set()
+
+        self._container = container
+        self._semaphore = asyncio.Semaphore(config.max_concurrent_updates)
 
     def assign_registry(self, registry: BotRegistryProtocol):
         self.bot_registry = registry
@@ -76,22 +78,23 @@ class BaseTgWebhookEndpoint(ABC):
         logger.info("Dispatcher shutdown and %s tasks cleaned up", len(self.tasks))
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
-        token = None
-        try:
-            token = self.bot_registry.set_current(bot)
-            result = await self.dp.feed_update(bot, update, userbot_dto=userbot)
-            if isinstance(result, TelegramMethod):
-                await result.as_(bot)
-        except Exception as e:
-            logger.exception(
-                "Failed to process update '%s' for bot '%s': %s",
-                update.update_id,
-                bot.id,
-                e,
-            )
-        finally:
-            if token is not None:
-                self.bot_registry.reset_current(token)
+        async with self._semaphore:
+            token = None
+            try:
+                token = self.bot_registry.set_current(bot)
+                result = await self.dp.feed_update(bot, update, userbot_dto=userbot)
+                if isinstance(result, TelegramMethod):
+                    await result.as_(bot)
+            except Exception as e:
+                logger.exception(
+                    "Failed to process update '%s' for bot '%s': %s",
+                    update.update_id,
+                    bot.id,
+                    e,
+                )
+            finally:
+                if token is not None:
+                    self.bot_registry.reset_current(token)
 
     @abstractmethod
     async def _handle(

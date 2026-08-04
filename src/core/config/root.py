@@ -26,6 +26,8 @@ class Config(BaseConfig):
     webhook_path: str = "/webhook"
     webhook_force_update: bool = False
 
+    max_concurrent_updates: int = 50
+
     encryption_key: SecretStr
 
     PROXY: str | None = None
