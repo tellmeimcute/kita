@@ -1,0 +1,11 @@
+{$DOMAIN}:{$WEBHOOK_PORT} {
+    handle {$WEBHOOK_PATH}* {
+        reverse_proxy bot:{$BOT_PORT} {
+            flush_interval -1
+        }
+    }
+
+    handle {
+        respond "Not Found" 404
+    }
+}
