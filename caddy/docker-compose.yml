@@ -2,6 +2,8 @@
 services:
   caddy:
     image: caddy:2-alpine
+    env_file:
+      - ../.env
     ports:
       - "80:80"
       - "${WEBHOOK_PORT}:${WEBHOOK_PORT}"
@@ -9,11 +11,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    environment:
-      - DOMAIN=${DOMAIN}
-      - WEBHOOK_PORT=${WEBHOOK_PORT}
-      - WEBHOOK_PATH=${WEBHOOK_PATH}
-      - BOT_PORT=${BOT_PORT}
     logging:
       driver: json-file
       options:
