@@ -17,6 +17,7 @@ from middlewares import (
     KitaI18nMiddleware,
     MediaGroupMiddleware,
     RateLimitMiddleware,
+    UserBotRateLimitMiddleware,
     UserMiddleware,
 )
 from routers.admin import banner_dialog as admin_banner_dialog
@@ -25,10 +26,10 @@ from routers.admin import menu_dialog as admin_menu_dialog
 from routers.admin import suggestion_router as admin_suggestion_router
 from routers.admin import user_moderation_dialog as admin_user_moderation_dialog
 from routers.master import (
+    userbot_menu_dialog,
     userbot_registrar_dialog,
     userbot_registrar_menu_dialog,
     userbot_registrar_router,
-    userbot_select_dialog,
 )
 from routers.system import get_error_router
 from routers.system.listeners import (
@@ -112,6 +113,7 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
     user_middleware = await container.get(UserMiddleware)
     i18n_middleware = await container.get(KitaI18nMiddleware)
     rate_limit_middleware = await container.get(RateLimitMiddleware)
+    userbot_limit = await container.get(UserBotRateLimitMiddleware)
 
     user_middleware.setup(dp)
     i18n_middleware.setup(dp)
@@ -119,10 +121,12 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
 
     setup_dialogs(dp)
 
+    userbot_limit.setup(userbot_menu_dialog)
+
     dp.include_routers(
         userbot_registrar_router,
         userbot_registrar_dialog,
         userbot_registrar_menu_dialog,
-        userbot_select_dialog,
+        userbot_menu_dialog,
         get_error_router(),
     )

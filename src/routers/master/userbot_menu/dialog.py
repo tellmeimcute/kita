@@ -95,4 +95,5 @@ dialog = Dialog(
     userbot_moderation_window,
     update_token_window,
     update_channel_window,
+    name="userbot_menu_dialog",
 )
