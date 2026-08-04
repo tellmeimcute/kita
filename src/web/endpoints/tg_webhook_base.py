@@ -47,8 +47,6 @@ class BaseTgWebhookEndpoint(ABC):
         self._container = container
         self.tasks = set()
 
-        self.cryptographer = Cryptographer(config)
-
     def assign_registry(self, registry: BotRegistryProtocol):
         self.bot_registry = registry
 
@@ -76,16 +74,6 @@ class BaseTgWebhookEndpoint(ABC):
             await asyncio.gather(*self.tasks, return_exceptions=True)
 
         logger.info("Dispatcher shutdown and %s tasks cleaned up", len(self.tasks))
-
-    def verify_secret(self, bot_id: int, token: str) -> bool:
-        if not self.cryptographer.verify_bot_secret(token, bot_id):
-            logger.warning("Invalid secret token for bot %s", bot_id)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid secret token",
-            )
-
-        return True
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
         token = None

@@ -2,7 +2,6 @@ from logging import getLogger
 from typing import Any
 
 from aiogram.types import Message
-from redis.asyncio import Redis
 
 from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload

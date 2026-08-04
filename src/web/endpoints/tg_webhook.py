@@ -16,6 +16,7 @@ from fastapi import (
 )
 
 from core.config import Config
+from core.cryptographer import Cryptographer
 from database.dto import UserBotDTO
 from interfaces import UnitOfWorkProtocol
 from services import UserBotService
@@ -83,10 +84,21 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
         container: AsyncContainer,
     ):
         super().__init__(dp, config, container)
+        self.cryptographer = Cryptographer(config)
         self.bot = None
 
     def assign_bot(self, bot: Bot):
         self.bot = bot
+
+    def verify_secret(self, bot_id: int, token: str) -> bool:
+        if not self.cryptographer.verify_bot_secret(token, bot_id):
+            logger.warning("Invalid secret token for bot %s", bot_id)
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid secret token",
+            )
+
+        return True
 
     async def _handle(
         self,

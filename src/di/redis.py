@@ -52,4 +52,3 @@ class RedisProvider(Provider):
         logger.info("Initializing TokenBucketLimiter instance")
         kwargs = config.rate_limit.model_dump()
         return TokenBucketLimiter(redis, bot_registry, **kwargs)
-
