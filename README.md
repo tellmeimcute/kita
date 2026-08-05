@@ -93,7 +93,7 @@ ln -s ../.env .env
 ```
 
 ```sh
-docker compose --env-file ../.env up -d
+docker compose up -d
 ```
 
 ## 🛠 Разработка
