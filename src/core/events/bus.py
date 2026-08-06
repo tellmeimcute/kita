@@ -3,9 +3,7 @@ from collections.abc import Callable, Sequence
 from logging import getLogger
 
 from dishka import AsyncContainer
-
 from interfaces import BotRegistryProtocol
-
 from .base import KitaEvent
 
 logger = getLogger("kita.event")
@@ -65,3 +63,14 @@ class EventBus:
         task.add_done_callback(self.background_tasks.discard)
 
         logger.debug("Event %s dispatched to %s listeners", event_name, len(listeners))
+
+    async def shutdown(self):
+        logger.info("EventBus shutdown...")
+        
+        tasks: list[asyncio.Task] = list(self.background_tasks)
+
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*self.background_tasks, return_exceptions=True)
+
+        logger.info("EventBus shutdown and %s tasks cleaned up", len(tasks))

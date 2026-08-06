@@ -70,12 +70,13 @@ class BaseTgWebhookEndpoint(ABC):
         await self.dp.emit_shutdown(**self.dp.workflow_data)
         logger.info("Dispatcher shutdown event emitted")
 
-        if self.tasks:
-            for task in self.tasks:
-                task.cancel()
-            await asyncio.gather(*self.tasks, return_exceptions=True)
+        tasks: list[asyncio.Task] = list(self.tasks)
+        
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*self.tasks, return_exceptions=True)
 
-        logger.info("Dispatcher shutdown and %s tasks cleaned up", len(self.tasks))
+        logger.info("Dispatcher shutdown and %s tasks cleaned up", len(tasks))
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
         async with self._semaphore:

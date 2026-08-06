@@ -64,6 +64,8 @@ async def lifespan(app: FastAPI):
     await telegram_webhook.shutdown()
     await registrar_webhook.shutdown()
 
+    await event_bus.shutdown()
+
     await container.close()
     await registry.close()
 
