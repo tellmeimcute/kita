@@ -40,6 +40,8 @@ async def on_bot_selected(
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    item_id: int = int(item_id)
+
     async with uow.transaction():
         userbot = await userbot_service.get(item_id)
 
