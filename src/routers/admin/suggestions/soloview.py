@@ -70,7 +70,9 @@ async def soloview_verdict(
 ):
     suggestion_dto = viewer_data.suggestion_dto
     async with uow.transaction():
-        await moderation_usecase.execute(suggestion_dto, verdict, force_update=True)
+        await moderation_usecase.execute(
+            suggestion_dto, verdict, force_update=True, bot_id=message.bot.id
+        )
 
     await notifier.send_text(
         user_dto,
