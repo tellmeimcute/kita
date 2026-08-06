@@ -64,10 +64,27 @@ class RateLimitMiddleware(KitaMiddleware):
         await event.answer(msg)
 
 
-class UserBotRateLimitMiddleware(RateLimitMiddleware):
+class WidgetRateLimit(RateLimitMiddleware):
+    _unlimited_widget_ids: set = frozenset()
+
+    async def __call__(
+        self,
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
+        event: Message | CallbackQuery,
+        data: dict[str, Any],
+    ) -> Any:
+        if isinstance(event, CallbackQuery) and event.data:
+            callback_data = event.data.split("\x1D")[-1]
+            widget_id = callback_data.split(":", maxsplit=1)[0]
+            if widget_id in self._unlimited_widget_ids:
+                return await handler(event, data)
+        return await super().__call__(handler, event, data)
+
+
+class UserBotRateLimitMiddleware(WidgetRateLimit):
     _attemp_action: str = "USERBOT_ACTION"
     _warn_key: str = "USERBOT_WARNED"
-    _unlimited_widget_ids = {"main_menu"}
+    _unlimited_widget_ids = {"main_menu", "userbot_select_group"}
 
     def __init__(
         self,
@@ -85,10 +102,3 @@ class UserBotRateLimitMiddleware(RateLimitMiddleware):
             max_tokens=4,
             refill_rate=0.05,
         )
-
-    async def __call__(self, handler, event, data):
-        if isinstance(event, CallbackQuery):
-            widget_id = event.data.split("\x1D")[-1]
-            if widget_id in self._unlimited_widget_ids:
-                return await handler(event, data)
-        return await super().__call__(handler, event, data)
