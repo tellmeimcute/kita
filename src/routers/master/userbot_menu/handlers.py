@@ -20,13 +20,25 @@ router = Router(name="registrar")
 logger = getLogger("kita.userbot_moderation")
 
 
+@inject
 async def on_bot_selected(
     callback: CallbackQuery,
     widget: Select,
     manager: DialogManager,
     item_id: str,
+    uow: FromDishka[UnitOfWorkProtocol],
+    userbot_service: FromDishka[UserBotService],
+    tl: FromDishka[Translator],
 ):
-    manager.dialog_data["selected_bot_id"] = item_id
+    async with uow.transaction():
+        userbot = await userbot_service.get(item_id)
+
+    if not userbot:
+        return await callback.answer(tl.translate("userbot_not_found"))
+    if userbot.banned:
+        return await callback.answer(tl.translate("userbot_is_banned"))
+
+    manager.dialog_data.update(selected_bot_id=item_id)
     return await manager.switch_to(UserBotSelectSG.moderation)
 
 
@@ -47,6 +59,9 @@ async def userbot_set_toggle(
     async with uow.transaction():
         userbot = await userbot_service.get(bot_id)
 
+    if userbot.banned:
+        return await callback.answer(tl.translate("userbot_is_banned"))
+
     userbot.active = not userbot.active
 
     bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
@@ -62,7 +77,7 @@ async def userbot_set_toggle(
             userbot.active = False
             await userbot_service.save(userbot)
         bot_registry.remove(bot.id)
-        return
+        return None
 
     try:
         if not userbot.active:
@@ -93,7 +108,6 @@ async def update_token(
     notifier: FromDishka[NotifierServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-
     bot_id = int(manager.dialog_data["selected_bot_id"])
 
     checker = UserBotChecker()
@@ -127,9 +141,15 @@ async def update_channel(
     bot_registry: FromDishka[BotRegistryProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
 ):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    bot_id = int(manager.dialog_data["selected_bot_id"])
+
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
+
+    async with uow.transaction():
+        userbot = await userbot_service.get(bot_id)
 
     checker = UserBotChecker()
 
@@ -139,11 +159,6 @@ async def update_channel(
         logger.exception("Userbot channel_id to '%s' change failed", message.text.strip())
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
-
-    bot_id = int(manager.dialog_data["selected_bot_id"])
-
-    async with uow.transaction():
-        userbot = await userbot_service.get(bot_id)
 
     bot: Bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
 
@@ -157,7 +172,6 @@ async def update_channel(
         userbot.channel_name = check_result.channel.full_name
         await userbot_service.save(userbot)
 
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
     await notifier.send_text(user_dto, "userbot_channel_updated")
 
     await manager.switch_to(UserBotSelectSG.moderation)
