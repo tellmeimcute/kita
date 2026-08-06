@@ -111,6 +111,7 @@ class BaseRedisRepository[T: BaseModel]:
                 items.append(self._from_cache(raw))
             except Exception as e:
                 logger.error("Error validate model from redis cache: %s", e, exc_info=True)
+                await self.delete(key)
                 continue
 
         return items
