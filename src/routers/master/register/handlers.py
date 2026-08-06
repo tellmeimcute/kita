@@ -9,6 +9,7 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.config import Config
+from core.cryptographer import Cryptographer
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
@@ -47,6 +48,7 @@ async def bot_token_handler(
     userbot_service: FromDishka[UserBotService],
     notifier: FromDishka[NotifierServiceProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
+    crypto: FromDishka[Cryptographer],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
@@ -62,7 +64,7 @@ async def bot_token_handler(
             await notifier.send_text(user_dto, "reg_bot_alredy_exist")
             return await manager.start(RegistrarMenuSG.menu)
 
-    manager.dialog_data["new_userbot_token"] = check_result.token
+    manager.dialog_data["new_userbot_token"] = crypto.encrypt(check_result.token)
     manager.dialog_data["new_userbot_bot_id"] = check_result.bot_id
 
     await manager.next(ShowMode.DELETE_AND_SEND)
@@ -78,6 +80,7 @@ async def channel_id_handler(
     notifier: FromDishka[NotifierServiceProtocol],
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
+    crypto: FromDishka[Cryptographer],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
@@ -94,7 +97,12 @@ async def channel_id_handler(
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
 
-    token = manager.dialog_data.get("new_userbot_token")
+    raw_token = manager.dialog_data.get("new_userbot_token")
+    if not raw_token:
+        manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
+        return
+    
+    token = crypto.decrypt(raw_token)
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
     async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
@@ -109,7 +117,7 @@ async def channel_id_handler(
             token=token,
             bot_id=check_result.bot_info.id,
             username=check_result.bot_info.username,
-            owner_id=message.from_user.id,
+            owner_id=user_dto.user_id,
             channel_id=check_result.channel.id,
             channel_name=check_result.channel.full_name,
         )
