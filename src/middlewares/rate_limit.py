@@ -91,4 +91,4 @@ class UserBotRateLimitMiddleware(RateLimitMiddleware):
             widget_id = event.data.split("\x1D")[-1]
             if widget_id in self._unlimited_widget_ids:
                 return await handler(event, data)
-        return super().__call__(handler, event, data)
+        return await super().__call__(handler, event, data)
