@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from aiogram import Bot, Router
+from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import MessageInput
@@ -15,7 +15,6 @@ from services import UserBotService, WebhookService
 from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import UserBotSelectSG
 
-router = Router(name="registrar")
 
 logger = getLogger("kita.userbot_moderation")
 
@@ -43,7 +42,7 @@ async def on_bot_selected(
 
 
 @inject
-async def userbot_set_toggle(
+async def userbot_active_toggle(
     callback: CallbackQuery,
     widget: Button,
     manager: DialogManager,

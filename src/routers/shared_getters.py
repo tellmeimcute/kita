@@ -3,6 +3,10 @@ from typing import Literal
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import Whenable
 
+from dishka import FromDishka
+from dishka.integrations.aiogram_dialog import inject
+
+from core.i18n_translator import Translator
 from database.dto import UserProfileDTO
 from database.enums import UserRole
 
@@ -33,3 +37,13 @@ def role_condition(
 
 
 is_admin = role_condition(UserRole.ADMIN, user_key="profile_dto", data_source="middleware_data")
+
+
+@inject
+async def get_error_text(
+    dialog_manager: DialogManager,
+    translator: FromDishka[Translator],
+    **kwargs,
+):
+    i18n_key = dialog_manager.dialog_data.pop("something_wrong", None)
+    return {"error": translator.translate(i18n_key)}

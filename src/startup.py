@@ -26,10 +26,10 @@ from routers.admin import menu_dialog as admin_menu_dialog
 from routers.admin import suggestion_router as admin_suggestion_router
 from routers.admin import user_moderation_dialog as admin_user_moderation_dialog
 from routers.master import (
+    master_menu_dialog,
+    master_menu_router,
+    userbot_register_dialog,
     userbot_menu_dialog,
-    userbot_registrar_dialog,
-    userbot_registrar_menu_dialog,
-    userbot_registrar_router,
 )
 from routers.system import get_error_router
 from routers.system.listeners import (
@@ -124,9 +124,9 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
     userbot_limit.setup(userbot_menu_dialog)
 
     dp.include_routers(
-        userbot_registrar_router,
-        userbot_registrar_dialog,
-        userbot_registrar_menu_dialog,
+        master_menu_router,
+        master_menu_dialog,
+        userbot_register_dialog,
         userbot_menu_dialog,
         get_error_router(),
     )

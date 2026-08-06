@@ -1,11 +1,10 @@
-from .dialog import dialog as userbot_registrar_dialog
-from .dialog import menu_dialog as userbot_registrar_menu_dialog
-from .handlers import router as userbot_registrar_router
-from .userbot_menu import userbot_menu_dialog as userbot_menu_dialog
+from .main_menu import master_menu_dialog, master_menu_router
+from .register import userbot_register_dialog
+from .userbot_menu import userbot_menu_dialog
 
-__all__ = [
-    "userbot_registrar_dialog",
-    "userbot_registrar_menu_dialog",
-    "userbot_registrar_router",
+__all__ = (
+    "master_menu_dialog",
+    "master_menu_router",
+    "userbot_register_dialog",
     "userbot_menu_dialog",
-]
+)

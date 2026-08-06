@@ -1,8 +1,6 @@
 from logging import getLogger
 
-from aiogram import Bot, Router
-from aiogram.filters import CommandStart
-from aiogram.fsm.context import FSMContext
+from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -17,7 +15,7 @@ from services import UserBotService, WebhookService
 from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 
-router = Router(name="registrar")
+
 
 logger = getLogger("kita.master_reg_userbot")
 
@@ -129,14 +127,3 @@ async def channel_id_handler(
         show_mode=ShowMode.DELETE_AND_SEND,
     )
 
-
-@router.message(CommandStart())
-async def registrar_start_menu(message: Message, state: FSMContext, dialog_manager: DialogManager):
-    current_state = await state.get_state()
-    if current_state:
-        await state.clear()
-
-    await dialog_manager.start(
-        RegistrarMenuSG.menu,
-        show_mode=ShowMode.DELETE_AND_SEND,
-    )
