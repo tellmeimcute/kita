@@ -23,6 +23,7 @@ class UserBot(AbstractModel, TimestampMixin):
     channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     channel_name: Mapped[str | None] = mapped_column(nullable=True)
 
-    active: Mapped[bool] = mapped_column(default=True, server_default=text("true"), nullable=False)
+    active: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
+    banned: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
     owner: Mapped["UserAlchemy"] = relationship(back_populates="bots")

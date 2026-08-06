@@ -15,6 +15,7 @@ class UserBotDTO(TrackableDto):
     channel_name: str | None = None
 
     active: bool
+    banned: bool
 
     @property
     def bot_url(self) -> str:
