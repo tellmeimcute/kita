@@ -67,6 +67,7 @@ class RateLimitMiddleware(KitaMiddleware):
 class UserBotRateLimitMiddleware(RateLimitMiddleware):
     _attemp_action: str = "USERBOT_ACTION"
     _warn_key: str = "USERBOT_WARNED"
+    _unlimited_widget_ids = {"main_menu"}
 
     def __init__(
         self,
@@ -84,3 +85,10 @@ class UserBotRateLimitMiddleware(RateLimitMiddleware):
             max_tokens=4,
             refill_rate=0.05,
         )
+
+    async def __call__(self, handler, event, data):
+        if isinstance(event, CallbackQuery):
+            widget_id = event.data.split("\x1D")[-1]
+            if widget_id in self._unlimited_widget_ids:
+                return await handler(event, data)
+        return super().__call__(handler, event, data)
