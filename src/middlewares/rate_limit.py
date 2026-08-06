@@ -99,6 +99,6 @@ class UserBotRateLimitMiddleware(WidgetRateLimit):
         self.limiter = TokenBucketLimiter(
             redis,
             bot_registry,
-            max_tokens=4,
+            max_tokens=3,
             refill_rate=0.05,
         )
