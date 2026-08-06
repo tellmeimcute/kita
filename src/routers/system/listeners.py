@@ -17,7 +17,7 @@ from interfaces import (
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
-from ui.suggestion_utils import SuggestionUtils
+from utils.suggestion_utils import SuggestionUtils
 
 logger = getLogger("kita.event")
 

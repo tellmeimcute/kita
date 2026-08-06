@@ -9,7 +9,7 @@ from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
 from database.redis import RedisKey, UserStatsRedis
 from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
-from services.message_parser import MessageParser
+from utils.message_parser import MessageParser
 
 from .base import BaseService
 

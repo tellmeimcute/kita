@@ -30,19 +30,20 @@ from interfaces import (
     UserRepositoryProtocol,
     UserServiceProtocol,
 )
-from services.message_parser import MessageParser
 from services.notifier import NotifierService
 from services.suggestion import SuggestionService
 from services.user import UserService
 from services.user_profile import UserProfileService
 from services.userbots import UserBotService
 from services.webhooks import WebhookService
-from ui.suggestion_utils import SuggestionUtils
 from usecases import (
     BroadcastUseCase,
     ChangeRoleUseCase,
     ModerateSuggestionUseCase,
 )
+from utils.message_parser import MessageParser
+from utils.suggestion_utils import SuggestionUtils
+from utils.userbot_checker import UserBotChecker
 
 
 class InfraProvider(Provider):
@@ -82,9 +83,9 @@ class UtilsProvider(Provider):
     scope = Scope.APP
 
     suggestion_utils = provide(SuggestionUtils, scope=Scope.REQUEST)
-
     translator = provide(Translator)
     message_parser = provide(MessageParser)
+    userbot_checker = provide(UserBotChecker)
 
     @provide
     def i18n(self) -> I18n:

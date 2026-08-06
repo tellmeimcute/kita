@@ -13,8 +13,8 @@ from core.cryptographer import Cryptographer
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
-from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
+from utils.userbot_checker import UserBotChecker, UserBotCheckResult
 
 logger = getLogger("kita.master_reg_userbot")
 
@@ -49,10 +49,9 @@ async def bot_token_handler(
     notifier: FromDishka[NotifierServiceProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
+    checker: FromDishka[UserBotChecker],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-
-    checker = UserBotChecker()
     check_result = await checker.check_token(None, message.text, bot_registry.bot_settings)
 
     if not check_result.success:
@@ -81,12 +80,11 @@ async def channel_id_handler(
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
+    checker: FromDishka[UserBotChecker],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
-
-    checker = UserBotChecker()
 
     try:
         channel_id = checker.get_channel_id(message.text)

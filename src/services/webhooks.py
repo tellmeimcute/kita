@@ -9,7 +9,7 @@ from core.config import Config
 from core.cryptographer import Cryptographer
 from interfaces import BotRegistryProtocol
 
-logger = getLogger("kita.webhook")
+logger = getLogger("kita.webhook_service")
 
 
 class WebhookService:

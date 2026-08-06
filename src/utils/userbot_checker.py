@@ -20,7 +20,7 @@ class UserBotCheckResult:
     bot_id: int | None = None
 
 
-logger = getLogger("kita.userbot_service")
+logger = getLogger("kita.userbot_checker")
 
 
 class UserBotChecker:

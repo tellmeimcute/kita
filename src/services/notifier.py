@@ -16,7 +16,7 @@ from ui.senders import (
     TextSender,
 )
 from ui.senders.base import BaseSender
-from ui.suggestion_utils import SuggestionUtils
+from utils.suggestion_utils import SuggestionUtils
 
 from .base import BaseService
 

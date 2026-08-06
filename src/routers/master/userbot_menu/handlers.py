@@ -12,8 +12,8 @@ from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
-from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import UserBotSelectSG
+from utils.userbot_checker import UserBotChecker, UserBotCheckResult
 
 logger = getLogger("kita.userbot_moderation")
 
@@ -60,6 +60,7 @@ async def userbot_active_toggle(
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
     tl: FromDishka[Translator],
+    checker: FromDishka[UserBotChecker],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(manager.dialog_data["selected_bot_id"])
@@ -74,9 +75,7 @@ async def userbot_active_toggle(
 
     bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
 
-    checker = UserBotChecker()
     check_result: UserBotCheckResult = await checker.full_check(bot, userbot.channel_id)
-
     if not check_result.success:
         await callback.answer(tl.translate(check_result.detail_i18n_key))
         if check_result.bot_info:
@@ -114,6 +113,7 @@ async def update_token(
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
+    checker: FromDishka[UserBotChecker],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(manager.dialog_data["selected_bot_id"])
@@ -124,9 +124,7 @@ async def update_token(
     if auth_error := action_auth(user_dto, userbot):
         return await notifier.send_text(user_dto, auth_error)
 
-    checker = UserBotChecker()
     check_result = await checker.check_token(bot_id, message.text, bot_registry.bot_settings)
-
     if not check_result.success:
         manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
         return None
@@ -154,6 +152,7 @@ async def update_channel(
     userbot_service: FromDishka[UserBotService],
     bot_registry: FromDishka[BotRegistryProtocol],
     notifier: FromDishka[NotifierServiceProtocol],
+    checker: FromDishka[UserBotChecker],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(manager.dialog_data["selected_bot_id"])
@@ -163,8 +162,6 @@ async def update_channel(
 
     if auth_error := action_auth(user_dto, userbot):
         return await notifier.send_text(user_dto, auth_error)
-
-    checker = UserBotChecker()
 
     try:
         channel_id = checker.get_channel_id(message.text)
