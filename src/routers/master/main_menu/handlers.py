@@ -1,11 +1,10 @@
-
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, ShowMode
-from ui.state_groups import RegistrarMenuSG
 
+from ui.state_groups import RegistrarMenuSG
 
 router = Router(name="registrar")
 

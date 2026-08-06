@@ -2,7 +2,6 @@ from typing import Literal
 
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import Whenable
-
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 

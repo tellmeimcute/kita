@@ -15,8 +15,6 @@ from services import UserBotService, WebhookService
 from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 
-
-
 logger = getLogger("kita.master_reg_userbot")
 
 
@@ -126,4 +124,3 @@ async def channel_id_handler(
         RegistrarMenuSG.menu,
         show_mode=ShowMode.DELETE_AND_SEND,
     )
-

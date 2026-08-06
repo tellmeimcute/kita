@@ -28,8 +28,8 @@ from routers.admin import user_moderation_dialog as admin_user_moderation_dialog
 from routers.master import (
     master_menu_dialog,
     master_menu_router,
-    userbot_register_dialog,
     userbot_menu_dialog,
+    userbot_register_dialog,
 )
 from routers.system import get_error_router
 from routers.system.listeners import (

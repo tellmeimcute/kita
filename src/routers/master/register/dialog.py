@@ -3,12 +3,11 @@ from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Start
 from aiogram_dialog.widgets.text import Format
 
+from routers.shared_getters import get_error_text
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 from ui.widgets.i18n_text import I18nText
 
-from routers.shared_getters import get_error_text
 from .handlers import bot_token_handler, channel_id_handler
-
 
 get_bot_token_window = Window(
     I18nText("reg_bot_wait_for_token"),

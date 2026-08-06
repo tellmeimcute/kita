@@ -15,7 +15,6 @@ from services import UserBotService, WebhookService
 from services.userbot_checker import UserBotChecker, UserBotCheckResult
 from ui.state_groups import UserBotSelectSG
 
-
 logger = getLogger("kita.userbot_moderation")
 
 

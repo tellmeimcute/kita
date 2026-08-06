@@ -74,7 +74,7 @@ class WidgetRateLimit(RateLimitMiddleware):
         data: dict[str, Any],
     ) -> Any:
         if isinstance(event, CallbackQuery) and event.data:
-            callback_data = event.data.split("\x1D")[-1]
+            callback_data = event.data.split("\x1d")[-1]
             widget_id = callback_data.split(":", maxsplit=1)[0]
             if widget_id in self._unlimited_widget_ids:
                 return await handler(event, data)
