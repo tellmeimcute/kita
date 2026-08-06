@@ -101,7 +101,7 @@ async def channel_id_handler(
     if not raw_token:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
         return
-    
+
     token = crypto.decrypt(raw_token)
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 

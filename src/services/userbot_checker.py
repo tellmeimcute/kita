@@ -11,7 +11,7 @@ from aiogram.utils.token import TokenValidationError, extract_bot_id
 @dataclass(frozen=True)
 class UserBotCheckResult:
     success: bool
-    detail_i18n_key: str
+    detail_i18n_key: str | None = None
 
     bot_info: User | None = None
     channel: ChatFullInfo | None = None
@@ -52,7 +52,6 @@ class UserBotChecker:
 
         return UserBotCheckResult(
             success=True,
-            detail_i18n_key="reg_bot_token_check_success",
             bot_info=bot_info,
             token=token,
             bot_id=token_bot_id,
