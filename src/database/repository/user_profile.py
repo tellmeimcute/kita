@@ -26,6 +26,20 @@ class UserProfileRepository(BaseRepository):
             return None
         return UserProfileDTO.model_validate(orm_model)
 
+    async def get_many(self, limit: int = 10, offset: int = 0) -> list[UserProfileDTO]:
+        stmt = (
+            select(UserProfile)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+            )
+            .limit(limit)
+            .offset(offset)
+        )
+
+        result = await self._session.execute(stmt)
+        orm_models = result.scalars().all()
+        return UserProfileDTO.from_model_list(orm_models)
+
     async def get_or_create(self, user_id: int) -> UserProfileDTO:
         stmt = (
             insert(UserProfile)

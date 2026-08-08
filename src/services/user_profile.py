@@ -53,6 +53,9 @@ class UserProfileService(BaseService):
         )
         return profile_dto
 
+    async def get_many(self, limit: int = 10, offset: int = 0):
+        return await self.repo.get_many(limit, offset)
+
     async def create(self, user_id: int) -> UserProfileDTO:
         profile_dto = await self.repo.create(user_id)
         await self.user_profile_redis.set_cache(

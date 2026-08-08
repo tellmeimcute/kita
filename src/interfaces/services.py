@@ -38,6 +38,9 @@ class UserProfileServiceProtocol(Protocol):
     async def get(self, user_id: int) -> UserProfileDTO | None: ...
 
     @abstractmethod
+    async def get_many(self, limit: int = 10, offset: int = 0): ...
+
+    @abstractmethod
     async def update(self, user_id: int, **data: Any) -> None: ...
 
     @abstractmethod

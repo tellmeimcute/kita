@@ -34,6 +34,9 @@ class UserProfileRepositoryProtocol(Protocol):
     async def get(self, user_id: int) -> UserProfileDTO | None: ...
 
     @abstractmethod
+    async def get_many(self, limit: int = 10, offset: int = 0) -> Sequence[UserProfileDTO]: ...
+
+    @abstractmethod
     async def get_or_create(self, user_id: int) -> UserProfileDTO: ...
 
     @abstractmethod
