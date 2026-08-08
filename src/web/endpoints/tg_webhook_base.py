@@ -71,7 +71,7 @@ class BaseTgWebhookEndpoint(ABC):
         logger.info("Dispatcher shutdown event emitted")
 
         tasks: list[asyncio.Task] = list(self.tasks)
-        
+
         for task in tasks:
             task.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)

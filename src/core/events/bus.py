@@ -3,7 +3,9 @@ from collections.abc import Callable, Sequence
 from logging import getLogger
 
 from dishka import AsyncContainer
+
 from interfaces import BotRegistryProtocol
+
 from .base import KitaEvent
 
 logger = getLogger("kita.event")
@@ -66,7 +68,7 @@ class EventBus:
 
     async def shutdown(self):
         logger.info("EventBus shutdown...")
-        
+
         tasks: list[asyncio.Task] = list(self.background_tasks)
 
         for task in tasks:

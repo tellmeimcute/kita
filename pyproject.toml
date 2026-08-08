@@ -17,6 +17,7 @@ dependencies = [
     "redis>=7.3.0",
     "sqlalchemy>=2.0.45",
     "cryptography>=49.0.0",
+    "loguru>=0.7.3",
 ]
 
 [dependency-groups]

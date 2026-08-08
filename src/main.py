@@ -9,6 +9,7 @@ from dishka.integrations.aiogram import AiogramProvider
 from dishka.integrations.aiogram import setup_dishka as setup_dishka_aiogram
 from dishka.integrations.fastapi import setup_dishka as setup_dishka_fastapi
 from fastapi import FastAPI
+from loguru import logger
 
 from core.config import Config
 from core.logging_config import setup_logging
@@ -23,7 +24,8 @@ from di import (
 )
 from web import get_app
 
-logger = logging.getLogger("kita.main")
+config = Config.get()
+setup_logging(config.log_level.upper())
 
 
 def create_container() -> AsyncContainer:
@@ -48,15 +50,11 @@ def get_storage(config: Config):
 
 def get_dispatcher(storage: RedisStorage):
     dp = Dispatcher(storage=storage, name="dispatcher")
-    logger.info("Initialized Dispatcher with %s Redis storage", id(storage))
+    logger.info(f"Initialized Dispatcher with {id(storage)} Redis storage")
     return dp
 
 
 def application() -> FastAPI:
-    config = Config.get()
-
-    setup_logging(config.log_level.upper())
-
     container = create_container()
     storage = get_storage(config)
 
@@ -78,4 +76,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         factory=True,
+        log_config=None,
     )
