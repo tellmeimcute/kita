@@ -1,6 +1,6 @@
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import WhenCondition
-from aiogram_dialog.widgets.text import Text
+from aiogram_dialog.widgets.text import Format, Text
 from dishka import AsyncContainer
 
 from core.consts import DISHKA_CONTAINER_KEY
@@ -22,6 +22,7 @@ class I18nText(Text):
         translator: Translator = await container.get(Translator)
 
         additional_data = data.copy()
+
         additional_data.pop("middleware_data")
         additional_data.pop("start_data")
         additional_data.pop("event")
@@ -39,3 +40,9 @@ class I18nText(Text):
             i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
 
         return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
+
+
+class I18nFormat(Format):
+    def __init__(self, i18n_key: str, when: WhenCondition = None):
+        super().__init__(when=when)
+        self.text = Translator().translate(i18n_key)

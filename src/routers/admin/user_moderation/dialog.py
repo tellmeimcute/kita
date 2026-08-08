@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.text import Format
 from database.enums import UserRole
 from routers.shared_getters import get_error_text
 from ui.state_groups import AdminMenuSG, ModerationMenuSG
-from ui.widgets.i18n_text import I18nText
+from ui.widgets.i18n_text import I18nFormat, I18nText
 
 from .getters import get_selected_user, get_userbot_user_profiles
 from .handlers import message_to_user, on_user_selected, select_user, user_change_role
@@ -36,8 +36,7 @@ user_select_window = Window(
 )
 
 user_moderation_window = Window(
-    I18nText("admin_moderation_user_profile", when=F["target_profile_i18n"]),
-    Format("{target_dto.name}", when=~F["target_profile_i18n"]),
+    I18nFormat("admin_moderation_user_profile"),
     SwitchTo(
         I18nText("message_user_btn"),
         id="message_user",
