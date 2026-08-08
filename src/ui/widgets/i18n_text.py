@@ -44,5 +44,5 @@ class I18nText(Text):
 
 class I18nFormat(Format):
     def __init__(self, i18n_key: str, when: WhenCondition = None):
-        super().__init__(when=when)
-        self.text = Translator().translate(i18n_key)
+        text = Translator().translate(i18n_key)
+        super().__init__(text=text, when=when)
