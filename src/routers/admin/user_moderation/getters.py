@@ -2,18 +2,40 @@ from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.i18n_translator import Translator
+from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, UserServiceProtocol
 
 
 @inject
-async def user_select_getter(
+async def get_userbot_user_profiles(
     dialog_manager: DialogManager,
-    translator: FromDishka[Translator],
+    uow: FromDishka[UnitOfWorkProtocol],
+    profile_service: FromDishka[UserProfileServiceProtocol],
     **kwargs,
 ):
-    if dialog_manager.dialog_data.pop("user_not_found", False):
-        text = translator.translate("user_not_found_wait_next_id")
-    else:
-        text = translator.translate("wait_user_id_text")
+    async with uow.transaction():
+        profiles = await profile_service.get_many(limit=5)
+    return {"profiles": profiles}
 
-    return {"user_select_text": text}
+
+@inject
+async def get_selected_user(
+    dialog_manager: DialogManager,
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
+    profile_service: FromDishka[UserProfileServiceProtocol],
+    **kwargs,
+):
+    user_id = dialog_manager.dialog_data.get("selected_user_id")
+    if not user_id:
+        return {"selected_user": None}
+
+    user_id = int(user_id)
+
+    async with uow.transaction():
+        target_user = await user_service.get(user_id)
+        target_profile = await profile_service.get(user_id)
+
+    return {
+        "target_dto": target_user,
+        "target_profile": target_profile,
+    }

@@ -2,7 +2,7 @@ from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Button
+from aiogram_dialog.widgets.kbd import Button, Select
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 from pydantic import ValidationError
@@ -20,6 +20,17 @@ from interfaces import (
 )
 from ui.state_groups import ModerationMenuSG
 from usecases.change_role import ChangeRoleUseCase
+
+
+@inject
+async def on_user_selected(
+    callback: CallbackQuery,
+    widget: Select,
+    manager: DialogManager,
+    item_id: str,
+):
+    manager.dialog_data.update(selected_user_id=int(item_id))
+    return await manager.switch_to(ModerationMenuSG.user_moderation)
 
 
 @inject
@@ -41,12 +52,12 @@ async def select_user(
         target_profile = None
 
     if not target_dto or not target_profile:
-        manager.dialog_data["user_not_found"] = True
+        manager.dialog_data["something_wrong"] = "user_not_found_wait_next_id"
         return
 
     manager.dialog_data.update(
         {
-            "user_not_found": False,
+            "selected_user_id": target_dto.user_id,
             "target_dto": target_dto.model_dump(mode="json"),
             "target_dto_i18n": target_dto.to_i18n_kwargs(),
             "target_profile": target_profile.model_dump(mode="json") if target_profile else None,
