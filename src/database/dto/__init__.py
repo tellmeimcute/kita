@@ -3,6 +3,7 @@ from .suggestion import SuggestionBaseDTO, SuggestionFullDTO
 from .user import UserDTO
 from .user_profile import UserProfileDTO
 from .userbot import UserBotDTO
+from .userbot_stats import UserBotStats
 
 __all__ = (
     "UserDTO",
@@ -11,4 +12,5 @@ __all__ = (
     "SuggestionBaseDTO",
     "SuggestionFullDTO",
     "UserBotDTO",
+    "UserBotStats",
 )
