@@ -55,16 +55,11 @@ class I18nText(Text):
         translator: Translator = await container.get(Translator)
 
         additional_data = data.copy()
-
-        additional_data.pop("middleware_data")
-        additional_data.pop("start_data")
-        additional_data.pop("event")
-
         dialog_data = additional_data.pop("dialog_data")
 
         i18n_kwargs = {
-            "user_dto": user_dto.to_i18n_kwargs(),
-            "profile_dto": profile_dto.model_dump(mode="json"),
+            "user_dto": user_dto,
+            "profile_dto": profile_dto,
         }
 
         i18n_kwargs.update(**dialog_data)
@@ -72,7 +67,8 @@ class I18nText(Text):
         if userbot_dto:
             i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
 
-        return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
+        text = translator.translate(self.i18n_key)
+        return text.format_map(DataProxy(i18n_kwargs))
 
 
 class I18nFormat(Text):
@@ -85,7 +81,7 @@ class I18nFormat(Text):
         data: dict,
         manager: DialogManager,
     ) -> str:
-        text = Translator().translate(self.i18n_key)
-        if manager.is_preview():
-            return text.format_map(DataProxy(data))
+        container: AsyncContainer = manager.middleware_data[DISHKA_CONTAINER_KEY]
+        tl: Translator = await container.get(Translator)
+        text = tl.translate(self.i18n_key)
         return text.format_map(DataProxy(data))
