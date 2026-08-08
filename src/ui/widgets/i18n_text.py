@@ -1,11 +1,34 @@
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import WhenCondition
-from aiogram_dialog.widgets.text import Format, Text
+from aiogram_dialog.widgets.text import Text
 from dishka import AsyncContainer
 
 from core.consts import DISHKA_CONTAINER_KEY
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO, UserProfileDTO
+
+
+class _FormatDataStub:
+    def __init__(self, name="", data=None):
+        self.name = name
+        self.data = data or {}
+
+    def __getitem__(self, item):
+        if item in self.data:
+            return self.data[item]
+        if not self.name:
+            return _FormatDataStub(item)
+        return _FormatDataStub(f"{self.name}[{item}]")
+
+    def __getattr__(self, item):
+        return _FormatDataStub(f"{self.name}.{item}")
+
+    def __format__(self, format_spec):
+        if format_spec:
+            res = f"{self.name}:{format_spec}"
+        else:
+            res = self.name
+        return f"{{{res}}}"
 
 
 class I18nText(Text):
@@ -42,7 +65,17 @@ class I18nText(Text):
         return translator.i18n_text(i18n_key=self.i18n_key, i18n_kwargs=i18n_kwargs)
 
 
-class I18nFormat(Format):
+class I18nFormat(Text):
     def __init__(self, i18n_key: str, when: WhenCondition = None):
-        text = Translator().translate(i18n_key)
-        super().__init__(text=text, when=when)
+        super().__init__(when=when)
+        self.i18n_key = i18n_key
+
+    async def _render_text(
+        self,
+        data: dict,
+        manager: DialogManager,
+    ) -> str:
+        text = Translator().translate(self.i18n_key)
+        if manager.is_preview():
+            return text.format_map(_FormatDataStub(data=data))
+        return text.format_map(data)
