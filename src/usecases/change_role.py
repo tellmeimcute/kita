@@ -1,6 +1,6 @@
 from core.config import Config
 from core.exceptions import UserImmuneError
-from database.dto import UserDTO
+from database.dto import UserDTO, UserBotDTO
 from database.enums import UserRole
 from interfaces import UserProfileServiceProtocol, UserServiceProtocol
 
@@ -10,6 +10,7 @@ class ChangeRoleUseCase:
         "_config",
         "_user_service",
         "_user_profile_service",
+        "_userbot",
     )
 
     def __init__(
@@ -17,10 +18,12 @@ class ChangeRoleUseCase:
         config: Config,
         user_service: UserServiceProtocol,
         user_profile_service: UserProfileServiceProtocol,
+        userbot: UserBotDTO,
     ):
         self._config = config
         self._user_service = user_service
         self._user_profile_service = user_profile_service
+        self._userbot = userbot
 
     async def execute(
         self,
@@ -28,7 +31,7 @@ class ChangeRoleUseCase:
         target_role: UserRole,
         caller: UserDTO,
     ):
-        if target_id in {self._config.admin_id, caller.user_id}:
+        if target_id in {self._config.admin_id, caller.user_id, self._userbot.owner_id}:
             raise UserImmuneError()
 
         profile_dto = await self._user_profile_service.get_or_create(target_id)
