@@ -8,6 +8,7 @@ from core.events import (
     CopyMessagesToUserEvent,
     EventBus,
     NewSuggestionEvent,
+    NewUserBotEvent,
     NewUserEvent,
     SuggestionAcceptedEvent,
 )
@@ -34,6 +35,7 @@ from routers.master import (
 from routers.system import get_error_router
 from routers.system.listeners import (
     copy_to_user_notify_both,
+    new_userbot,
     notify_admin_new_suggestion,
     notify_admin_new_user,
     suggestion_accepted,
@@ -50,6 +52,7 @@ async def register_events(event_bus: EventBus):
     event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
     event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
     event_bus.sub(CopyMessagesToUserEvent, copy_to_user_notify_both)
+    event_bus.sub(NewUserBotEvent, new_userbot)
 
     logger.debug("%s", event_bus.listeners)
     logger.info("Event Bus events successfully registered")

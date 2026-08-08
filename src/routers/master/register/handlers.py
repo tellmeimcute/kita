@@ -10,9 +10,10 @@ from dishka.integrations.aiogram_dialog import inject
 
 from core.config import Config
 from core.cryptographer import Cryptographer
+from core.events import EventBus, NewUserBotEvent
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
-from services import UserBotService, WebhookService
+from services import UserBotService
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 from utils.userbot_checker import UserBotChecker, UserBotCheckResult
 
@@ -77,10 +78,10 @@ async def channel_id_handler(
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
     notifier: FromDishka[NotifierServiceProtocol],
-    webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
     checker: FromDishka[UserBotChecker],
+    event_bus: FromDishka[EventBus],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
@@ -121,12 +122,19 @@ async def channel_id_handler(
         )
 
     bot_registry.remove(check_result.bot_info.id)
-    async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
-        await webhook_service.set_webhook(tmp_bot)
+    bot_registry.get_or_create(check_result.bot_info.id, token)
 
     await notifier.send_text(user_dto, "reg_bot_userbot_registered")
 
     await manager.start(
         RegistrarMenuSG.menu,
         show_mode=ShowMode.DELETE_AND_SEND,
+    )
+
+    event_bus.dispatch(
+        NewUserBotEvent(
+            bot_id=message.bot.id,
+            userbot_id=check_result.bot_info.id,
+            owner_id=user_dto.user_id,
+        )
     )

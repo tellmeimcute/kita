@@ -7,16 +7,20 @@ from dishka import AsyncContainer
 from core.events import (
     CopyMessagesToUserEvent,
     NewSuggestionEvent,
+    NewUserBotEvent,
     NewUserEvent,
     SuggestionAcceptedEvent,
 )
 from database.dto import UserBotDTO
+from database.enums import UserRole
 from interfaces import (
+    BotRegistryProtocol,
     NotifierServiceProtocol,
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
+from services import WebhookService
 from utils.suggestion_utils import SuggestionUtils
 
 logger = getLogger("kita.event")
@@ -108,3 +112,18 @@ async def copy_to_user_notify_both(
     with i18n.context(), i18n.use_locale(event.caller_dto.language_code):
         i18n_key = "message_delivered" if sent else "message_not_delivered"
         await notifier.send_text(event.caller_dto, i18n_key)
+
+
+async def new_userbot(event: NewUserBotEvent, container: AsyncContainer):
+    uow = await container.get(UnitOfWorkProtocol)
+    user_profile_service = await container.get(UserProfileServiceProtocol)
+
+    bot_registry = await container.get(BotRegistryProtocol)
+    webhook_service = await container.get(WebhookService)
+
+    async with uow.transaction(), uow.with_bot(event.userbot_id):
+        await user_profile_service.get_or_create(event.owner_id)
+        await user_profile_service.update(event.owner_id, role=UserRole.ADMIN)
+        await webhook_service.set_webhook(bot_registry.get(event.userbot_id))
+
+    logger.info("New userbot %s registered, admin %s", event.userbot_id, event.owner_id)

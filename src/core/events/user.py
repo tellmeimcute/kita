@@ -24,3 +24,9 @@ class NewSuggestionEvent(KitaEvent):
 @dataclass(frozen=True, kw_only=True, slots=True)
 class SuggestionAcceptedEvent(KitaEvent):
     suggestion_dto: SuggestionFullDTO
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class NewUserBotEvent(KitaEvent):
+    userbot_id: int
+    owner_id: int
