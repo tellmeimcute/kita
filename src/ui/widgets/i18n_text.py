@@ -2,33 +2,43 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.common import WhenCondition
 from aiogram_dialog.widgets.text import Text
 from dishka import AsyncContainer
+from pydantic import BaseModel
 
 from core.consts import DISHKA_CONTAINER_KEY
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO, UserProfileDTO
 
 
-class _FormatDataStub:
-    def __init__(self, name="", data=None):
-        self.name = name
-        self.data = data or {}
+def _normalize(v):
+    if isinstance(v, BaseModel):
+        to_i18n = getattr(v, "to_i18n_kwargs", None)
+        return to_i18n() if callable(to_i18n) else v.model_dump(mode="json")
+    return v
 
-    def __getitem__(self, item):
-        if item in self.data:
-            return self.data[item]
-        if not self.name:
-            return _FormatDataStub(item)
-        return _FormatDataStub(f"{self.name}[{item}]")
 
-    def __getattr__(self, item):
-        return _FormatDataStub(f"{self.name}.{item}")
+class Proxy:
+    def __init__(self, value):
+        self._v = value
 
-    def __format__(self, format_spec):
-        if format_spec:
-            res = f"{self.name}:{format_spec}"
-        else:
-            res = self.name
-        return f"{{{res}}}"
+    def _resolve(self, key):
+        v = _normalize(self._v)
+        return Proxy(v[key])
+
+    def __getitem__(self, key):
+        return self._resolve(key)
+
+    def __getattr__(self, key):
+        if key.startswith("_"):
+            raise AttributeError(key)
+        return self._resolve(key)
+
+    def __format__(self, spec):
+        return format(_normalize(self._v), spec)
+
+
+class DataProxy(dict):
+    def __getitem__(self, key):
+        return Proxy(super().__getitem__(key))
 
 
 class I18nText(Text):
@@ -77,5 +87,5 @@ class I18nFormat(Text):
     ) -> str:
         text = Translator().translate(self.i18n_key)
         if manager.is_preview():
-            return text.format_map(_FormatDataStub(data=data))
-        return text.format_map(data)
+            return text.format_map(DataProxy(data))
+        return text.format_map(DataProxy(data))
