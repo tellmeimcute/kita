@@ -74,11 +74,16 @@ async def user_change_role(
     manager: DialogManager,
     translator: FromDishka[Translator],
     uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
     change_role: FromDishka[ChangeRoleUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    target_dto_raw = manager.dialog_data.get("target_dto")
-    target_dto = UserDTO.model_validate(target_dto_raw)
+    user_id = manager.dialog_data["selected_user_id"]
+    if not user_id:
+        return
+
+    async with uow.transaction():
+        target_dto = await user_service.get(int(user_id))
 
     if button.widget_id == "ban":
         target_role = UserRole.BANNED
@@ -113,11 +118,18 @@ async def message_to_user(
     message_input: MessageInput,
     manager: DialogManager,
     event_bus: FromDishka[EventBus],
+    uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    target_dto_raw = manager.dialog_data.get("target_dto")
+    user_id = manager.dialog_data["selected_user_id"]
+    if not user_id:
+        return
+
+    async with uow.transaction():
+        target_dto = await user_service.get(int(user_id))
+
     bot: Bot = manager.middleware_data.get("bot")
-    target_dto = UserDTO.model_validate(target_dto_raw)
 
     album: list[Message] | None = manager.middleware_data.get("album")
     if not album:
