@@ -88,6 +88,7 @@ async def user_change_role(
         await manager.update(
             {
                 "target_profile": new_profile_dto.model_dump(mode="json"),
+                "target_profile_i18n": new_profile_dto.to_i18n_kwargs(),
             }
         )
     except UserImmuneError:
