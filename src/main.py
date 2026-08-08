@@ -1,5 +1,3 @@
-import logging
-
 import uvicorn
 from aiogram import Dispatcher
 from aiogram.fsm.storage.base import DefaultKeyBuilder
