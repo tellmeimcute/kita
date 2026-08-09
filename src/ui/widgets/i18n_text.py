@@ -65,7 +65,7 @@ class I18nText(Text):
         i18n_kwargs.update(**dialog_data)
         i18n_kwargs.update(additional_data)
         if userbot_dto:
-            i18n_kwargs.update(userbot_dto.model_dump(exclude={"token"}))
+            i18n_kwargs.update(userbot_dto.to_i18n_kwargs())
 
         text = translator.translate(self.i18n_key)
         return text.format_map(DataProxy(i18n_kwargs))

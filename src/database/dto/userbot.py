@@ -1,6 +1,7 @@
 from pydantic import SecretStr
 
 from core.consts import T_ME
+from core.html import quote
 
 from .base import TrackableDto
 
@@ -20,3 +21,9 @@ class UserBotDTO(TrackableDto):
     @property
     def bot_url(self) -> str:
         return T_ME + self.username
+
+    def to_i18n_kwargs(self) -> dict:
+        data = self.model_dump(mode="json", exclude={"token"})
+        data["username"] = quote(self.username)
+        data["channel_name"] = quote(self.channel_name)
+        return data

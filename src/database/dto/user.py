@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from core.html import quote
+
 from .base import TrackableDto
 
 if TYPE_CHECKING:
@@ -32,5 +34,11 @@ class UserDTO(TrackableDto):
         updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
         created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
 
-        data.update(updated_at=updated_at, created_at=created_at)
+        data.update(
+            name=quote(self.name),
+            username=quote(self.username),
+            updated_at=updated_at,
+            created_at=created_at,
+        )
+        
         return data

@@ -44,7 +44,7 @@ class MediaGroupMiddleware(KitaMiddleware):
 
         await self.tg_message_redis.rpush(key, event)
 
-        if await self.redis.set(lock_key, "1", nx=True, ex=5):
+        if await self.redis.set(lock_key, "1", nx=True, ex=15):
             logger.debug("Start mediagroup processing")
             try:
                 await self._process_album(key, handler, event, data)

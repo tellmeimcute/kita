@@ -5,6 +5,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 
 from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
+from core.html import quote
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
 from database.dto import SuggestionFullDTO, UserBotDTO
@@ -32,9 +33,9 @@ class SuggestionUtils:
     def _get_author_plus_origin(self, dto: SuggestionFullDTO):
         author = dto.author
         is_anon = dto.anonymous
-        author_name = "Anonymous" if is_anon else author.name
+        author_name = "Anonymous" if is_anon else quote(author.name)
 
-        i18n_kwargs = dict(author_name=author_name, forwarded_from=dto.forwarded_from)
+        i18n_kwargs = dict(author_name=author_name, forwarded_from=quote(dto.forwarded_from))
         return self._translator.i18n_text(i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs)
 
     def _get_input_media(self, dto: SuggestionFullDTO, i18n_key: str, i18n_kwargs: dict):
@@ -47,7 +48,7 @@ class SuggestionUtils:
     def get_i18n_kwargs(self, dto: SuggestionFullDTO):
         verdict = self._get_verdict(dto)
 
-        author_string = "Anonymous" if dto.anonymous else dto.author.name
+        author_string = "Anonymous" if dto.anonymous else quote(dto.author.name)
         if dto.forwarded_from:
             author_string = self._get_author_plus_origin(dto)
 

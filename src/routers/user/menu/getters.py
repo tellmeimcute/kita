@@ -2,6 +2,7 @@ from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
+from core.html import quote
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO, UserProfileDTO
 from interfaces import SuggestionServiceProtocol, UnitOfWorkProtocol
@@ -24,11 +25,11 @@ async def get_menu_i18n_kwargs(
     i18n_kwargs = stats.model_dump()
 
     stats_text = translator.i18n_text(i18n_key="user_stats", i18n_kwargs=i18n_kwargs)
-    signature = "Anonymous" if profile_dto.prefer_anonymous else user_dto.name
+    signature = "Anonymous" if profile_dto.prefer_anonymous else quote(user_dto.name)
 
     return {
         "stats_text": stats_text,
         "user_stats": i18n_kwargs,
         "signature": signature,
-        "channel_name": userbot_dto.channel_name,
+        "channel_name": quote(userbot_dto.channel_name),
     }

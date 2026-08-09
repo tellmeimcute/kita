@@ -104,7 +104,7 @@ async def channel_id_handler(
     token = crypto.decrypt(raw_token)
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
-    async with Bot(token=token, **bot_registry.bot_settings) as tmp_bot:
+    async with Bot(token=token) as tmp_bot:
         check_result: UserBotCheckResult = await checker.full_check(tmp_bot, channel_id)
 
     if not check_result.success:

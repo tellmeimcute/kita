@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import computed_field
 
 from core.enums import RenderType
+from core.html import quote
 from database.enums import SuggestionStatus
 
 from .base import TrackableDto
@@ -47,7 +48,8 @@ class SuggestionFullDTO(SuggestionBaseDTO):
 
         data.update(
             author=author,
-            caption=self.caption or "",
+            caption=quote(self.caption or ""),
+            forwarded_from=quote(self.forwarded_from),
             updated_at=updated_at,
             created_at=created_at,
         )
