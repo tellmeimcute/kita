@@ -53,16 +53,6 @@ class UnitOfWork:
             raise
         logger.debug("Transaction close")
 
-    @asynccontextmanager
-    async def with_bot(self, bot_id: int):
-        bot = self._bot_registry.get(bot_id)
-        token = self._bot_registry.set_current(bot)
-
-        try:
-            yield bot
-        finally:
-            self._bot_registry.reset_current(token)
-
     async def commit(self):
         await self._session.commit()
         logger.debug("Transaction committed")

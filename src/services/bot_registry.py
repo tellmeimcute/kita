@@ -1,4 +1,5 @@
 import contextvars
+from contextlib import asynccontextmanager
 from logging import getLogger
 
 from aiogram import Bot
@@ -73,6 +74,16 @@ class BotRegistry:
 
     def reset_current(self, token: contextvars.Token[Bot | None]) -> None:
         self._current_bot.reset(token)
+
+    @asynccontextmanager
+    async def with_bot(self, bot_id: int, token: str | None = None):
+        bot = self.get(bot_id) if not token else self.get_or_create(bot_id, token)
+
+        prev_token = self.set_current(bot)
+        try:
+            yield bot
+        finally:
+            self.reset_current(prev_token)
 
     async def close(self):
         await self._session.close()

@@ -60,9 +60,8 @@ async def on_userbot_demoted(
     if new.can_post_messages:
         return
 
-    registrar_token = config.tg_token.get_secret_value()
-    registrar_bot_id = extract_bot_id(registrar_token)
-    registrar_bot = bot_registry.get_or_create(registrar_bot_id, registrar_token)
+    main_token = config.tg_token.get_secret_value()
+    main_bot_id = extract_bot_id(main_token)
 
     bot = bot_registry.get_current()
     async with uow.transaction():
@@ -74,16 +73,16 @@ async def on_userbot_demoted(
     bot_registry.remove(bot.id)
 
     with i18n.context(), i18n.use_locale(owner_dto.language_code):
-        notifier.assign_bot(registrar_bot)
-        await notifier.send_text(
-            owner_dto,
-            i18n_key="your_bot_deactivated",
-            i18n_kwargs={
-                "bot_id": bot.id,
-                "detail": tl.translate("reg_bot_permission_error"),
-                "bot_username": userbot.username,
-            },
-        )
+        async with bot_registry.with_bot(main_bot_id, main_token):
+            await notifier.send_text(
+                owner_dto,
+                i18n_key="your_bot_deactivated",
+                i18n_kwargs={
+                    "bot_id": bot.id,
+                    "detail": tl.translate("reg_bot_permission_error"),
+                    "bot_username": userbot.username,
+                },
+            )
 
     logger.info(
         "Bot %s permission in channel %s has been revoked, deactivate userbot",

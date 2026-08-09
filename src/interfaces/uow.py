@@ -23,6 +23,3 @@ class UnitOfWorkProtocol(Protocol):
 
     @abstractmethod
     async def rollback(self): ...
-
-    @abstractmethod
-    async def with_bot(self, bot_id: int): ...

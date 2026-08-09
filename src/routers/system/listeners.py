@@ -121,7 +121,7 @@ async def new_userbot(event: NewUserBotEvent, container: AsyncContainer):
     bot_registry = await container.get(BotRegistryProtocol)
     webhook_service = await container.get(WebhookService)
 
-    async with uow.transaction(), uow.with_bot(event.userbot_id):
+    async with uow.transaction(), bot_registry.with_bot(event.userbot_id):
         await user_profile_service.get_or_create(event.owner_id)
         await user_profile_service.update(event.owner_id, role=UserRole.ADMIN)
         await webhook_service.set_webhook(bot_registry.get(event.userbot_id))
