@@ -42,4 +42,5 @@ class TextSender(MessageSender):
             text=content,
             reply_markup=self.payload.reply_markup,
             disable_notification=self.silent,
+            link_preview_options=None,
         )
