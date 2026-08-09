@@ -6,6 +6,7 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.config import Config
+from core.html import quote
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO
 from ui.state_groups import AdminMenuSG
@@ -31,6 +32,8 @@ async def get_banner_text(
     if not banner_text:
         manager.dialog_data["something_wrong"] = True
         return
+
+    banner_text = quote(banner_text)
 
     if isinstance(media, list):
         media = media[-1]
