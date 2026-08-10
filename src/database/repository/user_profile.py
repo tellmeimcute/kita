@@ -133,6 +133,33 @@ class UserProfileRepository(BaseRepository):
         result: Result = await self._session.execute(stmt)
         return result.one()
 
+    async def active_count(self):
+        stmt = select(func.count(UserProfile.id)).where(
+            UserProfile.bot_id == self.bot.id,
+            UserProfile.role != UserRole.BANNED,
+            UserProfile.is_bot_blocked.is_not(True),
+        )
+
+        result = await self._session.scalar(stmt)
+        return result or 0
+
+    async def get_active_ids(self, after_id: int | None, limit: int) -> Sequence[int]:
+        stmt = (
+            select(UserProfile.user_id)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+                UserProfile.role != UserRole.BANNED,
+                UserProfile.is_bot_blocked.is_not(True),
+            )
+            .order_by(UserProfile.user_id)
+            .limit(limit)
+        )
+        if after_id is not None:
+            stmt = stmt.where(UserProfile.user_id > after_id)
+
+        result = await self._session.scalars(stmt)
+        return result.all()
+
     async def decline_all_suggestions(self, user_id: int):
         stmt = (
             update(Suggestion)
