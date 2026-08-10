@@ -6,6 +6,7 @@ from dishka import Provider, Scope, provide
 from database.dto import UserBotDTO
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
 from services import BotRegistry, UserBotService
+from usecases.ub_token_resolver import UserBotTokenResolver
 
 logger = getLogger("kita.providers")
 
@@ -14,6 +15,7 @@ class BotProvider(Provider):
     scope = Scope.REQUEST
 
     bot_registry = provide(source=BotRegistry, provides=BotRegistryProtocol, scope=Scope.APP)
+    ub_token_resolver = provide(UserBotTokenResolver, scope=Scope.APP)
 
     @provide
     def get_bot(self, registry: BotRegistryProtocol) -> Bot:
