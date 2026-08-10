@@ -40,5 +40,5 @@ class UserDTO(TrackableDto):
             updated_at=updated_at,
             created_at=created_at,
         )
-        
+
         return data

@@ -192,9 +192,7 @@ msgid "broadcast_btn"
 msgstr "🚀 Рассылка"
 
 msgid "mass_message_confirm"
-msgstr ""
-"Подтвердите рассылку этого сообщения <b>{users_count} пользователям.</b>\n"
-"Расчетное время выполнения <b>{estimated_time} секунд</b>"
+msgstr "Подтвердите рассылку этого сообщения пользователям вашего бота.\n"
 
 msgid "broadcast_wait_message_text"
 msgstr ""

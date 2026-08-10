@@ -6,7 +6,6 @@ from aiogram_dialog.widgets.style import Style
 from ui.state_groups import AdminMenuSG, BroadcastMenuSG
 from ui.widgets.i18n_text import I18nText
 
-from .getters import get_broadcast_info
 from .handlers import execute_broadcast, prepare_broadcast
 
 wait_broadcast_window = Window(
@@ -36,7 +35,6 @@ confirm_broadcast = Window(
         ),
     ),
     state=BroadcastMenuSG.broadcast_confirm,
-    getter=get_broadcast_info,
 )
 
 dialog = Dialog(

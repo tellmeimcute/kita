@@ -187,9 +187,7 @@ msgid "broadcast_btn"
 msgstr "🚀 Broadcast"
 
 msgid "mass_message_confirm"
-msgstr ""
-"Confirm sending this message to <b>{users_count} users.</b>\n"
-"Estimated execution time: <b>{estimated_time} seconds</b>"
+msgstr "Confirm sending this message to your bot users.\n"
 
 msgid "broadcast_wait_message_text"
 msgstr ""
