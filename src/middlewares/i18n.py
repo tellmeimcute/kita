@@ -1,5 +1,4 @@
 from collections.abc import Awaitable, Callable
-from logging import getLogger
 from typing import Any, ClassVar
 
 from aiogram import Router
@@ -7,14 +6,13 @@ from aiogram.types import TelegramObject
 from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
+from loguru import logger
 
 from core.consts import DISHKA_CONTAINER_KEY
 from database.dto import UserDTO
 from interfaces import UnitOfWorkProtocol, UserServiceProtocol
 
 from .base import KitaMiddleware
-
-logger = getLogger("kita.middleware")
 
 
 class KitaI18nMiddleware(KitaMiddleware):
@@ -70,7 +68,7 @@ class KitaI18nMiddleware(KitaMiddleware):
         if self.middleware_key:
             data[self.middleware_key] = self
 
-        logger.debug("Context use locale %s", current_locale)
+        logger.debug("Context use locale {}", current_locale)
         with self.i18n.context(), self.i18n.use_locale(current_locale):
             return await handler(event, data)
 
@@ -79,7 +77,7 @@ class KitaI18nMiddleware(KitaMiddleware):
             if event_name not in self.__event__types__:
                 observer.outer_middleware(self)
                 logger.debug(
-                    "%s registered to event %s on router: %s",
+                    "{} registered to event {} on router: {}",
                     self.__class__.__name__,
                     event_name,
                     router.name,

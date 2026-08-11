@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import Bot
 from dishka import Provider, Scope, provide
 
@@ -7,8 +5,6 @@ from database.dto import UserBotDTO
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
 from services import BotRegistry, UserBotService
 from usecases.ub_token_resolver import UserBotTokenResolver
-
-logger = getLogger("kita.providers")
 
 
 class BotProvider(Provider):

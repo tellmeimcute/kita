@@ -1,17 +1,8 @@
-import logging
-
 from aiogram import Dispatcher, Router
 from aiogram_dialog import setup_dialogs
 from dishka import AsyncContainer
+from loguru import logger
 
-from core.events import (
-    CopyMessagesToUserEvent,
-    EventBus,
-    NewSuggestionEvent,
-    NewUserBotEvent,
-    NewUserEvent,
-    SuggestionAcceptedEvent,
-)
 from middlewares import (
     AdminMiddleware,
     BanCheckMiddleware,
@@ -33,29 +24,9 @@ from routers.master import (
     userbot_register_dialog,
 )
 from routers.system import get_error_router
-from routers.system.listeners import (
-    copy_to_user_notify_both,
-    new_userbot,
-    notify_admin_new_suggestion,
-    notify_admin_new_user,
-    suggestion_accepted,
-)
 from routers.user import menu_dialog as user_menu_dialog
 from routers.user import menu_router as user_menu_router
 from routers.user import suggestion_dialog as user_suggestion_dialog
-
-logger = logging.getLogger("kita.startup")
-
-
-async def register_events(event_bus: EventBus):
-    event_bus.sub(NewUserEvent, notify_admin_new_user)
-    event_bus.sub(NewSuggestionEvent, notify_admin_new_suggestion)
-    event_bus.sub(SuggestionAcceptedEvent, suggestion_accepted)
-    event_bus.sub(CopyMessagesToUserEvent, copy_to_user_notify_both)
-    event_bus.sub(NewUserBotEvent, new_userbot)
-
-    logger.debug("%s", event_bus.listeners)
-    logger.info("Event Bus events successfully registered")
 
 
 async def register_middlewares(container: AsyncContainer, dp: Dispatcher):
@@ -109,7 +80,7 @@ async def setup_slave_dp(
     await register_middlewares(container, dp)
     await register_routers(container, dp)
 
-    logger.info("Dispatcher fully init")
+    logger.info("Slave dp fully init")
 
 
 async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
@@ -133,3 +104,5 @@ async def setup_registrar_dp(container: AsyncContainer, dp: Dispatcher):
         userbot_menu_dialog,
         get_error_router(),
     )
+
+    logger.info("Registrar dp fully init")

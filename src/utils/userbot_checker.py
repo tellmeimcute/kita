@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from logging import getLogger
 
 from aiogram import Bot
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramBadRequest, TelegramUnauthorizedError
 from aiogram.types import ChatFullInfo, ChatMemberAdministrator, User
 from aiogram.utils.token import TokenValidationError, extract_bot_id
+from loguru import logger
 
 
 @dataclass(frozen=True)
@@ -18,9 +18,6 @@ class UserBotCheckResult:
     channel_admin: ChatMemberAdministrator | None = None
     token: str | None = None
     bot_id: int | None = None
-
-
-logger = getLogger("kita.userbot_checker")
 
 
 class UserBotChecker:
@@ -80,7 +77,7 @@ class UserBotChecker:
             detail_i18n_key = "reg_bot_token_invalid"
             status = UserBotCheckResult(success=False, detail_i18n_key=detail_i18n_key)
         except TelegramBadRequest as e:
-            logger.exception("Userbot check failed: %s", e.message)
+            logger.exception("Userbot check failed: {}", e.message)
             detail_i18n_key = "reg_bot_bad_request"
             status = UserBotCheckResult(
                 success=False, detail_i18n_key=detail_i18n_key, bot_info=bot_info

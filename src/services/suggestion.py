@@ -1,7 +1,7 @@
-from logging import getLogger
 from typing import Any
 
 from aiogram.types import Message
+from loguru import logger
 
 from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
@@ -12,8 +12,6 @@ from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
 from utils.message_parser import MessageParser
 
 from .base import BaseService
-
-logger = getLogger("kita.suggestion_service")
 
 
 class SuggestionService(BaseService):
@@ -65,11 +63,11 @@ class SuggestionService(BaseService):
         )
         await self.user_stats_redis.delete(key)
 
-        logger.info("Update suggestion %s", suggestion_dto.id)
+        logger.info("Update suggestion {}", suggestion_dto.id)
 
     async def update_by_id(self, suggestion_id: int, **data: Any):
         await self.repo.update(suggestion_id, **data)
-        logger.info("Update suggestion %s", suggestion_id)
+        logger.info("Update suggestion {}", suggestion_id)
 
     async def create(
         self, author_dto: UserDTO, album: list[Message], anonymous: bool = False

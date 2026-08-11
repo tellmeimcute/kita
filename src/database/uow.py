@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
-from logging import getLogger
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import (
@@ -10,8 +10,6 @@ from interfaces import (
     UserProfileRepositoryProtocol,
     UserRepositoryProtocol,
 )
-
-logger = getLogger("kita.uow")
 
 
 class UnitOfWork:

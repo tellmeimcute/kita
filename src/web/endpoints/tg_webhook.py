@@ -1,5 +1,4 @@
 import asyncio
-from logging import getLogger
 from typing import Annotated
 
 from aiogram import Bot, Dispatcher
@@ -14,6 +13,7 @@ from fastapi import (
     Response,
     status,
 )
+from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
@@ -22,8 +22,6 @@ from interfaces import UnitOfWorkProtocol
 from services import UserBotService
 
 from .tg_webhook_base import BaseTgWebhookEndpoint, verify_secret_token
-
-logger = getLogger("kita.fastapi")
 
 
 class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
@@ -36,18 +34,18 @@ class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
                     userbot = await userbot_service.get(bot_id)
             return userbot
         except Exception:
-            logger.exception("Failed to fetch UserBot %s from DataBase", bot_id)
+            logger.exception("Failed to fetch UserBot {} from DataBase", bot_id)
             return None
 
     async def _resolve_bot(self, bot_id: int) -> tuple[Bot, UserBotDTO]:
         userbot = await self._get_userbot(bot_id)
 
         if not userbot:
-            logger.warning("Bot %s not found, skipping update", bot_id)
+            logger.warning("Bot {} not found, skipping update", bot_id)
             raise HTTPException(status_code=status.HTTP_200_OK, detail="Bot is not registered")
 
         if userbot and not userbot.active:
-            logger.warning("Bot %s marked inactive, skipping update", bot_id)
+            logger.warning("Bot {} marked inactive, skipping update", bot_id)
             raise HTTPException(status_code=status.HTTP_200_OK, detail="Bot inactive")
 
         bot = self.bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
@@ -55,7 +53,7 @@ class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
         if bot:
             return bot, userbot
 
-        logger.warning("Bot %s not found, skipping update", bot_id)
+        logger.warning("Bot {} not found, skipping update", bot_id)
         raise HTTPException(
             status_code=status.HTTP_200_OK,
             detail="Bot not registered",
@@ -92,7 +90,7 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
 
     def verify_secret(self, bot_id: int, token: str) -> bool:
         if not self.cryptographer.verify_bot_secret(token, bot_id):
-            logger.warning("Invalid secret token for bot %s", bot_id)
+            logger.warning("Invalid secret token for bot {}", bot_id)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid secret token",

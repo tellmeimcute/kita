@@ -1,10 +1,8 @@
-import logging
 from abc import ABC
 from typing import ClassVar
 
 from aiogram import BaseMiddleware, Router
-
-logger = logging.getLogger("kita.middleware")
+from loguru import logger
 
 
 class KitaMiddleware(BaseMiddleware, ABC):

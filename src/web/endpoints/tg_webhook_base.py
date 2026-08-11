@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, abstractmethod
-from logging import getLogger
 from typing import Annotated
 
 from aiogram import Bot, Dispatcher
@@ -9,13 +8,12 @@ from aiogram.types import Update
 from dishka import AsyncContainer
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, status
+from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
 from database.dto import UserBotDTO
 from interfaces import BotRegistryProtocol
-
-logger = getLogger("kita.fastapi")
 
 
 @inject
@@ -60,7 +58,7 @@ class BaseTgWebhookEndpoint(ABC):
             include_in_schema=False,
         )
 
-        logger.info("Telegram Webhook endpoint registered on path %s", path)
+        logger.info("Telegram Webhook endpoint registered on path {}", path)
 
     async def startup(self):
         await self.dp.emit_startup(**self.dp.workflow_data)
@@ -76,7 +74,7 @@ class BaseTgWebhookEndpoint(ABC):
             task.cancel()
         await asyncio.gather(*self.tasks, return_exceptions=True)
 
-        logger.info("Dispatcher shutdown and %s tasks cleaned up", len(tasks))
+        logger.info("Dispatcher shutdown and {} tasks cleaned up", len(tasks))
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
         async with self._semaphore:
@@ -88,7 +86,7 @@ class BaseTgWebhookEndpoint(ABC):
                     await result.as_(bot)
             except Exception as e:
                 logger.exception(
-                    "Failed to process update '%s' for bot '%s': %s",
+                    "Failed to process update '{}' for bot '{}': {}",
                     update.update_id,
                     bot.id,
                     e,

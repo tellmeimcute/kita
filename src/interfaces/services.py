@@ -90,7 +90,7 @@ class NotifierServiceProtocol:
         target: UserDTO | int,
         dto: SuggestionFullDTO,
         mode: Literal["admin_viewer", "channel_post"] = "admin_viewer",
-    ): ...
+    ) -> Message | list[Message] | None: ...
 
     @abstractmethod
     async def send_text(

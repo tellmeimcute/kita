@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
@@ -7,17 +5,16 @@ from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
-from core.events import EventBus, NewUserBotEvent
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
 from services import UserBotService
+from task_queue.tasks import new_userbot
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 from utils.userbot_checker import UserBotChecker, UserBotCheckResult
-
-logger = getLogger("kita.master_reg_userbot")
 
 
 @inject
@@ -81,7 +78,6 @@ async def channel_id_handler(
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
     checker: FromDishka[UserBotChecker],
-    event_bus: FromDishka[EventBus],
 ):
     if not message.text:
         manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
@@ -91,7 +87,7 @@ async def channel_id_handler(
         channel_id = checker.get_channel_id(message.text)
     except ValueError:
         logger.exception(
-            "Userbot registration failed. Trying channel_id '%s'", message.text.strip()
+            "Userbot registration failed. Trying channel_id '{}'", message.text.strip()
         )
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return
@@ -131,10 +127,8 @@ async def channel_id_handler(
         show_mode=ShowMode.DELETE_AND_SEND,
     )
 
-    event_bus.dispatch(
-        NewUserBotEvent(
-            bot_id=message.bot.id,
-            userbot_id=check_result.bot_info.id,
-            owner_id=user_dto.user_id,
-        )
+    await new_userbot.kiq(
+        message.bot.id,
+        userbot_id=check_result.bot_info.id,
+        owner_id=user_dto.user_id,
     )

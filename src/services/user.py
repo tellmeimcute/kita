@@ -1,13 +1,12 @@
-from logging import getLogger
 from typing import Any
+
+from loguru import logger
 
 from database.dto import UserDTO
 from database.redis import KitaKeyBuilder, UserRedis
 from interfaces import BotRegistryProtocol, UserRepositoryProtocol
 
 from .base import BaseService
-
-logger = getLogger("kita.user_service")
 
 
 class UserService(BaseService):
@@ -37,8 +36,8 @@ class UserService(BaseService):
             data=user_dto,
         )
 
-        logger.info("Created new user %s", user_dto.user_id)
-        logger.debug("New user data: %s", user_dto)
+        logger.info("Created new user {}", user_dto.user_id)
+        logger.debug("New user data: {}", user_dto)
 
         return user_dto
 
@@ -75,7 +74,7 @@ class UserService(BaseService):
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)
         await self.user_redis.delete(self._get_key(user_id))
-        logger.info("Update database info for user %s", user_id)
+        logger.info("Update database info for user {}", user_id)
 
     async def save(self, user_dto: UserDTO):
         changed = user_dto.prepare_changed_data()
@@ -84,4 +83,4 @@ class UserService(BaseService):
 
         await self.repo.update(user_dto.user_id, **changed)
         await self.user_redis.delete(self._get_key(user_dto.user_id))
-        logger.info("Update database info for user %s", user_dto.user_id)
+        logger.info("Update database info for user {}", user_dto.user_id)

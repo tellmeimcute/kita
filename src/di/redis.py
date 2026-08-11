@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterable
-from logging import getLogger
 
 from dishka import Provider, Scope, provide
+from loguru import logger
 from redis.asyncio import ConnectionPool, Redis
 
 from core.config import Config
@@ -12,8 +12,6 @@ from database.redis import (
     UserRedis,
     UserStatsRedis,
 )
-
-logger = getLogger("kita.providers")
 
 
 class RedisProvider(Provider):

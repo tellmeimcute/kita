@@ -1,13 +1,12 @@
-from logging import getLogger
 from typing import Any
+
+from loguru import logger
 
 from database.dto import UserBotDTO
 from database.redis import KitaKeyBuilder, RedisKey, UserBotRedis
 from interfaces import BotRegistryProtocol, UserBotRepositoryProtocol
 
 from .base import BaseService
-
-logger = getLogger("kita.userbot_service")
 
 
 class UserBotService(BaseService):
@@ -85,9 +84,9 @@ class UserBotService(BaseService):
     async def update(self, bot_id: int, **data: Any):
         await self.repo.update(bot_id, **data)
         await self.userbot_redis.delete(self._get_key(bot_id))
-        logger.info("Update userbot %s", bot_id)
+        logger.info("Update userbot {}", bot_id)
 
     async def save(self, userbot_dto: UserBotDTO):
         await self.repo.save(userbot_dto)
         await self.userbot_redis.delete(self._get_key(userbot_dto.bot_id))
-        logger.info("Update userbot %s", userbot_dto.bot_id)
+        logger.info("Update userbot {}", userbot_dto.bot_id)

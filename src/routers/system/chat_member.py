@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import F, Router
 from aiogram.enums import ChatType
 from aiogram.exceptions import TelegramUnauthorizedError
@@ -14,6 +12,7 @@ from aiogram.utils.i18n import I18n
 from aiogram.utils.token import extract_bot_id
 from aiogram_dialog.api.exceptions import UnknownIntent
 from dishka import FromDishka
+from loguru import logger
 
 from core.config import Config
 from core.i18n_translator import Translator
@@ -28,8 +27,6 @@ from interfaces import (
 from services import UserBotService, WebhookService
 from ui.senders.payload import TextSender
 
-logger = getLogger("kita.errors")
-
 
 async def on_user_block_bot(
     event: ChatMemberUpdated,
@@ -40,7 +37,7 @@ async def on_user_block_bot(
     async with uow.transaction():
         await user_profile_service.update(user_id, is_bot_blocked=True)
 
-    logger.info("UserID %s blocked the bot.", user_id)
+    logger.info("UserID {} blocked the bot.", user_id)
 
 
 async def on_userbot_demoted(
@@ -85,7 +82,7 @@ async def on_userbot_demoted(
             )
 
     logger.info(
-        "Bot %s permission in channel %s has been revoked, deactivate userbot",
+        "Bot {} permission in channel {} has been revoked, deactivate userbot",
         bot.id,
         event.chat.title,
     )
@@ -109,7 +106,7 @@ async def unknown_intent(
     await strategy.send()
 
     logger.info(
-        "Unknown intent exception on update %s. Send warning to %s userid",
+        "Unknown intent exception on update {}. Send warning to {} userid",
         event.update.update_id,
         callback.from_user.id,
     )
@@ -128,7 +125,7 @@ async def userbot_token_invalid(
 
     bot_registry.remove(bot.id)
 
-    logger.info("Token invalid for bot %s, set userbot inactive", bot.id)
+    logger.info("Token invalid for bot {}, set userbot inactive", bot.id)
 
 
 def get_error_router():

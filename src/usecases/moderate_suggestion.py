@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from core.events import EventBus, SuggestionAcceptedEvent
 from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
 from interfaces import SuggestionServiceProtocol
+from task_queue.tasks import suggestion_accepted
 
 
 @dataclass
@@ -13,14 +13,10 @@ class ModerationResult:
 
 
 class ModerateSuggestionUseCase:
-    __slots__ = (
-        "_suggestion_service",
-        "_event_bus",
-    )
+    __slots__ = ("_suggestion_service",)
 
-    def __init__(self, suggestion_service: SuggestionServiceProtocol, event_bus: EventBus):
+    def __init__(self, suggestion_service: SuggestionServiceProtocol):
         self._suggestion_service = suggestion_service
-        self._event_bus = event_bus
 
     async def execute(
         self,
@@ -36,11 +32,5 @@ class ModerateSuggestionUseCase:
         await self._suggestion_service.update(suggestion_dto)
 
         if verdict == Status.ACCEPTED:
-            self._event_bus.dispatch(
-                SuggestionAcceptedEvent(
-                    suggestion_dto=suggestion_dto,
-                    bot_id=bot_id,
-                )
-            )
-
+            await suggestion_accepted.kiq(bot_id=bot_id, suggestion_id=suggestion_dto.id)
         return ModerationResult(suggestion_dto, False)

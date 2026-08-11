@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from logging import getLogger
 from typing import Literal
 
+from loguru import logger
 from redis.asyncio import Redis
 
 from database.dto import UserDTO
@@ -49,8 +49,6 @@ redis.call('EXPIRE', key, math.ceil(max_tokens / refill_rate) + 1)
 
 return { allowed, math.floor(remaining) }
 """
-
-logger = getLogger("kita.rate_limit")
 
 
 @dataclass
@@ -114,6 +112,6 @@ class TokenBucketLimiter:
         )
 
         result = TokenBucketResult(*result)
-        logger.debug("RedisKey %s : %s", key, result)
+        logger.debug("RedisKey {} : {}", key, result)
 
         return result

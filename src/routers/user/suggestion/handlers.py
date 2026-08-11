@@ -4,10 +4,10 @@ from aiogram_dialog.widgets.input import MessageInput
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.events import EventBus, NewSuggestionEvent
 from core.exceptions import UnsupportedPayload
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import SuggestionServiceProtocol, UnitOfWorkProtocol
+from task_queue.tasks import admin_notify_new_suggestion
 from ui.state_groups import SuggestionSG
 
 
@@ -18,7 +18,6 @@ async def on_album_received(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    event_bus: FromDishka[EventBus],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
@@ -41,4 +40,7 @@ async def on_album_received(
 
     await manager.switch_to(SuggestionSG.on_moderation)
 
-    event_bus.dispatch(NewSuggestionEvent(suggestion_dto=suggestion_dto, bot_id=message.bot.id))
+    await admin_notify_new_suggestion.kiq(
+        bot_id=message.bot.id,
+        suggestion_id=suggestion_dto.id,
+    )

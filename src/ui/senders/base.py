@@ -1,11 +1,9 @@
 import asyncio
 from abc import ABC, abstractmethod
-from logging import getLogger
 
 from aiogram.exceptions import TelegramRetryAfter
 from aiogram.types import Message, MessageId
-
-logger = getLogger("kita.senders")
+from loguru import logger
 
 MAX_RETRY = 3
 
@@ -23,11 +21,11 @@ class BaseSender(ABC):
                 return await self._send()
             except TelegramRetryAfter as e:
                 if retries + 1 > MAX_RETRY:
-                    logger.error("Rate limited on %s to %s, giving up", self.name, self.target_id)
+                    logger.error("Rate limited on {} to {}, giving up", self.name, self.target_id)
                     return None
                 wait = max(float(e.retry_after), 1.0)
                 logger.warning(
-                    "Telegram Rate limited on %s to %s, retrying in %.1fs",
+                    "Telegram Rate limited on {} to {}, retrying in {}",
                     self.name,
                     self.target_id,
                     wait,
@@ -36,7 +34,7 @@ class BaseSender(ABC):
                 retries += 1
             except Exception as e:
                 logger.exception(
-                    "Failed to execute strategy %s to target %s: %s", self.name, self.target_id, e
+                    "Failed to execute strategy {} to target {}: {}", self.name, self.target_id, e
                 )
                 return None
 

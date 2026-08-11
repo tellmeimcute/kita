@@ -1,15 +1,13 @@
 from collections.abc import Sequence
-from logging import getLogger
 
 from aiogram import Bot
 from aiogram.methods import SetWebhook
 from aiogram.types import WebhookInfo
+from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
 from interfaces import BotRegistryProtocol
-
-logger = getLogger("kita.webhook_service")
 
 
 class WebhookService:
@@ -30,11 +28,11 @@ class WebhookService:
         current_webhook = await bot.get_webhook_info()
 
         if current_webhook.url == webhook_url and not should_force:
-            logger.debug("Webhook already set for bot %s: %s", bot.id, webhook_url)
+            logger.debug("Webhook already set for bot {}: {}", bot.id, webhook_url)
             return current_webhook
 
         if should_force:
-            logger.info("Webhook force update enabled. Set/update webhook for bot %s", bot.id)
+            logger.info("Webhook force update enabled. Set/update webhook for bot {}", bot.id)
 
         secret_token = self.cryptographer.generate_bot_secret(bot.id)
         webhook_request = SetWebhook(
@@ -45,12 +43,12 @@ class WebhookService:
         )
 
         if not await bot(webhook_request):
-            logger.error("Failed to set webhook for bot %s", bot.id)
+            logger.error("Failed to set webhook for bot {}", bot.id)
             raise RuntimeError(f"Could not set webhook for bot '{bot.id}'")
 
-        logger.info("Webhook set successfully for bot %s", bot.id)
+        logger.info("Webhook set successfully for bot {}", bot.id)
         return await bot.get_webhook_info()
 
     async def remove_webhook(self, bot: Bot):
         await bot.delete_webhook(drop_pending_updates=True)
-        logger.info("Webhook removed for bot %s", bot.id)
+        logger.info("Webhook removed for bot {}", bot.id)

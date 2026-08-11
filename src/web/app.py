@@ -1,15 +1,12 @@
-from logging import getLogger
-
 from aiogram import Dispatcher
 from dishka import AsyncContainer
 from fastapi import FastAPI
+from loguru import logger
 
 from core.config import Config
 from lifespan import lifespan
 
 from .endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
-
-logger = getLogger("kita.fastapi")
 
 
 def get_app(

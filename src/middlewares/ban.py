@@ -1,14 +1,12 @@
 from collections.abc import Awaitable, Callable
-from logging import getLogger
 from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
+from loguru import logger
 
 from database.dto import UserProfileDTO
 
 from .base import KitaMiddleware
-
-logger = getLogger("kita.ban_middleware")
 
 
 class BanCheckMiddleware(KitaMiddleware):

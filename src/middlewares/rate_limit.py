@@ -1,9 +1,9 @@
 from collections.abc import Awaitable, Callable
-from logging import getLogger
 from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.utils.i18n import I18n
+from loguru import logger
 from redis.asyncio import Redis
 
 from core.config import Config
@@ -13,8 +13,6 @@ from database.dto import UserDTO
 from interfaces import BotRegistryProtocol
 
 from .base import KitaMiddleware
-
-logger = getLogger("kita.middleware")
 
 
 class RateLimitMiddleware(KitaMiddleware):
@@ -50,7 +48,7 @@ class RateLimitMiddleware(KitaMiddleware):
             await self.limiter.unmark_warned(user_dto, self._warn_key)
             return await handler(event, data)
 
-        logger.info("RateLimiting UserID %s", user_dto.user_id)
+        logger.info("RateLimiting UserID {}", user_dto.user_id)
 
         if await self.limiter.is_warned(user_dto, self._warn_key):
             if isinstance(event, CallbackQuery):

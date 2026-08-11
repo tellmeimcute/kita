@@ -1,11 +1,11 @@
 from collections.abc import Awaitable, Callable
-from logging import getLogger
 from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
+from loguru import logger
 
 from core.config import Config
 from core.consts import DISHKA_CONTAINER_KEY
@@ -18,8 +18,6 @@ from interfaces import (
 )
 
 from .base import KitaMiddleware
-
-logger = getLogger("kita.middleware")
 
 
 class UserMiddleware(KitaMiddleware):

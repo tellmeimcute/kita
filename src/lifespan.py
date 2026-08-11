@@ -1,19 +1,16 @@
 from contextlib import asynccontextmanager
-from logging import getLogger
 
 from aiogram import Dispatcher
 from aiogram.utils.token import extract_bot_id
 from dishka import AsyncContainer
 from fastapi import FastAPI
+from loguru import logger
 
 from core.config import Config
-from core.events import EventBus
 from interfaces import BotRegistryProtocol
 from services.webhooks import WebhookService
-from startup import register_events, setup_registrar_dp, setup_slave_dp
+from startup import setup_registrar_dp, setup_slave_dp
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
-
-logger = getLogger("kita.fastapi")
 
 
 @asynccontextmanager
@@ -25,13 +22,11 @@ async def lifespan(app: FastAPI):
     registrar_webhook: UserBotRegistrarEndpoint = app.state.registrar_endpoint
     registrar_dp: Dispatcher = app.state.registrar_dp
 
-    event_bus = await container.get(EventBus)
     config = await container.get(Config)
     webhooks_service = await container.get(WebhookService)
 
     await setup_slave_dp(container, dp)
     await setup_registrar_dp(container, registrar_dp)
-    await register_events(event_bus)
 
     registry: BotRegistryProtocol = await container.get(BotRegistryProtocol)
     registry.allowed_updates = dp.resolve_used_update_types()
@@ -63,8 +58,6 @@ async def lifespan(app: FastAPI):
 
     await telegram_webhook.shutdown()
     await registrar_webhook.shutdown()
-
-    await event_bus.shutdown()
 
     await container.close()
     await registry.close()

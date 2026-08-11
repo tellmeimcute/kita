@@ -1,13 +1,12 @@
-from logging import getLogger
 from typing import Any
+
+from loguru import logger
 
 from database.dto import UserProfileDTO
 from database.redis import UserProfileRedis
 from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
 
 from .base import BaseService
-
-logger = getLogger("kita.user_profile_service")
 
 
 class UserProfileService(BaseService):
@@ -67,7 +66,7 @@ class UserProfileService(BaseService):
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)
         await self.user_profile_redis.delete(self._get_key(user_id))
-        logger.info("Update user profile %s for bot %s", user_id, self.bot.id)
+        logger.info("Update user profile {} for bot {}", user_id, self.bot.id)
 
     async def save(self, profile_dto: UserProfileDTO):
         changed = profile_dto.prepare_changed_data()
@@ -76,7 +75,7 @@ class UserProfileService(BaseService):
 
         await self.repo.update(profile_dto.user_id, **changed)
         await self.user_profile_redis.delete(self._get_key(profile_dto.user_id))
-        logger.info("Update user profile %s for bot %s", profile_dto.user_id, self.bot.id)
+        logger.info("Update user profile {} for bot {}", profile_dto.user_id, self.bot.id)
 
     async def get_active(self):
         return await self.repo.get_active()

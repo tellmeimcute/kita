@@ -1,7 +1,7 @@
-from logging import getLogger
 from typing import Literal
 
 from aiogram.types import InlineKeyboardMarkup, Message, MessageId, ReplyKeyboardMarkup
+from loguru import logger
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
@@ -19,8 +19,6 @@ from ui.senders.base import BaseSender
 from utils.suggestion_utils import SuggestionUtils
 
 from .base import BaseService
-
-logger = getLogger("kita.notifier_service")
 
 
 class NotifierService(BaseService):
@@ -51,7 +49,7 @@ class NotifierService(BaseService):
         target: UserDTO | int,
         dto: SuggestionFullDTO,
         mode: Literal["admin_viewer", "channel_post"] = "admin_viewer",
-    ):
+    ) -> Message | list[Message] | list[MessageId] | None:
         if isinstance(target, UserDTO):
             target_id = target.user_id
         elif isinstance(target, int):
@@ -100,7 +98,7 @@ class NotifierService(BaseService):
         self, user_dto: UserDTO, payload: MessagePayload, profile_dto: UserProfileDTO | None = None
     ):
         if profile_dto and profile_dto.is_bot_blocked:
-            return logger.info("UserID %s has blocked the bot. Skip.", user_dto.user_id)
+            return logger.info("UserID {} has blocked the bot. Skip.", user_dto.user_id)
 
         strategy = self.strategy_factory(user_dto.user_id, payload)
         return await strategy.send()

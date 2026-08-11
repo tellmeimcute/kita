@@ -1,15 +1,13 @@
 import asyncio
-from logging import getLogger
 from typing import ClassVar
 
 from aiogram.types import Message
+from loguru import logger
 from redis.asyncio import Redis
 
 from database.redis import MediaGroupKey, MediaGroupKeyBuilder, TgMessageRedis
 
 from .base import KitaMiddleware
-
-logger = getLogger(name="kita.media_group_middleware")
 
 
 class MediaGroupMiddleware(KitaMiddleware):

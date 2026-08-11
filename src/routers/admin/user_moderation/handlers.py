@@ -1,4 +1,3 @@
-from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -7,7 +6,6 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 from pydantic import ValidationError
 
-from core.events import CopyMessagesToUserEvent, EventBus
 from core.exceptions import UserImmuneError
 from core.i18n_translator import Translator
 from core.schemas import IDCommand
@@ -19,7 +17,7 @@ from interfaces import (
     UserServiceProtocol,
 )
 from ui.state_groups import ModerationMenuSG
-from usecases.change_role import ChangeRoleUseCase
+from usecases import ChangeRoleUseCase, MessageUserUseCase
 
 
 @inject
@@ -109,33 +107,29 @@ async def message_to_user(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    event_bus: FromDishka[EventBus],
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
+    message_user_usecase: FromDishka[MessageUserUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     user_id = manager.dialog_data["selected_user_id"]
     if not user_id:
         return
 
+    await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
+
     async with uow.transaction():
         target_dto = await user_service.get(int(user_id))
-
-    bot: Bot = manager.middleware_data.get("bot")
 
     album: list[Message] | None = manager.middleware_data.get("album")
     if not album:
         album = (message,)
 
     album_ids = [m.message_id for m in album]
-    event_bus.dispatch(
-        CopyMessagesToUserEvent(
-            user_dto=target_dto,
-            caller_dto=user_dto,
-            source_chat_id=message.chat.id,
-            album_ids=album_ids,
-            bot_id=bot.id,
-        )
-    )
 
-    await manager.switch_to(ModerationMenuSG.user_moderation, show_mode=ShowMode.DELETE_AND_SEND)
+    await message_user_usecase.execute(
+        target_dto,
+        user_dto,
+        album_ids,
+        message.chat.id,
+    )

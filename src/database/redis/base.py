@@ -1,15 +1,13 @@
 import json
-import logging
 from collections.abc import Sequence
 from types import UnionType
 from typing import Union, get_args, get_origin
 
+from loguru import logger
 from pydantic import BaseModel, SecretStr
 
 from core.cryptographer import Cryptographer
 from redis.asyncio import Redis
-
-logger = logging.getLogger("kita.redis")
 
 
 class BaseRedisRepository[T: BaseModel]:
@@ -77,7 +75,7 @@ class BaseRedisRepository[T: BaseModel]:
         try:
             return self._from_cache(raw)
         except Exception as e:
-            logger.error("Fail to get key %s from cache: %s", key, e, exc_info=True)
+            logger.exception("Fail to get key {} from cache: {}", key, e)
             await self.delete(key)
             return None
 
@@ -88,14 +86,14 @@ class BaseRedisRepository[T: BaseModel]:
             ex=self.expiry,
         )
 
-        logger.info("Cached key %s", key)
+        logger.info("Cached key {}", key)
 
     async def rpush(self, key: str, *datas: T):
         to_cache_data = (self._prepare_cache(data) for data in datas)
         await self._redis.rpush(key, *to_cache_data)
         await self._redis.expire(key, self.expiry)
 
-        logger.debug("RPUSH key %s", key)
+        logger.debug("RPUSH key {}", key)
 
     async def lrange(
         self,
@@ -110,7 +108,7 @@ class BaseRedisRepository[T: BaseModel]:
             try:
                 items.append(self._from_cache(raw))
             except Exception as e:
-                logger.error("Error validate model from redis cache: %s", e, exc_info=True)
+                logger.exception("Error validate model from redis cache: {}", e)
                 await self.delete(key)
                 continue
 

@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager
@@ -7,6 +5,7 @@ from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Button, Select
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
+from loguru import logger
 
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO
@@ -14,8 +13,6 @@ from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkP
 from services import UserBotService, WebhookService
 from ui.state_groups import UserBotSelectSG
 from utils.userbot_checker import UserBotChecker, UserBotCheckResult
-
-logger = getLogger("kita.userbot_moderation")
 
 
 def action_auth(user_dto: UserDTO, userbot: UserBotDTO | None) -> str | None:
@@ -97,7 +94,7 @@ async def userbot_active_toggle(
             await userbot_service.save(userbot)
     except Exception:
         logger.exception(
-            "Something went wrong when user %s trying toggle userbot %s active state:",
+            "Something went wrong when user {} trying toggle userbot {} active state:",
             user_dto.user_id,
             userbot.bot_id,
         )
@@ -168,7 +165,7 @@ async def update_channel(
     try:
         channel_id = checker.get_channel_id(message.text)
     except (ValueError, AttributeError):
-        logger.exception("Userbot %s channel_id change failed", bot_id)
+        logger.exception("Userbot {} channel_id change failed", bot_id)
         manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
         return None
 

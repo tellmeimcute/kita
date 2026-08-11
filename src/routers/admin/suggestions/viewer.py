@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
@@ -8,7 +6,6 @@ from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
-from core.events import CopyMessagesToUserEvent, EventBus
 from core.exceptions import UserImmuneError
 from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
@@ -22,11 +19,10 @@ from interfaces import (
 )
 from ui.keyboards import ReplyKeyboard
 from ui.state_groups import SuggestionViewerSG, UserMenuSG
-from usecases import ChangeRoleUseCase
+from usecases import ChangeRoleUseCase, MessageUserUseCase
 from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationResult
 
 router = Router(name="admin_suggestions")
-logger = getLogger("kita.admin_suggestions")
 
 
 @inject
@@ -203,7 +199,7 @@ async def message_to_user(
     user_dto: UserDTO,
     viewer_data: FromDishka[SuggestionViewerData],
     notifier: FromDishka[NotifierServiceProtocol],
-    event_bus: FromDishka[EventBus],
+    message_user_usecase: FromDishka[MessageUserUseCase],
     album: list[Message] | None = None,
 ):
     target_dto = viewer_data.suggestion_dto.author
@@ -212,15 +208,7 @@ async def message_to_user(
 
     album_ids = [m.message_id for m in album]
 
-    event_bus.dispatch(
-        CopyMessagesToUserEvent(
-            user_dto=target_dto,
-            caller_dto=user_dto,
-            source_chat_id=message.chat.id,
-            album_ids=album_ids,
-            bot_id=message.bot.id,
-        )
-    )
+    await message_user_usecase.execute(target_dto, user_dto, album_ids, message.chat.id)
 
     await state.set_state(SuggestionViewerSG.in_viewer)
     await notifier.send_text(

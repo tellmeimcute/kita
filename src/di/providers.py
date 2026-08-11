@@ -7,7 +7,6 @@ from dishka.integrations.aiogram import AiogramMiddlewareData
 
 from core.config import Config
 from core.cryptographer import Cryptographer
-from core.events import EventBus
 from core.i18n_translator import Translator
 from core.schemas import SuggestionViewerData
 from database.repository import (
@@ -39,6 +38,7 @@ from services.webhooks import WebhookService
 from usecases import (
     BroadcastUseCase,
     ChangeRoleUseCase,
+    MessageUserUseCase,
     ModerateSuggestionUseCase,
 )
 from utils.message_parser import MessageParser
@@ -50,7 +50,6 @@ class InfraProvider(Provider):
     scope = Scope.REQUEST
 
     cryptographer = provide(Cryptographer, scope=Scope.APP)
-    event_bus = provide(EventBus, scope=Scope.APP)
 
     webhook_service = provide(WebhookService, scope=Scope.APP)
 
@@ -73,6 +72,7 @@ class InfraProvider(Provider):
     moderate_suggestion = provide(ModerateSuggestionUseCase)
     change_role = provide(ChangeRoleUseCase)
     broadcast = provide(BroadcastUseCase)
+    message_user = provide(MessageUserUseCase)
 
     @provide(scope=Scope.APP)
     def config(self) -> Config:

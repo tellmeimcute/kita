@@ -1,15 +1,13 @@
 import contextvars
 from contextlib import asynccontextmanager
-from logging import getLogger
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+from loguru import logger
 
 from core.config import Config
-
-logger = getLogger("kita.bot_registry")
 
 
 class BotRegistry:
@@ -44,7 +42,7 @@ class BotRegistry:
     def register(self, bot: Bot) -> None:
         self._storage[bot.id] = bot
 
-        logger.info("Register bot_id %s", bot.id)
+        logger.info("Register bot_id {}", bot.id)
 
     def get(self, bot_id: int) -> Bot:
         return self._storage[bot_id]
@@ -69,7 +67,7 @@ class BotRegistry:
         return self._current_bot.get()
 
     def set_current(self, bot: Bot) -> contextvars.Token[Bot | None]:
-        logger.debug("Set current bot_id %s for this task", bot.id)
+        logger.debug("Set current bot_id {} for this task", bot.id)
         return self._current_bot.set(bot)
 
     def reset_current(self, token: contextvars.Token[Bot | None]) -> None:
