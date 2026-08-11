@@ -152,7 +152,7 @@ msgstr ""
 msgid "completed"
 msgstr ""
 
-msgid "broadcast_status_text"
+msgid "broadcast_completed"
 msgstr ""
 
 msgid "author_plus_origin"

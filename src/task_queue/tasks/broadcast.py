@@ -2,11 +2,12 @@ import asyncio
 from collections.abc import Sequence
 from itertools import batched
 
+from aiogram.utils.i18n import I18n
 from dishka.integrations.taskiq import FromDishka, inject
 from loguru import logger
 from taskiq import AsyncTaskiqTask, TaskiqResult
 
-from interfaces import UnitOfWorkProtocol
+from interfaces import NotifierServiceProtocol, UnitOfWorkProtocol, UserServiceProtocol
 from task_queue.broker import broker
 from usecases import BroadcastUseCase
 from usecases.broadcast import BatchResult
@@ -42,7 +43,10 @@ async def broadcast(
     source_message_ids: Sequence[int],
     is_forwarded: bool,
     uow: FromDishka[UnitOfWorkProtocol],
+    user_service: FromDishka[UserServiceProtocol],
     broadcast_usecase: FromDishka[BroadcastUseCase],
+    i18n: FromDishka[I18n],
+    notifier: FromDishka[NotifierServiceProtocol],
 ):
     total = 0
     users_ok = 0
@@ -75,6 +79,7 @@ async def broadcast(
             if isinstance(r, TaskiqResult) and not r.is_err
         )
     finally:
+        await broadcast_usecase.unlock()
         logger.info(
             "Broadcast bot_id {} caller_id {} complete. Total {}, success {}",
             bot_id,
@@ -82,4 +87,12 @@ async def broadcast(
             total,
             users_ok,
         )
-        await broadcast_usecase.unlock()
+
+    caller = await user_service.get(caller_id)
+    with i18n.context(), i18n.use_locale(caller.language_code):
+        i18n_kwargs = {
+            "total": total,
+            "delivered": len(users_ok),
+            "failure": total - len(users_ok),
+        }
+        await notifier.send_text(caller, "broadcast_completed", i18n_kwargs)
