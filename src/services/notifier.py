@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Literal
 
-from aiogram.types import InlineKeyboardMarkup, Message, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, Message, MessageId, ReplyKeyboardMarkup
 
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
@@ -105,7 +105,9 @@ class NotifierService(BaseService):
         strategy = self.strategy_factory(user_dto.user_id, payload)
         return await strategy.send()
 
-    async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int):
+    async def forward_messages(
+        self, user_dto: UserDTO, messages: list[int], source: int
+    ) -> list[MessageId]:
         strategy = ForwardTransfer(
             bot=self.bot,
             target_id=user_dto.user_id,
@@ -114,7 +116,9 @@ class NotifierService(BaseService):
         )
         return await strategy.send()
 
-    async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int):
+    async def copy_messages(
+        self, user_dto: UserDTO, messages: list[int], source: int
+    ) -> list[MessageId]:
         strategy = CopyTransfer(
             bot=self.bot,
             target_id=user_dto.user_id,

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from typing import Any, Literal, Protocol
 
-from aiogram.types import InlineKeyboardMarkup, Message
+from aiogram.types import InlineKeyboardMarkup, Message, MessageId
 
 from core.schemas.message_payload import MessagePayload
 from core.schemas.objects import UserStats
@@ -105,10 +105,14 @@ class NotifierServiceProtocol:
     async def notify_user(self, user_dto: UserDTO, payload: MessagePayload): ...
 
     @abstractmethod
-    async def forward_messages(self, user_dto: UserDTO, messages: list[int], source: int): ...
+    async def forward_messages(
+        self, user_dto: UserDTO, messages: list[int], source: int
+    ) -> list[MessageId]: ...
 
     @abstractmethod
-    async def copy_messages(self, user_dto: UserDTO, messages: list[int], source: int): ...
+    async def copy_messages(
+        self, user_dto: UserDTO, messages: list[int], source: int
+    ) -> list[MessageId]: ...
 
     @abstractmethod
     async def edit_message_text(
