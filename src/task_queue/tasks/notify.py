@@ -29,12 +29,12 @@ async def admin_notify_new_suggestion(
 ):
     admin_profiles = await profile_service.get_admins()
     suggestion = await suggestion_service.get(suggestion_id)
-    i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion)
 
     with i18n.context():
         for profile in admin_profiles:
             admin_user = await user_service.get(profile.user_id)
             with i18n.use_locale(admin_user.language_code):
+                i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion)
                 await notifier.send_text(admin_user, "suggestion_notify_admin_new", i18n_kwargs)
                 await asyncio.sleep(0.2)
 
