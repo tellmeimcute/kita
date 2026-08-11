@@ -1,3 +1,4 @@
+from taskiq.serializers import ORJSONSerializer
 from taskiq_redis import RedisAsyncResultBackend, RedisStreamBroker
 
 from core.config import Config
@@ -8,6 +9,7 @@ def create_broker(config: Config):
         redis_url=config.redis.redis_url,
         keep_results=False,
         result_ex_time=3600,
+        serializer=ORJSONSerializer(),
     )
 
     return RedisStreamBroker(
