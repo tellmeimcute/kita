@@ -63,7 +63,7 @@ async def broadcast(
         *[r.wait_result(check_interval=1.0, timeout=300) for r in tasks], return_exceptions=True
     )
     users_ok = sum(
-        r.return_value["delivered"] for r in results if isinstance(r, TaskiqResult) and not r.is_err
+        r.return_value.delivered for r in results if isinstance(r, TaskiqResult) and not r.is_err
     )
 
     logger.info(f"Broadcast complete. Total {total}, success {users_ok}")
