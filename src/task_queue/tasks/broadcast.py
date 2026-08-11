@@ -9,6 +9,7 @@ from taskiq import AsyncTaskiqTask, TaskiqResult
 from interfaces import UnitOfWorkProtocol
 from task_queue.broker import broker
 from usecases import BroadcastUseCase
+from usecases.broadcast import BatchResult
 
 PAGE_SIZE = 20
 CHUNK_SIZE = 5
@@ -23,7 +24,7 @@ async def send_batch(
     source_message_ids: Sequence[int],
     is_forwarded: bool,
     broadcast_usecase: FromDishka[BroadcastUseCase],
-):
+) -> BatchResult:
     return await broadcast_usecase.execute_batch(
         user_ids=user_ids,
         source_chat_id=source_chat_id,
@@ -62,7 +63,7 @@ async def broadcast(
         *[r.wait_result(check_interval=1.0, timeout=300) for r in tasks], return_exceptions=True
     )
     users_ok = sum(
-        r.return_value.delivered for r in results if isinstance(r, TaskiqResult) and not r.is_err
+        r.return_value["delivered"] for r in results if isinstance(r, TaskiqResult) and not r.is_err
     )
 
     logger.info(f"Broadcast complete. Total {total}, success {users_ok}")
