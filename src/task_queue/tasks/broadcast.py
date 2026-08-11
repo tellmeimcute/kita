@@ -92,7 +92,7 @@ async def broadcast(
     with i18n.context(), i18n.use_locale(caller.language_code):
         i18n_kwargs = {
             "total": total,
-            "delivered": len(users_ok),
-            "failure": total - len(users_ok),
+            "delivered": users_ok,
+            "failure": total - users_ok,
         }
         await notifier.send_text(caller, "broadcast_completed", i18n_kwargs)
