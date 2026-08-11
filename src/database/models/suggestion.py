@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, Enum, ForeignKey, text
+from sqlalchemy import BigInteger, Enum, ForeignKey, Index, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.enums import SuggestionStatus
@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
 class Suggestion(AbstractModel, TimestampMixin):
     __tablename__ = "suggestion"
+    __table_args__ = (
+        Index("ix_suggestion_bot_status", "bot_id", "status"),
+    )
 
     bot_id: Mapped[int] = mapped_column(BigInteger)
 
@@ -37,7 +40,6 @@ class Suggestion(AbstractModel, TimestampMixin):
         ),
         default=SuggestionStatus.PENDING,
         server_default=SuggestionStatus.PENDING.value,
-        index=True,
     )
 
     author: Mapped["UserAlchemy"] = relationship(back_populates="suggestions")

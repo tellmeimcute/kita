@@ -18,12 +18,12 @@ class UserBot(AbstractModel, TimestampMixin):
     token: Mapped[str] = mapped_column(EncryptedString)
     bot_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     username: Mapped[str] = mapped_column()
-    owner_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"))
+    owner_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), index=True)
 
     channel_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     channel_name: Mapped[str | None] = mapped_column(nullable=True)
 
-    active: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
+    active: Mapped[bool] = mapped_column(default=True, server_default=text("true"), index=True)
     banned: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
     owner: Mapped["UserAlchemy"] = relationship(back_populates="bots")
