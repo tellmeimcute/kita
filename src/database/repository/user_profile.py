@@ -26,7 +26,9 @@ class UserProfileRepository(BaseRepository):
             return None
         return UserProfileDTO.model_validate(orm_model)
 
-    async def get_many(self, limit: int = 10, offset: int = 0, order_desc: bool = False) -> list[UserProfileDTO]:
+    async def get_many(
+        self, limit: int = 10, offset: int = 0, order_desc: bool = False
+    ) -> list[UserProfileDTO]:
         order_by = UserProfile.id if not order_desc else UserProfile.id.desc()
 
         stmt = (

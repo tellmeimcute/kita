@@ -15,9 +15,7 @@ if TYPE_CHECKING:
 
 class Suggestion(AbstractModel, TimestampMixin):
     __tablename__ = "suggestion"
-    __table_args__ = (
-        Index("ix_suggestion_bot_status", "bot_id", "status"),
-    )
+    __table_args__ = (Index("ix_suggestion_bot_status", "bot_id", "status"),)
 
     bot_id: Mapped[int] = mapped_column(BigInteger)
 
