@@ -24,6 +24,6 @@ async def new_userbot(
     async with uow.transaction(), bot_registry.with_bot(userbot_id, userbot_token):
         await profile_service.get_or_create(owner_id)
         await profile_service.update(owner_id, role=UserRole.ADMIN)
-        await webhook_service.set_webhook(bot_registry.get(userbot_id))
+    await webhook_service.set_webhook(bot_registry.get(userbot_id))
 
     logger.info("New userbot {} registered, admin {}", userbot_id, owner_id)

@@ -128,7 +128,7 @@ async def channel_id_handler(
     )
 
     await new_userbot.kiq(
-        message.bot.id,
+        bot_id=message.bot.id,
         userbot_id=check_result.bot_info.id,
         owner_id=user_dto.user_id,
     )
