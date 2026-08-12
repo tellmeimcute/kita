@@ -10,6 +10,7 @@ from core.config import Config
 from interfaces import BotRegistryProtocol
 from services.webhooks import WebhookService
 from startup import setup_registrar_dp, setup_slave_dp
+from task_queue.broker import broker
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 
@@ -45,6 +46,8 @@ async def lifespan(app: FastAPI):
     await telegram_webhook.startup()
     await registrar_webhook.startup()
 
+    await broker.startup()
+
     allowed_updates = registrar_dp.resolve_used_update_types()
     await webhooks_service.set_webhook(
         main_bot,
@@ -58,6 +61,8 @@ async def lifespan(app: FastAPI):
 
     await telegram_webhook.shutdown()
     await registrar_webhook.shutdown()
+
+    await broker.shutdown()
 
     await container.close()
     await registry.close()
