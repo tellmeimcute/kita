@@ -1,5 +1,5 @@
 from aiogram import F, Router
-from aiogram.enums import ChatType
+from aiogram.enums import ChatMemberStatus, ChatType
 from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import (
     IS_ADMIN,
@@ -55,14 +55,14 @@ async def on_userbot_demoted(
 ):
     bot = bot_registry.get_current()
 
-    new = event.new_chat_member
-    if new.can_post_messages:
-        return
-
     async with uow.transaction():
         userbot = await userbot_service.get(bot.id)
 
     if userbot.shifted_channel_id != event.chat.shifted_id:
+        return
+
+    new = event.new_chat_member
+    if new.status == ChatMemberStatus.ADMINISTRATOR and new.can_post_messages:
         return
 
     async with uow.transaction():
