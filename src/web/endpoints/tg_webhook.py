@@ -3,7 +3,6 @@ from typing import Annotated
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update
-from dishka import AsyncContainer
 from dishka.integrations.fastapi import FromDishka
 from fastapi import (
     Body,
@@ -56,9 +55,8 @@ class UserBotRegistrarEndpoint(TelegramWebhookEndpoint):
         self,
         dp: Dispatcher,
         config: Config,
-        container: AsyncContainer,
     ):
-        super().__init__(dp, config, container)
+        super().__init__(dp, config)
         self.bot = None
 
     def assign_bot(self, bot: Bot):
