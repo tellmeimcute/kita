@@ -18,6 +18,7 @@ from loguru import logger
 from core.config import Config
 from core.i18n_translator import Translator
 from core.schemas.message_payload import MessagePayload
+from database.dto import UserBotDTO
 from interfaces import (
     BotRegistryProtocol,
     NotifierServiceProtocol,
@@ -43,6 +44,7 @@ async def on_user_block_bot(
 
 async def on_userbot_demoted(
     event: ChatMemberUpdated,
+    userbot_dto: UserBotDTO,
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
     userbot_service: FromDishka[UserBotService],
@@ -53,21 +55,21 @@ async def on_userbot_demoted(
     i18n: FromDishka[I18n],
     tl: FromDishka[Translator],
 ):
-    bot = bot_registry.get_current()
-
-    async with uow.transaction():
-        userbot = await userbot_service.get(bot.id)
-
-    if userbot.shifted_channel_id != event.chat.shifted_id:
+    if (
+        not userbot_dto
+        or not userbot_dto.channel_id
+        or userbot_dto.shifted_channel_id != event.chat.shifted_id
+    ):
         return
 
+    bot = bot_registry.get_current()
     new = event.new_chat_member
     if new.status == ChatMemberStatus.ADMINISTRATOR and new.can_post_messages:
         return
 
     async with uow.transaction():
         await userbot_service.update(bot.id, active=False)
-        owner_dto = await user_service.get(userbot.owner_id)
+        owner_dto = await user_service.get(userbot_dto.owner_id)
 
     await webhook_service.remove_webhook(bot)
     bot_registry.remove(bot.id)
@@ -83,7 +85,7 @@ async def on_userbot_demoted(
                 i18n_kwargs={
                     "bot_id": bot.id,
                     "detail": tl.translate("reg_bot_permission_error"),
-                    "bot_username": userbot.username,
+                    "bot_username": userbot_dto.username,
                 },
             )
 
