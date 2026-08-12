@@ -5,7 +5,6 @@ from typing import Annotated
 from aiogram import Bot, Dispatcher
 from aiogram.methods import TelegramMethod
 from aiogram.types import Update
-from dishka import AsyncContainer
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, status
 from loguru import logger

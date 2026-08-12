@@ -1,5 +1,4 @@
 from aiogram import Dispatcher
-from dishka import AsyncContainer
 from fastapi import FastAPI
 from loguru import logger
 
