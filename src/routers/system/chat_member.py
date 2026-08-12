@@ -4,6 +4,7 @@ from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.filters import (
     IS_ADMIN,
     LEAVE_TRANSITION,
+    PROMOTED_TRANSITION,
     ChatMemberUpdatedFilter,
     ExceptionTypeFilter,
 )
@@ -52,22 +53,27 @@ async def on_userbot_demoted(
     i18n: FromDishka[I18n],
     tl: FromDishka[Translator],
 ):
-    new = event.new_chat_member
+    bot = bot_registry.get_current()
 
+    new = event.new_chat_member
     if new.can_post_messages:
         return
 
-    main_token = config.tg_token.get_secret_value()
-    main_bot_id = extract_bot_id(main_token)
+    async with uow.transaction():
+        userbot = await userbot_service.get(bot.id)
 
-    bot = bot_registry.get_current()
+    if userbot.shifted_channel_id != event.chat.shifted_id:
+        return
+
     async with uow.transaction():
         await userbot_service.update(bot.id, active=False)
-        userbot = await userbot_service.get(bot.id)
         owner_dto = await user_service.get(userbot.owner_id)
 
     await webhook_service.remove_webhook(bot)
     bot_registry.remove(bot.id)
+
+    main_token = config.tg_token.get_secret_value()
+    main_bot_id = extract_bot_id(main_token)
 
     with i18n.context(), i18n.use_locale(owner_dto.language_code):
         async with bot_registry.with_bot(main_bot_id, main_token):
@@ -145,6 +151,12 @@ def get_error_router():
     router.my_chat_member.register(
         on_userbot_demoted,
         ChatMemberUpdatedFilter(IS_ADMIN),
+        F.chat.type == ChatType.CHANNEL,
+    )
+
+    router.my_chat_member.register(
+        on_userbot_demoted,
+        ChatMemberUpdatedFilter(~PROMOTED_TRANSITION),
         F.chat.type == ChatType.CHANNEL,
     )
 
