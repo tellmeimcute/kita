@@ -48,9 +48,9 @@ class BotRegistry:
         return self._storage[bot_id]
 
     def get_or_create(self, bot_id: int, token: str) -> Bot:
-        bot = self._storage.get(bot_id)
-        if bot:
-            return bot
+        cached = self._storage.get(bot_id)
+        if cached and cached.token == token:
+            return cached
 
         bot = Bot(token=token, **self._bot_settings)
         self._storage[bot.id] = bot
