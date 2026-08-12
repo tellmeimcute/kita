@@ -36,7 +36,6 @@ class BaseTgWebhookEndpoint(ABC):
         self,
         dp: Dispatcher,
         config: Config,
-        container: AsyncContainer,
     ):
         self.bot_registry: BotRegistryProtocol = None
 
@@ -44,7 +43,6 @@ class BaseTgWebhookEndpoint(ABC):
         self.config = config
         self.tasks = set()
 
-        self._container = container
         self._semaphore = asyncio.Semaphore(config.max_concurrent_updates)
 
     def assign_registry(self, registry: BotRegistryProtocol):
@@ -53,7 +51,7 @@ class BaseTgWebhookEndpoint(ABC):
     def register(self, app: FastAPI, path: str):
         app.add_api_route(
             path=path,
-            endpoint=self._handle,
+            endpoint=inject(self._handle),
             methods=["POST"],
             include_in_schema=False,
         )

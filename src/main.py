@@ -62,7 +62,7 @@ def application() -> FastAPI:
     dp = get_dispatcher(storage)
     setup_dishka_aiogram(container, dp, auto_inject=True)
 
-    app = get_app(config, registrar_dp, dp, container)
+    app = get_app(config, registrar_dp, dp)
     setup_dishka_fastapi(container, app)
 
     return app
