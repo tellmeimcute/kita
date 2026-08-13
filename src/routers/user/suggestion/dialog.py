@@ -1,3 +1,4 @@
+from aiogram import F
 from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import Row, Start, SwitchTo
@@ -11,7 +12,7 @@ from ui.widgets.i18n_text import I18nText
 from .handlers import on_album_received
 
 make_suggestion_window = Window(
-    I18nText("suggestion_wait_media"),
+    I18nText("suggestion_wait_media", when=~F["error"]),
     Format("{error}", when="error"),
     MessageInput(on_album_received),
     Start(I18nText("menu_btn"), id="menu", state=UserMenuSG.main, show_mode=ShowMode.AUTO),
