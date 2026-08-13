@@ -6,7 +6,7 @@ from aiogram_dialog.widgets.text import Format
 
 from routers.shared_getters import get_error_text
 from ui.state_groups import RegistrarMenuSG, UserBotSelectSG
-from ui.widgets.i18n_text import I18nText
+from ui.widgets.i18n_text import I18nText, I18nFormat
 
 from .getters import get_selected_userbot, owned_userbots
 from .handlers import on_bot_selected, update_channel, update_token, userbot_active_toggle
@@ -31,7 +31,7 @@ userbot_main_window = Window(
 
 userbot_moderation_window = Window(
     Format("{error}", when="error"),
-    Format("{selected_userbot.username}"),
+    I18nFormat("userbot_window_description"),
     Button(
         I18nText("userbot_set_inactive_btn"),
         id="userbot_set_inactive",

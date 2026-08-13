@@ -311,6 +311,9 @@ msgstr ""
 msgid "your_bot_deactivated"
 msgstr ""
 
+msgid "userbot_window_description"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 

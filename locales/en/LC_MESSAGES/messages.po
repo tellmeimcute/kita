@@ -399,6 +399,12 @@ msgstr "<b>Channel updated.</b>"
 msgid "your_bot_deactivated"
 msgstr "Your bot @{bot_username} ({bot_id}) deactivated: {detail}"
 
+msgid "userbot_window_description"
+msgstr ""
+"🤖 Бот @{selected_userbot[username]}\n"
+"Active status: {selected_userbot[active]}\n"
+"Ban status: {selected_userbot[banned]}"
+
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
 

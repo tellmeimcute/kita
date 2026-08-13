@@ -310,8 +310,7 @@ msgstr ""
 "<b>Роль</b> <code>{target_profile[role]}</code>\n"
 "\n"
 "<b>Дата регистрации</b> <code>{target_profile[created_at]}</code>\n"
-"<b>Последнее обновление</b> "
-"<code>{target_profile[updated_at]}</code>\n"
+"<b>Последнее обновление</b> <code>{target_profile[updated_at]}</code>\n"
 
 msgid "rate_limited_warning"
 msgstr "RateLimited. Подождите пару секунд 😴"
@@ -401,6 +400,12 @@ msgstr "🟢 <b>Канал успешно обновлен</b>"
 
 msgid "your_bot_deactivated"
 msgstr "Твой бот @{bot_username} ({bot_id}) деактивирован: {detail}"
+
+msgid "userbot_window_description"
+msgstr ""
+"🤖 Бот @{selected_userbot[username]}\n"
+"Актив статус: {selected_userbot[active]}\n"
+"Бан статус: {selected_userbot[banned]}"
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"
