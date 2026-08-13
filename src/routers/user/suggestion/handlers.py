@@ -1,5 +1,5 @@
 from aiogram.types import Message
-from aiogram_dialog import DialogManager, ShowMode
+from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import MessageInput
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
@@ -34,9 +34,8 @@ async def on_album_received(
                 anonymous=profile_dto.prefer_anonymous,
             )
     except UnsupportedPayload:
-        return await manager.switch_to(
-            SuggestionSG.media_error, show_mode=ShowMode.DELETE_AND_SEND
-        )
+        manager.dialog_data["something_wrong"] = "suggestion_error_media"
+        return
 
     await manager.switch_to(SuggestionSG.on_moderation)
 

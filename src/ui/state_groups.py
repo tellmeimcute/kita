@@ -10,7 +10,6 @@ class UserMenuSG(StatesGroup):
 class SuggestionSG(StatesGroup):
     make_suggestion = State()
     on_moderation = State()
-    media_error = State()
 
 
 class AdminMenuSG(StatesGroup):
