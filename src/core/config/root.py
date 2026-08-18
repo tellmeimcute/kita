@@ -10,7 +10,6 @@ from .redis import RedisConfig
 
 class Config(BaseConfig):
     tg_token: SecretStr
-    admin_id: int
 
     log_level: str = "INFO"
 

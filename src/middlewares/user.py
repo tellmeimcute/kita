@@ -7,7 +7,6 @@ from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
 from loguru import logger
 
-from core.config import Config
 from core.consts import DISHKA_CONTAINER_KEY
 from database.dto import UserDTO
 from interfaces import (
@@ -23,11 +22,9 @@ from .base import KitaMiddleware
 class UserMiddleware(KitaMiddleware):
     def __init__(
         self,
-        config: Config,
         i18n: I18n,
         bot_registry: BotRegistryProtocol,
     ):
-        self.admin_id = config.admin_id
         self.i18n = i18n
         self.bot_registry = bot_registry
 

@@ -7,7 +7,6 @@ from interfaces import UserProfileServiceProtocol, UserServiceProtocol
 
 class ChangeRoleUseCase:
     __slots__ = (
-        "_config",
         "_user_service",
         "_user_profile_service",
         "_userbot",
@@ -15,12 +14,10 @@ class ChangeRoleUseCase:
 
     def __init__(
         self,
-        config: Config,
         user_service: UserServiceProtocol,
         user_profile_service: UserProfileServiceProtocol,
         userbot: UserBotDTO,
     ):
-        self._config = config
         self._user_service = user_service
         self._user_profile_service = user_profile_service
         self._userbot = userbot
@@ -31,7 +28,7 @@ class ChangeRoleUseCase:
         target_role: UserRole,
         caller: UserDTO,
     ):
-        if target_id in {self._config.admin_id, caller.user_id, self._userbot.owner_id}:
+        if target_id in {caller.user_id, self._userbot.owner_id}:
             raise UserImmuneError()
 
         profile_dto = await self._user_profile_service.get_or_create(target_id)
