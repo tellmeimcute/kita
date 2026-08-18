@@ -13,7 +13,7 @@ class KitaMiddleware(BaseMiddleware, ABC):
             if event_name in self.__event__types__:
                 observer.outer_middleware(self)
                 logger.debug(
-                    "%s registered to event %s on router: %s",
+                    "{} registered to event {} on router: {}",
                     self.__class__.__qualname__,
                     event_name,
                     router.name,
