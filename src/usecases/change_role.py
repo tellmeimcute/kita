@@ -1,4 +1,3 @@
-from core.config import Config
 from core.exceptions import UserImmuneError
 from database.dto import UserBotDTO, UserDTO
 from database.enums import UserRole

@@ -37,10 +37,10 @@ def get_app(
     app.state.registrar_endpoint = registrar_endpoint
     app.state.registrar_dp = registrar_dp
 
-    path = config.webhook_path + "/{bot_id}"
+    path = config.webhook.path + "/{bot_id}"
     endpoint.register(app, path=path)
 
-    path = config.webhook_path
+    path = config.webhook.path
     registrar_endpoint.register(app, path=path)
 
     logger.info("FastAPI instance initialized")

@@ -15,7 +15,7 @@ class BotRegistry:
         self._slaves_allowed_updates = []
         self._storage: dict[int, Bot] = {}
 
-        self._session = AiohttpSession(proxy=config.PROXY)
+        self._session = AiohttpSession(proxy=config.proxy)
         self._bot_settings = {
             "session": self._session,
             "default": DefaultBotProperties(parse_mode=ParseMode.HTML),

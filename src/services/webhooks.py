@@ -24,11 +24,11 @@ class WebhookService:
         allowed_updates: Sequence[str] | None = None,
     ) -> WebhookInfo:
         webhook_url = url or f"{self.config.webhook_base_url}/{bot.id}"
-        should_force = force_update or self.config.webhook_force_update
+        should_force = force_update or self.config.webhook.force_update
         current_webhook = await bot.get_webhook_info()
 
         if current_webhook.url == webhook_url and not should_force:
-            logger.debug("Webhook already set for bot {}: {}", bot.id, webhook_url)
+            logger.debug("Webhook already set for bot {}", bot.id)
             return current_webhook
 
         if should_force:

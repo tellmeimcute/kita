@@ -42,7 +42,7 @@ class BaseTgWebhookEndpoint(ABC):
         self.config = config
         self.tasks = set()
 
-        self._semaphore = asyncio.Semaphore(config.max_concurrent_updates)
+        self._semaphore = asyncio.Semaphore(config.webhook.max_concurrent_updates)
 
     def assign_registry(self, registry: BotRegistryProtocol):
         self.bot_registry = registry
