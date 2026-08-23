@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from types import UnionType
 from typing import Union, get_args, get_origin
 
@@ -100,19 +99,14 @@ class BaseRedisRepository[T: BaseModel]:
         key: str,
         start: int = 0,
         end: int = -1,
-    ) -> Sequence[T]:
+    ) -> list[T]:
         raw_list = await self._redis.lrange(key, start, end)
-        items: list[T] = []
-
-        for raw in raw_list:
-            try:
-                items.append(self._from_cache(raw))
-            except Exception as e:
-                logger.exception("Error validate model from redis cache: {}", e)
-                await self.delete(key)
-                continue
-
-        return items
+        try:
+            return [self._from_cache(v) for v in raw_list]
+        except Exception as e:
+            await self.delete(key)
+            logger.exception("Error validate model from redis cache: {}", e)
+        return []
 
     async def delete(self, key: str):
         return await self._redis.delete(key)
