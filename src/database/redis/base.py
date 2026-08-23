@@ -1,8 +1,8 @@
-import json
 from collections.abc import Sequence
 from types import UnionType
 from typing import Union, get_args, get_origin
 
+import orjson
 from loguru import logger
 from pydantic import BaseModel, SecretStr
 
@@ -43,7 +43,7 @@ class BaseRedisRepository[T: BaseModel]:
 
         return annotation is SecretStr
 
-    def _prepare_cache(self, data: T) -> str:
+    def _prepare_cache(self, data: T) -> bytes:
         data_dict = data.model_dump(
             mode="python",
             exclude=self.exclude,
@@ -57,10 +57,10 @@ class BaseRedisRepository[T: BaseModel]:
                 else:
                     data_dict[k] = self._crypto.encrypt(str(v))
 
-        return json.dumps(data_dict, default=str)
+        return orjson.dumps(data_dict, default=str)
 
-    def _from_cache(self, cached_str: str) -> T:
-        data_dict: dict = json.loads(cached_str)
+    def _from_cache(self, cached_value: str) -> T:
+        data_dict: dict = orjson.loads(cached_value)
 
         for k, v in data_dict.items():
             if v is not None and self._is_secret_field(k):
