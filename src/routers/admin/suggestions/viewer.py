@@ -10,7 +10,8 @@ from core.exceptions import UserImmuneError
 from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 from core.schemas import SuggestionViewerData
-from database.dto import UserDTO, UserProfileDTO
+from database.dto import UserDTO
+from database.dto.suggestion import SuggestionFullDTO
 from database.enums import SuggestionStatus, UserRole
 from interfaces import (
     NotifierServiceProtocol,
@@ -25,6 +26,43 @@ from usecases.moderate_suggestion import ModerateSuggestionUseCase, ModerationRe
 router = Router(name="admin_suggestions")
 
 
+async def _load_next_suggestion(
+    viewer_data: SuggestionViewerData,
+    suggestion_service: SuggestionServiceProtocol,
+    uow: UnitOfWorkProtocol,
+) -> SuggestionFullDTO | None:
+    if viewer_data.suggestion_dtos:
+        next_suggestion = viewer_data.suggestion_dtos.pop(0)
+        viewer_data.suggestion_dto = next_suggestion
+        return next_suggestion
+
+    async with uow.transaction():
+        new_suggestions = await suggestion_service.get_active()
+
+    if not new_suggestions:
+        return None
+
+    viewer_data.suggestion_dtos = list(new_suggestions)
+    next_suggestion = viewer_data.suggestion_dtos.pop(0)
+    viewer_data.suggestion_dto = next_suggestion
+    return next_suggestion
+
+
+async def _return_to_menu(
+    user_dto: UserDTO,
+    state: FSMContext,
+    dialog_manager: DialogManager,
+    notifier: NotifierServiceProtocol,
+):
+    await state.clear()
+    await notifier.send_text(user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove())
+    return await dialog_manager.start(
+        UserMenuSG.main,
+        mode=StartMode.RESET_STACK,
+        show_mode=ShowMode.DELETE_AND_SEND,
+    )
+
+
 @inject
 async def enter_suggestion_viewer(
     callback: CallbackQuery,
@@ -37,31 +75,24 @@ async def enter_suggestion_viewer(
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    profile_dto: UserProfileDTO = manager.middleware_data.get("profile_dto")
-
-    if not profile_dto.is_admin:
-        warning = tl.translate("warning_not_enough_permission")
-        return await callback.answer(warning)
-
     state: FSMContext = manager.middleware_data.get("state")
 
     async with uow.transaction():
-        new_suggestions: list | None = await suggestion_service.get_active()
+        new_suggestions = await suggestion_service.get_active()
 
     if not new_suggestions:
         warning = tl.translate("suggestion_no_active")
         return await callback.answer(warning)
 
-    cur_suggestion = new_suggestions.pop(0)
-
-    viewer_data.suggestion_dtos = new_suggestions
-    viewer_data.suggestion_dto = cur_suggestion
+    viewer_data.suggestion_dtos = list(new_suggestions)
+    first_suggestion = viewer_data.suggestion_dtos.pop(0)
+    viewer_data.suggestion_dto = first_suggestion
 
     await manager.reset_stack()
     await state.set_state(SuggestionViewerSG.in_viewer)
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    await notifier.send_suggestion(user_dto, cur_suggestion)
+    await notifier.send_suggestion(user_dto, first_suggestion)
 
 
 @router.message(
@@ -94,29 +125,17 @@ async def viewer_verdict(
         await notifier.send_text(
             user_dto,
             "suggestion_verdict_exists",
-            i18n_kwargs=dict(id=result.suggestion_dto.id, verdict=updated_dto.status),
+            i18n_kwargs=dict(id=result.suggestion_dto.id, verdict=result.suggestion_dto.status),
         )
+        return None
 
-    if not viewer_data.suggestion_dtos:
-        async with uow.transaction():
-            new_suggestions: list | None = await suggestion_service.get_active()
+    new_suggestion = await _load_next_suggestion(viewer_data, suggestion_service, uow)
 
-        if not new_suggestions:
-            await state.clear()
-            await notifier.send_text(user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove())
-            return await dialog_manager.start(
-                UserMenuSG.main,
-                mode=StartMode.RESET_STACK,
-                show_mode=ShowMode.DELETE_AND_SEND,
-            )
+    if not new_suggestion:
+        return await _return_to_menu(user_dto, state, dialog_manager, notifier)
 
-        viewer_data.suggestion_dtos = new_suggestions
-
-    new_suggestion = viewer_data.suggestion_dtos.pop(0)
-    viewer_data.suggestion_dto = new_suggestion
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-
-    return await notifier.send_suggestion(user_dto.user_id, new_suggestion)
+    return await notifier.send_suggestion(user_dto, new_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("ban_btn"))
@@ -140,26 +159,13 @@ async def viewer_ban_author(
     except UserImmuneError:
         return await notifier.send_text(user_dto, "error_user_immune")
 
-    viewer_data.suggestion_dtos = None
-    async with uow.transaction():
-        new_suggestions: list | None = await suggestion_service.get_active()
+    new_suggestion = await _load_next_suggestion(viewer_data, suggestion_service, uow)
 
-    if not new_suggestions:
-        await state.clear()
-        await notifier.send_text(user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove())
-
-        return await dialog_manager.start(
-            UserMenuSG.main,
-            mode=StartMode.RESET_STACK,
-            show_mode=ShowMode.DELETE_AND_SEND,
-        )
-
-    cur_suggestion = new_suggestions.pop(0)
-    viewer_data.suggestion_dtos = new_suggestions
-    viewer_data.suggestion_dto = cur_suggestion
+    if not new_suggestion:
+        return await _return_to_menu(user_dto, state, dialog_manager, notifier)
 
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    return await notifier.send_suggestion(user_dto.user_id, cur_suggestion)
+    return await notifier.send_suggestion(user_dto, new_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_message_to_user_btn"))
