@@ -49,6 +49,11 @@ async def bot_token_handler(
     crypto: FromDishka[Cryptographer],
     checker: FromDishka[UserBotChecker],
 ):
+    try:
+        await message.delete()
+    except Exception:
+        logger.exception("Token message delete failed")
+
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     check_result = await checker.check_token(None, message.text, bot_registry.bot_settings)
 

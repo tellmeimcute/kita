@@ -114,9 +114,14 @@ async def update_token(
     notifier: FromDishka[NotifierServiceProtocol],
     checker: FromDishka[UserBotChecker],
 ):
+    try:
+        await message.delete()
+    except Exception:
+        logger.exception("Token message delete failed")
+
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(manager.dialog_data["selected_bot_id"])
-
+    
     async with uow.transaction():
         userbot = await userbot_service.get(bot_id)
 
