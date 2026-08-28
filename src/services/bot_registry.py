@@ -74,10 +74,14 @@ class BotRegistry:
         self._current_bot.reset(token)
 
     @asynccontextmanager
-    async def with_bot(self, bot_id: int, token: str | None = None):
-        bot = self.get(bot_id) if not token else self.get_or_create(bot_id, token)
+    async def with_bot(self, bot_or_id: Bot | int, token: str | None = None):
+        if isinstance(bot_or_id, Bot):
+            bot = bot_or_id
+        else:
+            bot = self.get(bot_or_id) if not token else self.get_or_create(bot_or_id, token)
 
         prev_token = self.set_current(bot)
+
         try:
             yield bot
         finally:

@@ -1,6 +1,6 @@
 import contextvars
 from abc import abstractmethod
-from typing import Protocol
+from typing import Protocol, overload
 
 from aiogram import Bot
 
@@ -39,8 +39,11 @@ class BotRegistryProtocol(Protocol):
     @abstractmethod
     def reset_current(self, token: contextvars.Token[Bot | None]) -> None: ...
 
-    @abstractmethod
-    async def with_bot(self, bot_id: int, token: str | None = None): ...
+    @overload
+    async def with_bot(self, bot_id: int, /, *, token: str | None = None): ...
+
+    @overload
+    async def with_bot(self, bot: Bot, /): ...
 
     @abstractmethod
     async def close(self) -> None: ...
