@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from typing import Annotated
 
 from aiogram import Bot, Dispatcher
-from aiogram.methods import TelegramMethod
 from aiogram.types import Update
 from dishka.integrations.fastapi import FromDishka, inject
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Path, status
@@ -74,23 +73,15 @@ class BaseTgWebhookEndpoint(ABC):
         logger.info("Dispatcher shutdown and {} tasks cleaned up", len(tasks))
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
-        async with self._semaphore:
-            token = None
+        async with self._semaphore, self.bot_registry.with_bot(bot):
             try:
-                token = self.bot_registry.set_current(bot)
-                result = await self.dp.feed_update(bot, update, userbot_dto=userbot)
-                if isinstance(result, TelegramMethod):
-                    await result.as_(bot)
-            except Exception as e:
+                await self.dp.feed_update(bot, update, userbot_dto=userbot)
+            except Exception:
                 logger.exception(
-                    "Failed to process update '{}' for bot '{}': {}",
+                    "Failed to process update '{}' for bot '{}'",
                     update.update_id,
                     bot.id,
-                    e,
                 )
-            finally:
-                if token is not None:
-                    self.bot_registry.reset_current(token)
 
     @abstractmethod
     async def _handle(
