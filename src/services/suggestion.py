@@ -7,7 +7,6 @@ from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from database.redis import RedisKey, UserStatsRedis
 from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
 from utils.message_parser import MessageParser
 
@@ -15,39 +14,28 @@ from .base import BaseService
 
 
 class SuggestionService(BaseService):
-    REDIS_KEY_PART = "suggestion"
-
     __slots__ = (
-        "user_stats_redis",
         "repo",
         "parser",
     )
 
     def __init__(
         self,
-        user_stats_redis: UserStatsRedis,
         repo: SuggestionRepositoryProtocol,
         bot_registry: BotRegistryProtocol,
         parser: MessageParser,
     ):
         super().__init__(bot_registry)
 
-        self.user_stats_redis = user_stats_redis
         self.repo = repo
         self.parser = parser
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
-        redis_key = RedisKey(bot_id=self.bot.id, user_id=user_dto.user_id)
-
-        key = self._key_builder.build(key=redis_key, part="user_stats")
-
-        stats_row = await self.user_stats_redis.get(key)
-        if stats_row:
-            return stats_row
-
-        user_stats = await self.repo.user_stats(user_dto.user_id)
-        await self.user_stats_redis.set_cache(key, user_stats)
-        return user_stats
+        return await self.repo.user_stats(user_dto.user_id) or UserStats(
+            total=0,
+            accepted=0,
+            declined=0,
+        )
 
     async def get(self, suggestion_id: int):
         return await self.repo.get_by_id(suggestion_id)
@@ -57,11 +45,6 @@ class SuggestionService(BaseService):
 
     async def update(self, suggestion_dto: SuggestionBaseDTO):
         await self.repo.save(suggestion_dto)
-
-        key = self._key_builder.build(
-            key=RedisKey(bot_id=self.bot.id, user_id=suggestion_dto.author_id), part="user_stats"
-        )
-        await self.user_stats_redis.delete(key)
 
         logger.info("Update suggestion {}", suggestion_dto.id)
 

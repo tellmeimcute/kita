@@ -121,7 +121,7 @@ async def update_token(
 
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(manager.dialog_data["selected_bot_id"])
-    
+
     async with uow.transaction():
         userbot = await userbot_service.get(bot_id)
 

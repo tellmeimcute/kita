@@ -9,6 +9,9 @@ from .repository import (
     UserBotRepositoryProtocol as UserBotRepositoryProtocol,
 )
 from .repository import (
+    UserBotStatsRepositoryProtocol as UserBotStatsRepositoryProtocol,
+)
+from .repository import (
     UserProfileRepositoryProtocol as UserProfileRepositoryProtocol,
 )
 from .repository import (

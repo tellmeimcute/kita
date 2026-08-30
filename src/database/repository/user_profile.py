@@ -14,7 +14,7 @@ from .base import BaseRepository
 class UserProfileRepository(BaseRepository):
     __slots__ = ()
 
-    async def get(self, user_id: int) -> UserProfileDTO | None:
+    async def get_by_id(self, user_id: int) -> UserProfileDTO | None:
         stmt = select(UserProfile).where(
             UserProfile.user_id == user_id,
             UserProfile.bot_id == self.bot.id,
@@ -56,7 +56,7 @@ class UserProfileRepository(BaseRepository):
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
         if orm_model is None:
-            return await self.get(user_id)
+            return await self.get_by_id(user_id)
 
         return UserProfileDTO.model_validate(orm_model)
 
@@ -128,16 +128,6 @@ class UserProfileRepository(BaseRepository):
         count = await self._session.scalar(stmt)
         return count or 0
 
-    async def bot_user_stats(self):
-        stmt = select(
-            func.count(UserProfile.id).label("users_total"),
-            func.count(UserProfile.id).filter(UserProfile.role == UserRole.USER).label("users"),
-            func.count(UserProfile.id).filter(UserProfile.role == UserRole.ADMIN).label("admins"),
-            func.count(UserProfile.id).filter(UserProfile.role == UserRole.BANNED).label("banned"),
-        ).where(UserProfile.bot_id == self.bot.id)
-        result: Result = await self._session.execute(stmt)
-        return result.one()
-
     async def active_count(self):
         stmt = select(func.count(UserProfile.id)).where(
             UserProfile.bot_id == self.bot.id,
@@ -164,6 +154,16 @@ class UserProfileRepository(BaseRepository):
 
         result = await self._session.scalars(stmt)
         return result.all()
+
+    async def bot_user_stats(self):
+        stmt = select(
+            func.count(UserProfile.id).label("users_total"),
+            func.count(UserProfile.id).filter(UserProfile.role == UserRole.USER).label("users"),
+            func.count(UserProfile.id).filter(UserProfile.role == UserRole.ADMIN).label("admins"),
+            func.count(UserProfile.id).filter(UserProfile.role == UserRole.BANNED).label("banned"),
+        ).where(UserProfile.bot_id == self.bot.id)
+        result: Result = await self._session.execute(stmt)
+        return result.one()
 
     async def decline_all_suggestions(self, user_id: int):
         stmt = (

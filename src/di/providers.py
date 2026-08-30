@@ -16,6 +16,13 @@ from database.repository import (
     UserProfileRepository,
     UserRepository,
 )
+from database.repository.cached import (
+    CachedSuggestionRepository,
+    CachedUserBotRepository,
+    CachedUserBotStatsRepository,
+    CachedUserProfileRepository,
+    CachedUserRepository,
+)
 from database.uow import UnitOfWork
 from interfaces import (
     MediaRepositoryProtocol,
@@ -24,6 +31,7 @@ from interfaces import (
     SuggestionServiceProtocol,
     UnitOfWorkProtocol,
     UserBotRepositoryProtocol,
+    UserBotStatsRepositoryProtocol,
     UserProfileRepositoryProtocol,
     UserProfileServiceProtocol,
     UserRepositoryProtocol,
@@ -54,20 +62,29 @@ class InfraProvider(Provider):
     webhook_service = provide(WebhookService, scope=Scope.APP)
 
     userbot_service = provide(UserBotService)
-    notifier_service = provide(source=NotifierService, provides=NotifierServiceProtocol)
-    user_service = provide(source=UserService, provides=UserServiceProtocol)
-    user_profile_service = provide(source=UserProfileService, provides=UserProfileServiceProtocol)
-    suggestion_service = provide(source=SuggestionService, provides=SuggestionServiceProtocol)
+    notifier_service = provide(NotifierService, provides=NotifierServiceProtocol)
+    user_service = provide(UserService, provides=UserServiceProtocol)
+    user_profile_service = provide(UserProfileService, provides=UserProfileServiceProtocol)
+    suggestion_service = provide(SuggestionService, provides=SuggestionServiceProtocol)
 
-    suggestion_repo = provide(source=SuggestionRepository, provides=SuggestionRepositoryProtocol)
-    user_repo = provide(source=UserRepository, provides=UserRepositoryProtocol)
+    raw_suggestion_repo = provide(SuggestionRepository)
+    suggestion_repo = provide(CachedSuggestionRepository, provides=SuggestionRepositoryProtocol)
+
+    raw_user_repo = provide(UserRepository)
+    raw_profile_repo = provide(UserProfileRepository)
+
+    user_repo = provide(CachedUserRepository, provides=UserRepositoryProtocol)
     user_profile_repo = provide(
-        source=UserProfileRepository, provides=UserProfileRepositoryProtocol
+        CachedUserProfileRepository, provides=UserProfileRepositoryProtocol
     )
-    media_repo = provide(source=MediaRepository, provides=MediaRepositoryProtocol)
-    userbot_repo = provide(source=UserBotRepository, provides=UserBotRepositoryProtocol)
 
-    uow = provide(source=UnitOfWork, provides=UnitOfWorkProtocol)
+    media_repo = provide(MediaRepository, provides=MediaRepositoryProtocol)
+
+    raw_userbot_repo = provide(UserBotRepository)
+    userbot_repo = provide(CachedUserBotRepository, provides=UserBotRepositoryProtocol)
+    userbot_stats = provide(CachedUserBotStatsRepository, provides=UserBotStatsRepositoryProtocol)
+
+    uow = provide(UnitOfWork, provides=UnitOfWorkProtocol)
 
     moderate_suggestion = provide(ModerateSuggestionUseCase)
     change_role = provide(ChangeRoleUseCase)

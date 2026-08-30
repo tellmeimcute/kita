@@ -7,6 +7,7 @@ from database.dto import (
     SuggestionBaseDTO,
     SuggestionFullDTO,
     UserBotDTO,
+    UserBotStats,
     UserDTO,
     UserProfileDTO,
 )
@@ -31,7 +32,7 @@ class UserRepositoryProtocol(Protocol):
 
 class UserProfileRepositoryProtocol(Protocol):
     @abstractmethod
-    async def get(self, user_id: int) -> UserProfileDTO | None: ...
+    async def get_by_id(self, user_id: int) -> UserProfileDTO | None: ...
 
     @abstractmethod
     async def get_many(
@@ -112,6 +113,11 @@ class SuggestionRepositoryProtocol(Protocol):
 class MediaRepositoryProtocol(Protocol):
     @abstractmethod
     async def count(self) -> int: ...
+
+
+class UserBotStatsRepositoryProtocol(Protocol):
+    @abstractmethod
+    async def get(self) -> UserBotStats: ...
 
 
 class UserBotRepositoryProtocol(Protocol):

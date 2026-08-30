@@ -8,6 +8,7 @@ from core.config import Config
 from database.redis import (
     TgMessageRedis,
     UserBotRedis,
+    UserBotStatsRedis,
     UserProfileRedis,
     UserRedis,
     UserStatsRedis,
@@ -18,6 +19,7 @@ class RedisProvider(Provider):
     scope = Scope.APP
 
     user_stats_redis = provide(UserStatsRedis)
+    userbot_stats_redis = provide(UserBotStatsRedis)
     user_redis = provide(UserRedis)
     user_profile_redis = provide(UserProfileRedis)
     user_bot_redis = provide(UserBotRedis)

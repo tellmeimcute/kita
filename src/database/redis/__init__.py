@@ -17,6 +17,9 @@ from .repos import (
     UserBotRedis as UserBotRedis,
 )
 from .repos import (
+    UserBotStatsRedis as UserBotStatsRedis,
+)
+from .repos import (
     UserProfileRedis as UserProfileRedis,
 )
 from .repos import (

@@ -1,4 +1,3 @@
-from aiogram import Bot
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import BotRegistryProtocol
@@ -25,6 +24,3 @@ class BaseRepository:
         if self._bot:
             return self._bot
         return self._bot_registry.get_current()
-
-    def assign_bot(self, bot: Bot):
-        self._bot = bot

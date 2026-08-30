@@ -1,13 +1,23 @@
 from aiogram.types import Message
 
 from core.schemas.objects import UserStats
-from database.dto import UserBotDTO, UserDTO, UserProfileDTO
+from database.dto import (
+    UserBotDTO,
+    UserBotStats,
+    UserDTO,
+    UserProfileDTO,
+)
 
 from .base import BaseRedisRepository
 
 
 class UserStatsRedis(BaseRedisRepository[UserStats]):
     model = UserStats
+
+
+class UserBotStatsRedis(BaseRedisRepository[UserBotStats]):
+    model = UserBotStats
+    expiry = 30
 
 
 class UserRedis(BaseRedisRepository[UserDTO]):
