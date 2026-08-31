@@ -5,6 +5,7 @@ from .key_builder import (
     RedisKey,
 )
 from .repos import (
+    IntRedis,
     TgMessageRedis,
     UserBotRedis,
     UserBotStatsRedis,
@@ -18,6 +19,7 @@ __all__ = (
     "MediaGroupKey",
     "MediaGroupKeyBuilder",
     "RedisKey",
+    "IntRedis",
     "TgMessageRedis",
     "UserBotRedis",
     "UserBotStatsRedis",

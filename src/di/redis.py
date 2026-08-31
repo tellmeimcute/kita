@@ -6,6 +6,7 @@ from redis.asyncio import ConnectionPool, Redis
 
 from core.config import Config
 from database.redis import (
+    IntRedis,
     TgMessageRedis,
     UserBotRedis,
     UserBotStatsRedis,
@@ -18,6 +19,7 @@ from database.redis import (
 class RedisProvider(Provider):
     scope = Scope.APP
 
+    int_redis = provide(IntRedis)
     user_stats_redis = provide(UserStatsRedis)
     userbot_stats_redis = provide(UserBotStatsRedis)
     user_redis = provide(UserRedis)

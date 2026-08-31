@@ -1,4 +1,5 @@
 from aiogram.types import Message
+from pydantic import TypeAdapter
 
 from core.schemas.objects import UserStats
 from database.dto import (
@@ -9,6 +10,11 @@ from database.dto import (
 )
 
 from .base import BaseRedisRepository
+
+
+class IntRedis(BaseRedisRepository[int]):
+    adapter = TypeAdapter(int)
+    expiry = 30
 
 
 class UserStatsRedis(BaseRedisRepository[UserStats]):
