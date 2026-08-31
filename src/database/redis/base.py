@@ -1,16 +1,17 @@
 from types import UnionType
-from typing import Union, get_args, get_origin
+from typing import Any, Union, get_args, get_origin
 
-import orjson
 from loguru import logger
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, TypeAdapter
 
 from core.cryptographer import Cryptographer
 from redis.asyncio import Redis
 
 
-class BaseRedisRepository[T: BaseModel]:
-    model: type[T]
+class BaseRedisRepository[T]:
+    model: type[BaseModel] | None = None
+    adapter: TypeAdapter | None = None
+
     expiry: int = 3600
 
     exclude: set[str] | None = None
@@ -21,15 +22,23 @@ class BaseRedisRepository[T: BaseModel]:
     __slots__ = (
         "_redis",
         "_crypto",
+        "_any_adapter",
     )
 
     def __init__(self, redis: Redis, crypto: Cryptographer):
         self._redis = redis
         self._crypto = crypto
+        self._any_adapter = TypeAdapter(Any)
+
+        if not self.model and not self.adapter:
+            raise ValueError("Either model or adapter should be provided!")
 
     def _is_secret_field(self, field_name: str) -> bool:
         if field_name in self._secret_fields:
             return True
+
+        if not self.model:
+            return False
 
         field_info = self.model.model_fields.get(field_name)
         if not field_info:
@@ -42,13 +51,7 @@ class BaseRedisRepository[T: BaseModel]:
 
         return annotation is SecretStr
 
-    def _prepare_cache(self, data: T) -> bytes:
-        data_dict = data.model_dump(
-            mode="python",
-            exclude=self.exclude,
-            include=self.include,
-        )
-
+    def _encrypt_fields(self, data_dict: dict):
         for k, v in data_dict.items():
             if v is not None and self._is_secret_field(k):
                 if isinstance(v, SecretStr):
@@ -56,16 +59,39 @@ class BaseRedisRepository[T: BaseModel]:
                 else:
                     data_dict[k] = self._crypto.encrypt(str(v))
 
-        return orjson.dumps(data_dict, default=str)
-
-    def _from_cache(self, cached_value: str) -> T:
-        data_dict: dict = orjson.loads(cached_value)
-
+    def _decrypt_fields(self, data_dict: dict):
         for k, v in data_dict.items():
             if v is not None and self._is_secret_field(k):
                 data_dict[k] = self._crypto.decrypt(str(v))
 
-        return self.model.model_validate(data_dict)
+    def _prepare_cache(self, data: T) -> bytes:
+        if self.model and not isinstance(data, BaseModel):
+            raise TypeError("RedisRepo with provided model should take a BaseModel subclass only")
+
+        if self.model and isinstance(data, BaseModel):
+            data_dict = data.model_dump(
+                mode="python",
+                exclude=self.exclude,
+                include=self.include,
+            )
+        elif self.adapter:
+            data_dict = self.adapter.dump_python(data)
+
+        if isinstance(data_dict, dict):
+            self._encrypt_fields(data_dict)
+
+        return self._any_adapter.dump_json(data_dict)
+
+    def _from_cache(self, cached_value: str) -> T:
+        raw_data = self._any_adapter.validate_json(cached_value)
+
+        if isinstance(raw_data, dict):
+            self._decrypt_fields(raw_data)
+
+        if self.model:
+            return self.model.model_validate(raw_data)
+        if self.adapter:
+            return self.adapter.validate_python(raw_data)
 
     async def get(self, key: str) -> T | None:
         raw = await self._redis.get(key)
