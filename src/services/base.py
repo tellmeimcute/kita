@@ -2,8 +2,6 @@ from interfaces import BotRegistryProtocol
 
 
 class BaseService:
-    REDIS_KEY_PART = "base_key"
-
     __slots__ = ("_bot_registry",)
 
     def __init__(self, bot_registry: BotRegistryProtocol):
