@@ -1,1 +1,3 @@
-from .root import Config as Config
+from .root import Config
+
+__all__ = ("Config",)

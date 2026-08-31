@@ -1,5 +1,13 @@
-from .media import MediaRepository as MediaRepository
-from .suggestions import SuggestionRepository as SuggestionRepository
-from .user import UserRepository as UserRepository
-from .user_profile import UserProfileRepository as UserProfileRepository
-from .userbots import UserBotRepository as UserBotRepository
+from .media import MediaRepository
+from .suggestions import SuggestionRepository
+from .user import UserRepository
+from .user_profile import UserProfileRepository
+from .userbots import UserBotRepository
+
+__all__ = (
+    "MediaRepository",
+    "SuggestionRepository",
+    "UserRepository",
+    "UserProfileRepository",
+    "UserBotRepository",
+)

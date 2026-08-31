@@ -1,2 +1,7 @@
-from .payload import UnsupportedPayload as UnsupportedPayload
-from .sql import UserImmuneError as UserImmuneError
+from .payload import UnsupportedPayload
+from .sql import UserImmuneError
+
+__all__ = (
+    "UnsupportedPayload",
+    "UserImmuneError",
+)

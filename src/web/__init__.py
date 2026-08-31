@@ -1,1 +1,3 @@
-from .app import get_app as get_app
+from .app import get_app
+
+__all__ = ("get_app",)

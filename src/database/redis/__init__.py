@@ -1,30 +1,27 @@
 from .key_builder import (
-    KitaKeyBuilder as KitaKeyBuilder,
-)
-from .key_builder import (
-    MediaGroupKey as MediaGroupKey,
-)
-from .key_builder import (
-    MediaGroupKeyBuilder as MediaGroupKeyBuilder,
-)
-from .key_builder import (
-    RedisKey as RedisKey,
+    KitaKeyBuilder,
+    MediaGroupKey,
+    MediaGroupKeyBuilder,
+    RedisKey,
 )
 from .repos import (
-    TgMessageRedis as TgMessageRedis,
+    TgMessageRedis,
+    UserBotRedis,
+    UserBotStatsRedis,
+    UserProfileRedis,
+    UserRedis,
+    UserStatsRedis,
 )
-from .repos import (
-    UserBotRedis as UserBotRedis,
-)
-from .repos import (
-    UserBotStatsRedis as UserBotStatsRedis,
-)
-from .repos import (
-    UserProfileRedis as UserProfileRedis,
-)
-from .repos import (
-    UserRedis as UserRedis,
-)
-from .repos import (
-    UserStatsRedis as UserStatsRedis,
+
+__all__ = (
+    "KitaKeyBuilder",
+    "MediaGroupKey",
+    "MediaGroupKeyBuilder",
+    "RedisKey",
+    "TgMessageRedis",
+    "UserBotRedis",
+    "UserBotStatsRedis",
+    "UserProfileRedis",
+    "UserRedis",
+    "UserStatsRedis",
 )
