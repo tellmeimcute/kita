@@ -19,16 +19,16 @@ class BaseRedisRepository[T]:
 
     _secret_fields: set[str] = set()
 
+    _any_adapter = TypeAdapter(Any)
+
     __slots__ = (
         "_redis",
         "_crypto",
-        "_any_adapter",
     )
 
     def __init__(self, redis: Redis, crypto: Cryptographer):
         self._redis = redis
         self._crypto = crypto
-        self._any_adapter = TypeAdapter(Any)
 
         if not self.model and not self.adapter:
             raise ValueError("Either model or adapter should be provided!")
