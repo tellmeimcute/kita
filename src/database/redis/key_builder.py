@@ -39,7 +39,7 @@ class KitaKeyBuilder(KeyBuilder):
     def build(
         self,
         key: RedisKey,
-        part: Literal["user", "user_stats", "bot_config"] = None,
+        part: str | list[str] = None,
     ):
         parts = [self.prefix]
         if self.with_bot_id:
@@ -47,8 +47,11 @@ class KitaKeyBuilder(KeyBuilder):
         if self.with_user_id:
             parts.append(str(key.user_id))
 
-        if part:
+        if isinstance(part, str):
             parts.append(part)
+        if isinstance(part, list):
+            parts.extend(part)
+
         return self.separator.join(parts)
 
 

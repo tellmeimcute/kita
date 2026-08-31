@@ -30,14 +30,22 @@ class CachedRepository:
         redis_key = RedisKey(bot_id=self.bot.id, user_id=user_id)
         return self._key_builder.build(redis_key, self.REDIS_KEY_PART)
 
-    async def _cache_or_load(self, key: str, loader):
-        if hit := await self._redis.get(key):
+    async def _cache_or_load(
+        self,
+        key: str,
+        loader,
+        *,
+        redis_repo: BaseRedisRepository | None = None,
+    ):
+        redis = redis_repo or self._redis
+
+        if (hit := await redis.get(key)) is not None:
             return hit
 
         result = await loader()
 
         if result is not None:
-            await self._redis.set_cache(key, result)
+            await redis.set_cache(key, result)
         return result
 
     @property
