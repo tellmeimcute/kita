@@ -1,4 +1,5 @@
 import contextvars
+from collections import OrderedDict
 from contextlib import asynccontextmanager
 
 from aiogram import Bot
@@ -13,7 +14,7 @@ from core.config import Config
 class BotRegistry:
     def __init__(self, config: Config):
         self._slaves_allowed_updates = []
-        self._storage: dict[int, Bot] = {}
+        self._storage: OrderedDict[int, Bot] = OrderedDict()
 
         self._session = AiohttpSession(proxy=config.proxy)
         self._bot_settings = {
@@ -24,6 +25,8 @@ class BotRegistry:
         self._current_bot: contextvars.ContextVar[Bot | None] = contextvars.ContextVar(
             "_current_bot", default=None
         )
+
+        self.cache_max_size = config.bot_cache_max_size
 
     @property
     def bot_settings(self) -> dict:
@@ -39,21 +42,29 @@ class BotRegistry:
             raise ValueError("allowed updates should be list.")
         self._slaves_allowed_updates = value
 
-    def register(self, bot: Bot) -> None:
+    def _upsert(self, bot: Bot) -> None:
         self._storage[bot.id] = bot
+        self._storage.move_to_end(bot.id)
+        if len(self._storage) > self.cache_max_size:
+            oldest_id, _ = self._storage.popitem(last=False)
+            logger.debug("Bot {} removed from cache", oldest_id)
 
-        logger.info("Register bot_id {}", bot.id)
+    def register(self, bot: Bot) -> None:
+        self._upsert(bot)
+        logger.info("Cached bot {} instance", bot.id)
 
-    def get(self, bot_id: int) -> Bot:
-        return self._storage[bot_id]
+    def get(self, bot_id: int) -> Bot | None:
+        if bot_id in self._storage:
+            self._storage.move_to_end(bot_id)
+            return self._storage[bot_id]
 
     def get_or_create(self, bot_id: int, token: str) -> Bot:
-        cached = self._storage.get(bot_id)
+        cached = self.get(bot_id)
         if cached and cached.token == token:
             return cached
 
         bot = Bot(token=token, **self._bot_settings)
-        self._storage[bot.id] = bot
+        self._upsert(bot)
 
         return bot
 

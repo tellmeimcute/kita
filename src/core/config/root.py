@@ -18,6 +18,7 @@ class Config(BaseConfig):
     webhook: WebhookConfig = Field(default_factory=WebhookConfig)
 
     max_userbots_per_user: int = 1
+    bot_cache_max_size: int = 50
 
     tg_token: SecretStr
     webhook_secret: SecretStr

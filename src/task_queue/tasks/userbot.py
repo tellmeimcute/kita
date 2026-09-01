@@ -21,9 +21,11 @@ async def new_userbot(
     token_resolver: FromDishka[UserBotTokenResolver],
 ):
     userbot_token = await token_resolver.resolve(userbot_id)
-    async with uow.transaction(), bot_registry.with_bot(userbot_id, userbot_token):
+    bot = bot_registry.get_or_create(userbot_id, userbot_token)
+
+    async with uow.transaction(), bot_registry.with_bot(bot):
         await profile_service.get_or_create(owner_id)
         await profile_service.update(owner_id, role=UserRole.ADMIN)
-    await webhook_service.set_webhook(bot_registry.get(userbot_id))
+    await webhook_service.set_webhook(bot)
 
     logger.info("New userbot {} registered, admin {}", userbot_id, owner_id)
