@@ -21,6 +21,8 @@ MAX_RETRY = 3
 
 class NotifierUtilsMixin:
 
+    __slots__ = ()
+
     async def exec_with_retry(self, to_exec):
         retries = 0
         while True:
