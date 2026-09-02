@@ -29,7 +29,7 @@ msgstr "⌚ Under moderation"
 
 msgid "suggestion_notify_admin_new"
 msgstr ""
-"🛑 New suggestion! ID {id}\n"
+"🛑 New suggestion!\n"
 "<b>Author</b> {author[name]} @{author[username]} ({author[user_id]})"
 
 msgid "suggestion_admin_viewer_info"

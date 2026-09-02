@@ -30,7 +30,7 @@ msgstr "⌚ На модерации"
 
 msgid "suggestion_notify_admin_new"
 msgstr ""
-"🛑 Новая предложка! ID {id}\n"
+"🛑 Новая предложка!\n"
 "<b>Автор</b> {author[name]} @{author[username]} ({author[user_id]})"
 
 msgid "suggestion_admin_viewer_info"
