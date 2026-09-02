@@ -36,8 +36,6 @@ class BroadcastMenuSG(StatesGroup):
 
 class SuggestionViewerSG(StatesGroup):
     in_viewer = State()
-    in_solo_view = State()
-
     message_user = State()
 
 
