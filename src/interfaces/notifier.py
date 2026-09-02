@@ -1,9 +1,8 @@
 from typing import Any, Protocol
 
-from aiogram.types import InlineKeyboardMarkup, Message, MessageId, MediaUnion
+from aiogram.types import InlineKeyboardMarkup, MediaUnion, Message, MessageId
 
 from database.dto import SuggestionFullDTO, UserDTO, UserProfileDTO
-
 
 SendTarget = UserDTO | UserProfileDTO | int
 
@@ -44,6 +43,7 @@ class MessageNotifierProtocol(Protocol):
         new_text: str,
         new_kb: InlineKeyboardMarkup | None = None,
     ) -> bool | Message: ...
+
 
 class SuggestionNotifierProtocol(Protocol):
     async def send_to_admin(self, admin: SendTarget, dto: SuggestionFullDTO): ...

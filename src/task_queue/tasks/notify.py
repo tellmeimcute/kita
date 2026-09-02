@@ -55,9 +55,7 @@ async def suggestion_accepted(
     post_url = None
 
     with i18n.context():
-        channel_post = await suggestion_notifier.send_to_channel(
-            userbot.channel_id, suggestion
-        )
+        channel_post = await suggestion_notifier.send_to_channel(userbot.channel_id, suggestion)
 
         if isinstance(channel_post, list):
             channel_post = channel_post[0]

@@ -32,6 +32,4 @@ class AdminMiddleware(KitaMiddleware):
         try:
             await notifier.send_text(event.from_user.id, "warning_not_enough_permission")
         except Exception:
-            logger.exception(
-                "Failed to send permission warning to user {}", event.from_user.id
-            )
+            logger.exception("Failed to send permission warning to user {}", event.from_user.id)

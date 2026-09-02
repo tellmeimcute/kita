@@ -104,9 +104,7 @@ async def unknown_intent(
     try:
         await notifier.send_text(callback.from_user.id, "warning_unknown_intent")
     except Exception:
-        logger.exception(
-            "Failed to send unknown-intent warning to user {}", callback.from_user.id
-        )
+        logger.exception("Failed to send unknown-intent warning to user {}", callback.from_user.id)
 
     logger.info(
         "Unknown intent exception on update {}. Send warning to {} userid",

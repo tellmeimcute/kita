@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-from aiogram.exceptions import TelegramRetryAfter, TelegramAPIError
+from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
 from aiogram.types import InlineKeyboardMarkup, MediaUnion, Message, MessageId
 from loguru import logger
 
@@ -15,12 +15,11 @@ from utils.suggestion_utils import SuggestionUtils
 
 from .base import BaseService
 
-
 SendTarget = UserDTO | UserProfileDTO | int
 MAX_RETRY = 3
 
-class NotifierUtilsMixin:
 
+class NotifierUtilsMixin:
     __slots__ = ()
 
     async def exec_with_retry(self, to_exec):
@@ -36,7 +35,7 @@ class NotifierUtilsMixin:
                 logger.warning("Message sending rate limiting, retrying in {}", wait)
                 await asyncio.sleep(wait)
                 retries += 1
-            except TelegramAPIError as e:
+            except TelegramAPIError:
                 logger.exception("Failed to send message")
                 raise
 
@@ -86,9 +85,7 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
     ) -> list[Message]:
         target_id = self._parse_target_id(target)
         return await self.exec_with_retry(
-            lambda: self.bot.send_media_group(
-                target_id, media, disable_notification=True
-            )
+            lambda: self.bot.send_media_group(target_id, media, disable_notification=True)
         )
 
     async def forward(
@@ -105,7 +102,7 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
                 message_ids=message_ids,
             )
         )
-    
+
     async def copy(
         self,
         target: SendTarget,
@@ -136,6 +133,7 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
                 reply_markup=new_kb,
             )
         )
+
 
 class SuggestionNotifier(NotifierUtilsMixin, BaseService):
     __slots__ = (

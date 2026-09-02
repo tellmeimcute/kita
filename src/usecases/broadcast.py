@@ -57,9 +57,7 @@ class BroadcastUseCase:
         source_message_ids: Sequence[int],
         is_forwarded: bool,
     ):
-        send_func = (
-            self.notifier.forward if is_forwarded else self.notifier.copy
-        )
+        send_func = self.notifier.forward if is_forwarded else self.notifier.copy
 
         total = 0
         delivered = 0
