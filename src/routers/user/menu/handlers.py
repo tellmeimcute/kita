@@ -12,7 +12,7 @@ from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import (
-    NotifierServiceProtocol,
+    MessageNotifierProtocol,
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
@@ -86,7 +86,7 @@ async def cancel(
     user_dto: UserDTO,
     state: FSMContext,
     dialog_manager: DialogManager,
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
 ):
     await notifier.send_text(user_dto, "state_reset", kb=ReplyKeyboardRemove())
     await start_main_menu(message, state, dialog_manager)

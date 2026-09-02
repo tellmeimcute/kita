@@ -6,7 +6,8 @@ from dishka.integrations.taskiq import FromDishka, inject
 
 from database.dto import UserBotDTO
 from interfaces import (
-    NotifierServiceProtocol,
+    MessageNotifierProtocol,
+    SuggestionNotifierProtocol,
     SuggestionServiceProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
@@ -22,7 +23,7 @@ async def admin_notify_new_suggestion(
     suggestion_id: int,
     user_service: FromDishka[UserServiceProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     suggestion_utils: FromDishka[SuggestionUtils],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     i18n: FromDishka[I18n],
@@ -45,7 +46,8 @@ async def suggestion_accepted(
     bot_id: int,
     suggestion_id: int,
     userbot: FromDishka[UserBotDTO],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
+    suggestion_notifier: FromDishka[SuggestionNotifierProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     i18n: FromDishka[I18n],
 ):
@@ -53,8 +55,8 @@ async def suggestion_accepted(
     post_url = None
 
     with i18n.context():
-        channel_post = await notifier.send_suggestion(
-            userbot.channel_id, suggestion, mode="channel_post"
+        channel_post = await suggestion_notifier.send_to_channel(
+            userbot.channel_id, suggestion
         )
 
         if isinstance(channel_post, list):
@@ -76,7 +78,7 @@ async def admin_notify_new_user(
     bot_id: int,
     new_user_id: int,
     userbot: FromDishka[UserBotDTO],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     user_service: FromDishka[UserServiceProtocol],
     i18n: FromDishka[I18n],
 ):

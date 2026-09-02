@@ -17,17 +17,15 @@ from loguru import logger
 
 from core.config import Config
 from core.i18n_translator import Translator
-from core.schemas.message_payload import MessagePayload
 from database.dto import UserBotDTO
 from interfaces import (
     BotRegistryProtocol,
-    NotifierServiceProtocol,
+    MessageNotifierProtocol,
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
 from services import UserBotService, WebhookService
-from ui.senders.payload import TextSender
 
 
 async def on_user_block_bot(
@@ -50,7 +48,7 @@ async def on_userbot_demoted(
     userbot_service: FromDishka[UserBotService],
     bot_registry: FromDishka[BotRegistryProtocol],
     webhook_service: FromDishka[WebhookService],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     config: FromDishka[Config],
     i18n: FromDishka[I18n],
     tl: FromDishka[Translator],
@@ -99,19 +97,16 @@ async def on_userbot_demoted(
 async def unknown_intent(
     event: ErrorEvent,
     callback: CallbackQuery,
-    translator: FromDishka[Translator],
+    notifier: FromDishka[MessageNotifierProtocol],
 ):
     await callback.answer()
 
-    payload = MessagePayload(i18n_key="warning_unknown_intent")
-    strategy = TextSender(
-        bot=callback.bot,
-        target_id=callback.from_user.id,
-        payload=payload,
-        translator=translator,
-    )
-
-    await strategy.send()
+    try:
+        await notifier.send_text(callback.from_user.id, "warning_unknown_intent")
+    except Exception:
+        logger.exception(
+            "Failed to send unknown-intent warning to user {}", callback.from_user.id
+        )
 
     logger.info(
         "Unknown intent exception on update {}. Send warning to {} userid",

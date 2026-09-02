@@ -1,4 +1,5 @@
 from .bot_registry import BotRegistryProtocol
+from .notifier import MessageNotifierProtocol, SuggestionNotifierProtocol
 from .repository import (
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
@@ -8,7 +9,6 @@ from .repository import (
     UserRepositoryProtocol,
 )
 from .services import (
-    NotifierServiceProtocol,
     SuggestionServiceProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
@@ -17,13 +17,14 @@ from .uow import UnitOfWorkProtocol
 
 __all__ = (
     "BotRegistryProtocol",
+    "MessageNotifierProtocol",
     "MediaRepositoryProtocol",
+    "SuggestionNotifierProtocol",
     "SuggestionRepositoryProtocol",
     "UserBotRepositoryProtocol",
     "UserBotStatsRepositoryProtocol",
     "UserProfileRepositoryProtocol",
     "UserRepositoryProtocol",
-    "NotifierServiceProtocol",
     "SuggestionServiceProtocol",
     "UserProfileServiceProtocol",
     "UserServiceProtocol",

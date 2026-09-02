@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 
 from core.schemas.broadcast import BroadcastData
 from database.redis import KitaKeyBuilder, RedisKey
-from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UserProfileServiceProtocol
+from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UserProfileServiceProtocol
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class BroadcastUseCase:
         self,
         redis: Redis,
         bot_registry: BotRegistryProtocol,
-        notifier: NotifierServiceProtocol,
+        notifier: MessageNotifierProtocol,
         profile_service: UserProfileServiceProtocol,
     ):
         self.redis = redis
@@ -57,7 +57,9 @@ class BroadcastUseCase:
         source_message_ids: Sequence[int],
         is_forwarded: bool,
     ):
-        send_func = self.notifier.forward_messages if is_forwarded else self.notifier.copy_messages
+        send_func = (
+            self.notifier.forward if is_forwarded else self.notifier.copy
+        )
 
         total = 0
         delivered = 0
@@ -65,7 +67,7 @@ class BroadcastUseCase:
         tasks = []
         for user_id in user_ids:
             user_profile = await self.profile_service.get(user_id)
-            tasks.append(send_func(user_profile, source_message_ids, source_chat_id))
+            tasks.append(send_func(user_profile, source_chat_id, source_message_ids))
             total += 1
 
         for res in await asyncio.gather(*tasks, return_exceptions=True):

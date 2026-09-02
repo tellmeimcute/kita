@@ -7,7 +7,7 @@ from dishka.integrations.taskiq import FromDishka, inject
 from loguru import logger
 from taskiq import AsyncTaskiqTask, TaskiqResult
 
-from interfaces import NotifierServiceProtocol, UnitOfWorkProtocol, UserServiceProtocol
+from interfaces import MessageNotifierProtocol, UnitOfWorkProtocol, UserServiceProtocol
 from task_queue.broker import broker
 from usecases import BroadcastUseCase
 from usecases.broadcast import BatchResult
@@ -46,7 +46,7 @@ async def broadcast(
     user_service: FromDishka[UserServiceProtocol],
     broadcast_usecase: FromDishka[BroadcastUseCase],
     i18n: FromDishka[I18n],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
 ):
     total = 0
     users_ok = 0

@@ -14,7 +14,8 @@ from database.dto import UserDTO
 from database.dto.suggestion import SuggestionFullDTO
 from database.enums import SuggestionStatus, UserRole
 from interfaces import (
-    NotifierServiceProtocol,
+    MessageNotifierProtocol,
+    SuggestionNotifierProtocol,
     SuggestionServiceProtocol,
     UnitOfWorkProtocol,
 )
@@ -52,7 +53,7 @@ async def _return_to_menu(
     user_dto: UserDTO,
     state: FSMContext,
     dialog_manager: DialogManager,
-    notifier: NotifierServiceProtocol,
+    notifier: MessageNotifierProtocol,
 ):
     await state.clear()
     await notifier.send_text(user_dto, "suggestion_no_active", kb=ReplyKeyboardRemove())
@@ -71,7 +72,7 @@ async def enter_suggestion_viewer(
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
     viewer_data: FromDishka[SuggestionViewerData],
-    notifier: FromDishka[NotifierServiceProtocol],
+    suggestion_notifier: FromDishka[SuggestionNotifierProtocol],
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
@@ -92,7 +93,7 @@ async def enter_suggestion_viewer(
     await state.set_state(SuggestionViewerSG.in_viewer)
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
 
-    await notifier.send_suggestion(user_dto, first_suggestion)
+    await suggestion_notifier.send_to_admin(user_dto, first_suggestion)
 
 
 @router.message(
@@ -111,7 +112,8 @@ async def viewer_verdict(
     viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
+    suggestion_notifier: FromDishka[SuggestionNotifierProtocol],
     moderation_usecase: FromDishka[ModerateSuggestionUseCase],
     verdict: SuggestionStatus,
 ):
@@ -135,7 +137,7 @@ async def viewer_verdict(
         return await _return_to_menu(user_dto, state, dialog_manager, notifier)
 
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    return await notifier.send_suggestion(user_dto, new_suggestion)
+    return await suggestion_notifier.send_to_admin(user_dto, new_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("ban_btn"))
@@ -147,7 +149,8 @@ async def viewer_ban_author(
     viewer_data: FromDishka[SuggestionViewerData],
     uow: FromDishka[UnitOfWorkProtocol],
     suggestion_service: FromDishka[SuggestionServiceProtocol],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
+    suggestion_notifier: FromDishka[SuggestionNotifierProtocol],
     change_role_usecase: FromDishka[ChangeRoleUseCase],
 ):
     target_id = viewer_data.suggestion_dto.author_id
@@ -165,7 +168,7 @@ async def viewer_ban_author(
         return await _return_to_menu(user_dto, state, dialog_manager, notifier)
 
     await state.set_data({"viewer_data": viewer_data.model_dump(mode="json")})
-    return await notifier.send_suggestion(user_dto, new_suggestion)
+    return await suggestion_notifier.send_to_admin(user_dto, new_suggestion)
 
 
 @router.message(SuggestionViewerSG.in_viewer, I18nTextFilter("viewer_message_to_user_btn"))
@@ -173,7 +176,7 @@ async def enter_message_to_user(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
 ):
     await state.set_state(SuggestionViewerSG.message_user)
     await notifier.send_text(
@@ -188,7 +191,7 @@ async def viewer_back(
     message: Message,
     state: FSMContext,
     user_dto: UserDTO,
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
 ):
     await state.set_state(SuggestionViewerSG.in_viewer)
     await notifier.send_text(
@@ -204,7 +207,7 @@ async def message_to_user(
     state: FSMContext,
     user_dto: UserDTO,
     viewer_data: FromDishka[SuggestionViewerData],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     message_user_usecase: FromDishka[MessageUserUseCase],
     album: list[Message] | None = None,
 ):

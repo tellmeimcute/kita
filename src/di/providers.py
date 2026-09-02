@@ -26,7 +26,8 @@ from database.repository.cached import (
 from database.uow import UnitOfWork
 from interfaces import (
     MediaRepositoryProtocol,
-    NotifierServiceProtocol,
+    MessageNotifierProtocol,
+    SuggestionNotifierProtocol,
     SuggestionRepositoryProtocol,
     SuggestionServiceProtocol,
     UnitOfWorkProtocol,
@@ -37,7 +38,7 @@ from interfaces import (
     UserRepositoryProtocol,
     UserServiceProtocol,
 )
-from services.notifier import NotifierService
+from services.notifier import MessageNotifier, SuggestionNotifier
 from services.suggestion import SuggestionService
 from services.user import UserService
 from services.user_profile import UserProfileService
@@ -62,7 +63,8 @@ class InfraProvider(Provider):
     webhook_service = provide(WebhookService, scope=Scope.APP)
 
     userbot_service = provide(UserBotService)
-    notifier_service = provide(NotifierService, provides=NotifierServiceProtocol)
+    msg_notifier = provide(MessageNotifier, provides=MessageNotifierProtocol)
+    suggestion_notifier = provide(SuggestionNotifier, provides=SuggestionNotifierProtocol)
     user_service = provide(UserService, provides=UserServiceProtocol)
     user_profile_service = provide(UserProfileService, provides=UserProfileServiceProtocol)
     suggestion_service = provide(SuggestionService, provides=SuggestionServiceProtocol)

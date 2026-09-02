@@ -1,11 +1,11 @@
 from aiogram.utils.i18n import I18n
 
 from database.dto import UserDTO
-from interfaces import NotifierServiceProtocol
+from interfaces import MessageNotifierProtocol
 
 
 class MessageUserUseCase:
-    def __init__(self, notifier: NotifierServiceProtocol, i18n: I18n):
+    def __init__(self, notifier: MessageNotifierProtocol, i18n: I18n):
         self.notifier = notifier
         self.i18n = i18n
 
@@ -16,7 +16,7 @@ class MessageUserUseCase:
         album_ids: list[int],
         source: int,
     ):
-        sended_msg = await self.notifier.copy_messages(target, album_ids, source)
+        sended_msg = await self.notifier.copy(target, source, album_ids)
         with self.i18n.context():
             with self.i18n.use_locale(target.language_code):
                 await self.notifier.send_text(target, "notify_you_receive_message")

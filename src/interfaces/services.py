@@ -1,13 +1,11 @@
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Any, Literal, Protocol
+from typing import Any, Protocol
 
-from aiogram.types import InlineKeyboardMarkup, Message, MessageId
+from aiogram.types import Message
 
-from core.schemas.message_payload import MessagePayload
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO, UserProfileDTO
-from ui.senders.base import BaseSender
 
 
 class UserServiceProtocol(Protocol):
@@ -76,48 +74,3 @@ class SuggestionServiceProtocol(Protocol):
 
     @abstractmethod
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats: ...
-
-
-class NotifierServiceProtocol:
-    @abstractmethod
-    def strategy_factory(
-        self, target_id: int, payload: MessagePayload, silent: bool = True
-    ) -> BaseSender: ...
-
-    @abstractmethod
-    async def send_suggestion(
-        self,
-        target: UserDTO | int,
-        dto: SuggestionFullDTO,
-        mode: Literal["admin_viewer", "channel_post"] = "admin_viewer",
-    ) -> Message | list[Message] | None: ...
-
-    @abstractmethod
-    async def send_text(
-        self,
-        target: UserDTO | int,
-        i18n_key: str,
-        i18n_kwargs: dict | None = None,
-        kb: Any | None = None,
-    ): ...
-
-    @abstractmethod
-    async def notify_user(self, user_dto: UserDTO, payload: MessagePayload): ...
-
-    @abstractmethod
-    async def forward_messages(
-        self, user_dto: UserDTO, messages: list[int], source: int
-    ) -> list[MessageId]: ...
-
-    @abstractmethod
-    async def copy_messages(
-        self, user_dto: UserDTO, messages: list[int], source: int
-    ) -> list[MessageId]: ...
-
-    @abstractmethod
-    async def edit_message_text(
-        self,
-        message: Message,
-        text: str,
-        reply_markup: InlineKeyboardMarkup | None = None,
-    ): ...

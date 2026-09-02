@@ -1,13 +1,7 @@
-from typing import Literal
-
-from aiogram.types import ReplyKeyboardMarkup
 from aiogram.utils.media_group import MediaGroupBuilder
 
-from core.enums import RenderType
-from core.exceptions import UnsupportedPayload
 from core.html import quote
 from core.i18n_translator import Translator
-from core.schemas.message_payload import MessagePayload
 from database.dto import SuggestionFullDTO, UserBotDTO
 
 
@@ -38,7 +32,7 @@ class SuggestionUtils:
         i18n_kwargs = dict(author_name=author_name, forwarded_from=quote(dto.forwarded_from))
         return self._translator.i18n_text(i18n_key="author_plus_origin", i18n_kwargs=i18n_kwargs)
 
-    def _get_input_media(self, dto: SuggestionFullDTO, i18n_key: str, i18n_kwargs: dict):
+    def get_input_media(self, dto: SuggestionFullDTO, i18n_key: str, i18n_kwargs: dict):
         caption = self._translator.i18n_text(i18n_key, i18n_kwargs)
         mediagroup = MediaGroupBuilder(caption=caption)
         for media in dto.media:
@@ -60,25 +54,3 @@ class SuggestionUtils:
         )
 
         return i18n_kwargs
-
-    def payload_factory(
-        self,
-        dto: SuggestionFullDTO,
-        i18n_key: Literal["suggestion_caption", "channel_post_message"] = "suggestion_caption",
-        kb: ReplyKeyboardMarkup | None = None,
-    ):
-        if dto.render_type not in {RenderType.MESSAGE, RenderType.MEDIAGROUP}:
-            raise UnsupportedPayload
-
-        i18n_kwargs = self.get_i18n_kwargs(dto)
-
-        if dto.render_type == RenderType.MESSAGE:
-            return MessagePayload(
-                i18n_key=i18n_key,
-                i18n_kwargs=i18n_kwargs,
-                reply_markup=kb,
-            )
-
-        if dto.render_type == RenderType.MEDIAGROUP:
-            media = self._get_input_media(dto, i18n_key, i18n_kwargs)
-            return MessagePayload(media=media)

@@ -3,12 +3,11 @@ from typing import Any
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from dishka import AsyncContainer
+from loguru import logger
 
 from core.consts import DISHKA_CONTAINER_KEY
-from core.i18n_translator import Translator
-from core.schemas.message_payload import MessagePayload
 from database.dto import UserProfileDTO
-from ui.senders.payload import TextSender
+from interfaces import MessageNotifierProtocol
 
 from .base import KitaMiddleware
 
@@ -28,13 +27,11 @@ class AdminMiddleware(KitaMiddleware):
             await event.answer()
 
         container: AsyncContainer = data.get(DISHKA_CONTAINER_KEY)
-        translator = await container.get(Translator)
+        notifier = await container.get(MessageNotifierProtocol)
 
-        payload = MessagePayload(i18n_key="warning_not_enough_permission")
-        strategy = TextSender(
-            bot=event.bot,
-            target_id=event.from_user.id,
-            payload=payload,
-            translator=translator,
-        )
-        await strategy.send()
+        try:
+            await notifier.send_text(event.from_user.id, "warning_not_enough_permission")
+        except Exception:
+            logger.exception(
+                "Failed to send permission warning to user {}", event.from_user.id
+            )

@@ -9,7 +9,7 @@ from loguru import logger
 
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
+from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UnitOfWorkProtocol
 from services import UserBotService, WebhookService
 from ui.state_groups import UserBotSelectSG
 from utils.userbot_checker import UserBotChecker, UserBotCheckResult
@@ -111,7 +111,7 @@ async def update_token(
     userbot_service: FromDishka[UserBotService],
     webhook_service: FromDishka[WebhookService],
     bot_registry: FromDishka[BotRegistryProtocol],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     checker: FromDishka[UserBotChecker],
 ):
     try:
@@ -155,7 +155,7 @@ async def update_channel(
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
     bot_registry: FromDishka[BotRegistryProtocol],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     checker: FromDishka[UserBotChecker],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")

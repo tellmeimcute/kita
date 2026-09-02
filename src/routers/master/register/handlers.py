@@ -10,7 +10,7 @@ from loguru import logger
 from core.config import Config
 from core.cryptographer import Cryptographer
 from database.dto import UserDTO
-from interfaces import BotRegistryProtocol, NotifierServiceProtocol, UnitOfWorkProtocol
+from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UnitOfWorkProtocol
 from services import UserBotService
 from task_queue.tasks import new_userbot
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
@@ -44,7 +44,7 @@ async def bot_token_handler(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
     checker: FromDishka[UserBotChecker],
@@ -79,7 +79,7 @@ async def channel_id_handler(
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
-    notifier: FromDishka[NotifierServiceProtocol],
+    notifier: FromDishka[MessageNotifierProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
     checker: FromDishka[UserBotChecker],
