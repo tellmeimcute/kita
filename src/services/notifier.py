@@ -34,7 +34,7 @@ def with_retry(max_retries: int = 3):
                         logger.error("Telegram rate limiting {} times, giving up", max_retries)
                         raise
                     wait = max(float(e.retry_after), 1.0)
-                    logger.warning(e.message)
+                    logger.warning(e)
                     await asyncio.sleep(wait)
                 except TelegramAPIError:
                     logger.exception("Failed to send message")
