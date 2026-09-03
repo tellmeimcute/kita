@@ -1,3 +1,4 @@
+import orjson
 import uvicorn
 from aiogram import Dispatcher
 from aiogram.fsm.storage.base import DefaultKeyBuilder
@@ -43,6 +44,8 @@ def get_storage(config: Config):
     return RedisStorage.from_url(
         url=config.redis.redis_url,
         key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True),
+        json_loads=orjson.loads,
+        json_dumps=orjson.dumps,
     )
 
 
