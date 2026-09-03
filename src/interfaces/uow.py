@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Protocol
 
 from interfaces import (
@@ -15,11 +14,8 @@ class UnitOfWorkProtocol(Protocol):
     suggestions: SuggestionRepositoryProtocol
     medias: MediaRepositoryProtocol
 
-    @abstractmethod
     async def transaction(self): ...
 
-    @abstractmethod
     async def commit(self): ...
 
-    @abstractmethod
     async def rollback(self): ...
