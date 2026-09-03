@@ -171,6 +171,9 @@ msgstr ""
 msgid "channel_banner_btn"
 msgstr "😏 Suggestions"
 
+msgid "banner_confirm"
+msgstr "Confirm sending the banner to the channel."
+
 msgid "wait_verdict_text"
 msgstr "Post or decline? Or maybe ban 😏"
 

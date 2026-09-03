@@ -27,6 +27,7 @@ class ModerationMenuSG(StatesGroup):
 
 class BannerMenuSG(StatesGroup):
     prepare_banner = State()
+    confirm_banner = State()
 
 
 class BroadcastMenuSG(StatesGroup):

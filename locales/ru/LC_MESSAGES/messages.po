@@ -176,6 +176,9 @@ msgstr ""
 msgid "channel_banner_btn"
 msgstr "😏 Предложка"
 
+msgid "banner_confirm"
+msgstr "Подтвердите отправку баннера в канал."
+
 msgid "wait_verdict_text"
 msgstr "Запостить или отказать? А может забанить 😏"
 

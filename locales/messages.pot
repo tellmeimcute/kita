@@ -128,6 +128,9 @@ msgstr ""
 msgid "channel_banner_btn"
 msgstr ""
 
+msgid "banner_confirm"
+msgstr ""
+
 msgid "wait_verdict_text"
 msgstr ""
 
