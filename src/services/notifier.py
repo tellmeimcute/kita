@@ -1,4 +1,5 @@
 import asyncio
+from functools import wraps
 from typing import Any
 
 from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
@@ -19,25 +20,33 @@ SendTarget = UserDTO | UserProfileDTO | int
 MAX_RETRY = 3
 
 
+def with_retry(max_retries: int = 3):
+    def wrapper(fn):
+        @wraps(fn)
+        async def decorated(*args, **kwargs):
+            retries = 0
+            while True:
+                try:
+                    return await fn(*args, **kwargs)
+                except TelegramRetryAfter as e:
+                    retries += 1
+                    if retries > max_retries:
+                        logger.error("Telegram rate limiting {} times, giving up", max_retries)
+                        raise
+                    wait = max(float(e.retry_after), 1.0)
+                    logger.warning(e.message)
+                    await asyncio.sleep(wait)
+                except TelegramAPIError:
+                    logger.exception("Failed to send message")
+                    raise
+
+        return decorated
+
+    return wrapper
+
+
 class NotifierUtilsMixin:
     __slots__ = ()
-
-    async def exec_with_retry(self, to_exec):
-        retries = 0
-        while True:
-            try:
-                return await to_exec()
-            except TelegramRetryAfter as e:
-                if retries + 1 > MAX_RETRY:
-                    logger.error("Message sending rate limiting {} times, giving up", MAX_RETRY)
-                    raise
-                wait = max(float(e.retry_after), 1.0)
-                logger.warning("Message sending rate limiting, retrying in {}", wait)
-                await asyncio.sleep(wait)
-                retries += 1
-            except TelegramAPIError:
-                logger.exception("Failed to send message")
-                raise
 
     def _parse_target_id(self, target: SendTarget) -> int:
         if isinstance(target, (UserProfileDTO, UserDTO)):
@@ -56,6 +65,7 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         super().__init__(bot_registry)
         self.translator = translator
 
+    @with_retry(MAX_RETRY)
     async def send_text(
         self,
         target: SendTarget,
@@ -67,27 +77,24 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
             i18n_kwargs = dict()
 
         target_id = self._parse_target_id(target)
-
-        return await self.exec_with_retry(
-            lambda: self.bot.send_message(
-                chat_id=target_id,
-                text=self.translator.i18n_text(i18n_key, i18n_kwargs),
-                reply_markup=kb,
-                disable_notification=True,
-                disable_web_page_preview=True,
-            )
+        return await self.bot.send_message(
+            chat_id=target_id,
+            text=self.translator.i18n_text(i18n_key, i18n_kwargs),
+            reply_markup=kb,
+            disable_notification=True,
+            disable_web_page_preview=True,
         )
 
+    @with_retry(MAX_RETRY)
     async def send_mediagroup(
         self,
         target: SendTarget,
         media: list[MediaUnion],
     ) -> list[Message]:
         target_id = self._parse_target_id(target)
-        return await self.exec_with_retry(
-            lambda: self.bot.send_media_group(target_id, media, disable_notification=True)
-        )
+        return await self.bot.send_media_group(target_id, media, disable_notification=True)
 
+    @with_retry(MAX_RETRY)
     async def forward(
         self,
         target: SendTarget,
@@ -95,14 +102,13 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         message_ids: list[int],
     ) -> list[MessageId]:
         target_id = self._parse_target_id(target)
-        return await self.exec_with_retry(
-            lambda: self.bot.forward_messages(
-                chat_id=target_id,
-                from_chat_id=source_chat,
-                message_ids=message_ids,
-            )
+        return await self.bot.forward_messages(
+            chat_id=target_id,
+            from_chat_id=source_chat,
+            message_ids=message_ids,
         )
 
+    @with_retry(MAX_RETRY)
     async def copy(
         self,
         target: SendTarget,
@@ -110,14 +116,13 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         message_ids: list[int],
     ) -> list[MessageId]:
         target_id = self._parse_target_id(target)
-        return await self.exec_with_retry(
-            lambda: self.bot.copy_messages(
-                chat_id=target_id,
-                from_chat_id=source_chat,
-                message_ids=message_ids,
-            )
+        return await self.bot.copy_messages(
+            chat_id=target_id,
+            from_chat_id=source_chat,
+            message_ids=message_ids,
         )
 
+    @with_retry(MAX_RETRY)
     async def edit(
         self,
         chat_id: int,
@@ -125,13 +130,11 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         new_text: str,
         new_kb: InlineKeyboardMarkup | None = None,
     ) -> bool | Message:
-        return await self.exec_with_retry(
-            lambda: self.bot.edit_message_text(
-                text=new_text,
-                chat_id=chat_id,
-                message_id=message_id,
-                reply_markup=new_kb,
-            )
+        return await self.bot.edit_message_text(
+            text=new_text,
+            chat_id=chat_id,
+            message_id=message_id,
+            reply_markup=new_kb,
         )
 
 
