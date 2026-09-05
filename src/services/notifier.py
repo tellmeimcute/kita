@@ -171,6 +171,18 @@ class SuggestionNotifier(NotifierUtilsMixin, BaseService):
             return await self.msg_notifier.send_mediagroup(target_id, media)
         raise UnsupportedPayload
 
+    async def send_suggestion(
+        self,
+        target: SendTarget,
+        dto: SuggestionFullDTO,
+    ):
+        target_id = self._parse_target_id(target)
+
+        i18n_key = "suggestion_caption"
+        i18n_kwargs = self.utils.get_i18n_kwargs(dto)
+
+        return await self._send_suggestion(target_id, i18n_key, i18n_kwargs, dto)
+
     async def send_to_admin(
         self,
         admin: SendTarget,
@@ -178,13 +190,11 @@ class SuggestionNotifier(NotifierUtilsMixin, BaseService):
     ):
         target_id = self._parse_target_id(admin)
 
-        i18n_key = "suggestion_caption"
-        i18n_kwargs = self.utils.get_i18n_kwargs(dto)
-
-        msg = await self._send_suggestion(target_id, i18n_key, i18n_kwargs, dto)
+        msg = await self.send_suggestion(admin, dto)
 
         info_key = "suggestion_admin_viewer_info"
-        kb = ReplyKeyboard.viewer_admin_action()
+        i18n_kwargs = self.utils.get_i18n_kwargs(dto)
+        kb = ReplyKeyboard.viewer_actions()
 
         await self.msg_notifier.send_text(target_id, info_key, i18n_kwargs, kb)
 

@@ -12,7 +12,7 @@ class ReplyKeyboard:
         )
 
     @classmethod
-    def viewer_admin_action(cls):
+    def viewer_actions(cls):
         return cls.build(
             [KeyboardButton(text=_("viewer_accept")), KeyboardButton(text=_("viewer_decline"))],
             [

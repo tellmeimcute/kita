@@ -1,6 +1,8 @@
 from .bot_registry import BotRegistry
 from .notifier import MessageNotifier, SuggestionNotifier
 from .suggestion import SuggestionService
+from .suggestion_queue import SuggestionQueue
+from .suggestion_viewer import SuggestionViewer
 from .user import UserService
 from .user_profile import UserProfileService
 from .userbots import UserBotService
@@ -15,4 +17,6 @@ __all__ = (
     "BotRegistry",
     "UserBotService",
     "WebhookService",
+    "SuggestionQueue",
+    "SuggestionViewer",
 )

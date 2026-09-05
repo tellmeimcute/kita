@@ -9,7 +9,9 @@ from .repository import (
     UserRepositoryProtocol,
 )
 from .services import (
+    SuggestionQueueProtocol,
     SuggestionServiceProtocol,
+    SuggestionViewerProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
@@ -28,5 +30,7 @@ __all__ = (
     "SuggestionServiceProtocol",
     "UserProfileServiceProtocol",
     "UserServiceProtocol",
+    "SuggestionQueueProtocol",
+    "SuggestionViewerProtocol",
     "UnitOfWorkProtocol",
 )

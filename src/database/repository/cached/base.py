@@ -1,9 +1,10 @@
 from database.redis import KitaKeyBuilder, RedisKey
 from database.redis.base import BaseRedisRepository
 from interfaces import BotRegistryProtocol
+from interfaces.mixins import BotMixin
 
 
-class CachedRepository:
+class CachedRepository(BotMixin):
     REDIS_KEY_PART = "base_key"
 
     __slots__ = (
@@ -18,7 +19,7 @@ class CachedRepository:
         redis: BaseRedisRepository,
         key_builder: KitaKeyBuilder | None = None,
     ):
-        self._bot_registry = bot_registry
+        super().__init__(bot_registry)
         self._redis = redis
 
         if key_builder:
@@ -47,7 +48,3 @@ class CachedRepository:
         if result is not None:
             await redis.set_cache(key, result)
         return result
-
-    @property
-    def bot(self):
-        return self._bot_registry.get_current()

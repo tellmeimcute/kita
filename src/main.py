@@ -20,6 +20,7 @@ from di import (
     MiddlewareProvider,
     RedisProvider,
     UtilsProvider,
+    ViewerProvider,
 )
 from web import get_app
 
@@ -34,6 +35,7 @@ def create_container() -> AsyncContainer:
         BotProvider(),
         DatabaseProvider(),
         RedisProvider(),
+        ViewerProvider(),
         FSMProvider(),
         MiddlewareProvider(),
         AiogramProvider(),

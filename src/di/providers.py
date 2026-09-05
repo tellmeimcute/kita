@@ -8,7 +8,6 @@ from dishka.integrations.aiogram import AiogramMiddlewareData
 from core.config import Config
 from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
-from core.schemas import SuggestionViewerData
 from database.repository import (
     MediaRepository,
     SuggestionRepository,
@@ -28,8 +27,10 @@ from interfaces import (
     MediaRepositoryProtocol,
     MessageNotifierProtocol,
     SuggestionNotifierProtocol,
+    SuggestionQueueProtocol,
     SuggestionRepositoryProtocol,
     SuggestionServiceProtocol,
+    SuggestionViewerProtocol,
     UnitOfWorkProtocol,
     UserBotRepositoryProtocol,
     UserBotStatsRepositoryProtocol,
@@ -40,6 +41,8 @@ from interfaces import (
 )
 from services.notifier import MessageNotifier, SuggestionNotifier
 from services.suggestion import SuggestionService
+from services.suggestion_queue import SuggestionQueue
+from services.suggestion_viewer import SuggestionViewer
 from services.user import UserService
 from services.user_profile import UserProfileService
 from services.userbots import UserBotService
@@ -53,6 +56,13 @@ from usecases import (
 from utils.message_parser import MessageParser
 from utils.suggestion_utils import SuggestionUtils
 from utils.userbot_checker import UserBotChecker
+
+
+class ViewerProvider(Provider):
+    scope = Scope.REQUEST
+
+    suggestion_queue = provide(SuggestionQueue, provides=SuggestionQueueProtocol)
+    suggestion_viewer = provide(SuggestionViewer, provides=SuggestionViewerProtocol)
 
 
 class InfraProvider(Provider):
@@ -125,18 +135,3 @@ class FSMProvider(Provider):
         chat = middleware_data.get("event_chat")
         bot = middleware_data.get("bot")
         return bg_factory.bg(bot, from_user.id, chat.id)
-
-    @provide
-    async def viewer_data(
-        self,
-        fsm: FSMContext,
-        middleware_data: AiogramMiddlewareData,
-    ) -> SuggestionViewerData:
-        data = await fsm.get_data()
-        raw_viewer_data = data.get("viewer_data")
-
-        if not raw_viewer_data:
-            user_dto = middleware_data.get("user_dto")
-            return SuggestionViewerData(user_dto=user_dto)
-
-        return SuggestionViewerData.model_validate(raw_viewer_data)

@@ -1,22 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from interfaces import BotRegistryProtocol
+from interfaces.mixins import BotMixin
 
 
-class BaseRepository:
-    __slots__ = (
-        "_session",
-        "_bot_registry",
-    )
+class BaseRepository(BotMixin):
+    __slots__ = ("_session",)
 
     def __init__(
         self,
         session: AsyncSession,
         bot_registry: BotRegistryProtocol,
     ):
+        super().__init__(bot_registry)
         self._session = session
-        self._bot_registry = bot_registry
-
-    @property
-    def bot(self):
-        return self._bot_registry.get_current()

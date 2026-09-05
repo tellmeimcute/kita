@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any, Protocol
 
 from aiogram.types import Message
+from aiogram_dialog import DialogManager
 
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO, UserProfileDTO
@@ -53,3 +54,17 @@ class SuggestionServiceProtocol(Protocol):
     async def update_by_id(self, suggestion_id: int, **data: Any) -> None: ...
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats: ...
+
+
+class SuggestionQueueProtocol(Protocol):
+    async def seed_queue(self, suggestions: Sequence[SuggestionFullDTO]) -> list[dict]: ...
+
+    async def next_suggestion(self) -> SuggestionFullDTO | None: ...
+
+
+class SuggestionViewerProtocol(Protocol):
+    async def advance(self, user_dto: UserDTO) -> bool: ...
+
+    async def get_current(self) -> SuggestionFullDTO | None: ...
+
+    async def return_to_menu(self, manager: DialogManager, user_dto: UserDTO): ...
