@@ -16,10 +16,14 @@ class UserProfileRepository(BaseRepository):
     __slots__ = ()
 
     async def get_by_id(self, user_id: int) -> UserProfileDTO | None:
-        stmt = select(UserProfile).where(
-            UserProfile.user_id == user_id,
-            UserProfile.bot_id == self.bot.id,
-        ).options(selectinload(UserProfile.user))
+        stmt = (
+            select(UserProfile)
+            .where(
+                UserProfile.user_id == user_id,
+                UserProfile.bot_id == self.bot.id,
+            )
+            .options(selectinload(UserProfile.user))
+        )
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
@@ -80,30 +84,42 @@ class UserProfileRepository(BaseRepository):
         await self._session.execute(stmt)
 
     async def get_active(self) -> Sequence[UserProfileDTO]:
-        stmt = select(UserProfile).where(
-            UserProfile.bot_id == self.bot.id,
-            (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
-        ).options(selectinload(UserProfile.user))
+        stmt = (
+            select(UserProfile)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+                (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
+            )
+            .options(selectinload(UserProfile.user))
+        )
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
         return UserProfileDTO.from_model_list(orm_models)
 
     async def get_admins(self) -> Sequence[UserProfileDTO]:
-        stmt = select(UserProfile).where(
-            UserProfile.bot_id == self.bot.id,
-            UserProfile.role == UserRole.ADMIN,
-        ).options(selectinload(UserProfile.user))
+        stmt = (
+            select(UserProfile)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+                UserProfile.role == UserRole.ADMIN,
+            )
+            .options(selectinload(UserProfile.user))
+        )
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
         return UserProfileDTO.from_model_list(orm_models)
 
     async def get_banned(self) -> Sequence[UserProfileDTO]:
-        stmt = select(UserProfile).where(
-            UserProfile.bot_id == self.bot.id,
-            UserProfile.role == UserRole.BANNED,
-        ).options(selectinload(UserProfile.user))
+        stmt = (
+            select(UserProfile)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+                UserProfile.role == UserRole.BANNED,
+            )
+            .options(selectinload(UserProfile.user))
+        )
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()

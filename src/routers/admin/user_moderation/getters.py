@@ -13,7 +13,7 @@ async def get_userbot_user_profiles(
     **kwargs,
 ):
     async with uow.transaction():
-        profiles = await profile_service.get_many(limit=5, order_desc=True)
+        profiles = await profile_service.get_many(limit=50, order_desc=True)
     return {"profiles": profiles}
 
 

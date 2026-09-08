@@ -1,7 +1,7 @@
 from aiogram import F
 from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Button, Column, Select, Start, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, ScrollingGroup, Select, Start, SwitchTo
 from aiogram_dialog.widgets.text import Format
 
 from database.enums import UserRole
@@ -16,7 +16,7 @@ user_select_window = Window(
     I18nText("wait_user_id_text"),
     Format("{error}", when="error"),
     MessageInput(select_user),
-    Column(
+    ScrollingGroup(
         Select(
             Format("{item.user_id} | {item.user.name:.10}"),
             id="user_profile_select",
@@ -24,6 +24,9 @@ user_select_window = Window(
             item_id_getter=lambda item: item.user_id,
             items="profiles",
         ),
+        id="users_pager",
+        width=1,
+        height=5,
     ),
     Start(
         I18nText("back_admin_menu_btn"),

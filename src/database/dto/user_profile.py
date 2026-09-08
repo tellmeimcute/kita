@@ -2,8 +2,8 @@ from datetime import datetime
 
 from database.enums import UserRole
 
-from .user import UserDTO
 from .base import TrackableDto
+from .user import UserDTO
 
 
 class UserProfileDTO(TrackableDto):
