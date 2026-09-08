@@ -2,6 +2,7 @@ from datetime import datetime
 
 from database.enums import UserRole
 
+from .user import UserDTO
 from .base import TrackableDto
 
 
@@ -11,6 +12,8 @@ class UserProfileDTO(TrackableDto):
     prefer_anonymous: bool = False
     is_bot_blocked: bool | None = False
     role: UserRole = UserRole.USER
+
+    user: UserDTO | None = None
 
     created_at: datetime
     updated_at: datetime

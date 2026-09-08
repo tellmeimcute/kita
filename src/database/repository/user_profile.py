@@ -3,6 +3,7 @@ from typing import Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import selectinload
 
 from database.dto import UserProfileDTO
 from database.enums import SuggestionStatus, UserRole
@@ -18,7 +19,7 @@ class UserProfileRepository(BaseRepository):
         stmt = select(UserProfile).where(
             UserProfile.user_id == user_id,
             UserProfile.bot_id == self.bot.id,
-        )
+        ).options(selectinload(UserProfile.user))
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
@@ -36,6 +37,7 @@ class UserProfileRepository(BaseRepository):
             .where(
                 UserProfile.bot_id == self.bot.id,
             )
+            .options(selectinload(UserProfile.user))
             .limit(limit)
             .offset(offset)
             .order_by(order_by)
@@ -81,7 +83,7 @@ class UserProfileRepository(BaseRepository):
         stmt = select(UserProfile).where(
             UserProfile.bot_id == self.bot.id,
             (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
-        )
+        ).options(selectinload(UserProfile.user))
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
@@ -91,7 +93,7 @@ class UserProfileRepository(BaseRepository):
         stmt = select(UserProfile).where(
             UserProfile.bot_id == self.bot.id,
             UserProfile.role == UserRole.ADMIN,
-        )
+        ).options(selectinload(UserProfile.user))
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()
@@ -101,7 +103,7 @@ class UserProfileRepository(BaseRepository):
         stmt = select(UserProfile).where(
             UserProfile.bot_id == self.bot.id,
             UserProfile.role == UserRole.BANNED,
-        )
+        ).options(selectinload(UserProfile.user))
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()

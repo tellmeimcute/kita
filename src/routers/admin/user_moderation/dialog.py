@@ -18,7 +18,7 @@ user_select_window = Window(
     MessageInput(select_user),
     Column(
         Select(
-            Format("{item.user_id}"),
+            Format("{item.user_id} | {item.user.name:.10}"),
             id="user_profile_select",
             on_click=on_user_selected,
             item_id_getter=lambda item: item.user_id,
