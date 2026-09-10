@@ -34,9 +34,11 @@ class UserDTO(TrackableDto):
         updated_at = self.updated_at.strftime("%d/%m/%Y, %H:%M:%S")
         created_at = self.created_at.strftime("%d/%m/%Y, %H:%M:%S")
 
+        username = f"@{self.username}" if self.username else "N/A"
+
         data.update(
             name=quote(self.name),
-            username=quote(self.username),
+            username=quote(username),
             updated_at=updated_at,
             created_at=created_at,
         )
