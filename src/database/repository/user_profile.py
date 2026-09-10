@@ -57,6 +57,7 @@ class UserProfileRepository(BaseRepository):
             .values(bot_id=self.bot.id, user_id=user_id)
             .on_conflict_do_nothing(constraint="uq_user_profile_bot_user")
             .returning(UserProfile)
+            .options(selectinload(UserProfile.user))
         )
 
         result = await self._session.execute(stmt)
