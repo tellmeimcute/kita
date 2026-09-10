@@ -178,7 +178,7 @@ class SuggestionNotifier(NotifierUtilsMixin, BaseService):
     ):
         target_id = self._parse_target_id(target)
 
-        i18n_key = "suggestion_caption"
+        i18n_key = "channel_post_message"
         i18n_kwargs = self.utils.get_i18n_kwargs(dto)
 
         return await self._send_suggestion(target_id, i18n_key, i18n_kwargs, dto)
@@ -199,8 +199,3 @@ class SuggestionNotifier(NotifierUtilsMixin, BaseService):
         await self.msg_notifier.send_text(target_id, info_key, i18n_kwargs, kb)
 
         return msg
-
-    async def send_to_channel(self, channel_id: int, dto: SuggestionFullDTO):
-        i18n_key = "channel_post_message"
-        i18n_kwargs = self.utils.get_i18n_kwargs(dto)
-        return await self._send_suggestion(channel_id, i18n_key, i18n_kwargs, dto)
