@@ -33,6 +33,7 @@ class CachedUserRepository(CachedRepository):
         return await self._cache_or_load(
             self._get_key(prep_user_dto.user_id),
             lambda: self.repo.get_or_create(prep_user_dto),
+            populate=False,
         )
 
     async def update(self, user_id: int, **data: Any):
@@ -42,7 +43,7 @@ class CachedUserRepository(CachedRepository):
 
     async def create(self, dto: UserDTO):
         result = await self.repo.create(dto)
-        await self._redis.set_cache(self._get_key(dto.user_id), result)
+        await self._redis.delete(self._get_key(dto.user_id))
         return result
 
     async def count(self) -> int:

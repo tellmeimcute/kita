@@ -37,6 +37,7 @@ class CachedRepository(BotMixin):
         loader,
         *,
         redis_repo: BaseRedisRepository | None = None,
+        populate=True,
     ):
         redis = redis_repo or self._redis
 
@@ -45,6 +46,12 @@ class CachedRepository(BotMixin):
 
         result = await loader()
 
-        if result is not None:
+        if result is None:
+            return None
+
+        if populate:
             await redis.set_cache(key, result)
+        else:
+            await redis.delete(key)
+
         return result

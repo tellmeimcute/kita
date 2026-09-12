@@ -41,6 +41,7 @@ class CachedUserProfileRepository(CachedRepository):
         return await self._cache_or_load(
             self._get_key(user_id),
             lambda: self.repo.get_or_create(user_id),
+            populate=False,
         )
 
     async def update(self, user_id: int, **data: Any):
@@ -50,7 +51,7 @@ class CachedUserProfileRepository(CachedRepository):
 
     async def create(self, user_id: int) -> UserProfileDTO:
         result = await self.repo.create(user_id)
-        await self._redis.set_cache(self._get_key(user_id), result)
+        await self._redis.delete(self._get_key(user_id))
         return result
 
     async def get_many(
