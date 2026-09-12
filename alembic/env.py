@@ -1,4 +1,5 @@
 import asyncio
+import threading
 import os
 import sys
 from logging.config import fileConfig
@@ -25,9 +26,11 @@ if config.config_file_name is not None:
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 from core.config import Config
+from core.logging_config import setup_logging
 from database.models.abstract_model import AbstractModel
 
 project_config = Config()
+setup_logging(project_config.log_level.upper())
 target_metadata = AbstractModel.metadata
 config.set_main_option("sqlalchemy.url", project_config.database.db_url)
 
@@ -90,7 +93,20 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    asyncio.run(run_async_migrations())
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(run_async_migrations())
+        return
+
+    thread = threading.Thread(
+        target=asyncio.run,
+        args=(run_async_migrations(),),
+    )
+
+    thread.start()
+    thread.join()
+
 
 
 if context.is_offline_mode():
