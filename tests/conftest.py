@@ -8,6 +8,11 @@ from database.dto import SuggestionFullDTO, UserDTO
 from database.enums import SuggestionStatus
 
 
+@pytest.fixture(scope="session")
+def id_generator():
+    return itertools.count(start=666_777)
+
+
 @pytest.fixture
 def test_user_dto() -> UserDTO:
     return UserDTO(
@@ -19,9 +24,7 @@ def test_user_dto() -> UserDTO:
 
 
 @pytest.fixture
-def create_user_dto() -> Callable[..., UserDTO]:
-    id_generator = itertools.count(start=666_777)
-
+def create_user_dto(id_generator) -> Callable[..., UserDTO]:
     def _create_user(**kwargs) -> UserDTO:
         user_id = next(id_generator)
 

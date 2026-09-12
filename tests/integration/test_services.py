@@ -1,15 +1,9 @@
 from collections.abc import Callable
 
 from dishka import AsyncContainer
-from redis.asyncio import Redis
 
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, UserServiceProtocol
-
-
-async def flush_redis(container: AsyncContainer):
-    redis = await container.get(Redis)
-    await redis.flushall()
 
 
 async def test_register_user(
@@ -28,8 +22,6 @@ async def test_register_user(
         user_dto = await user_service.get_or_create(test_user_dto)
         profile_dto = await user_profile_service.get_or_create(test_user_dto.user_id)
         await uow.rollback()
-
-    await flush_redis(request_container)
 
     assert isinstance(user_dto, UserDTO)
     assert isinstance(profile_dto, UserProfileDTO)
@@ -53,7 +45,5 @@ async def test_redis_stalling_data(
     async with uow.transaction():
         user_dto = await user_service.get(test_user_dto.user_id)
         await uow.rollback()
-
-    await flush_redis(request_container)
 
     assert user_dto is None
