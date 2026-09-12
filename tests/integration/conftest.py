@@ -1,20 +1,17 @@
 import os
-import asyncio
 from collections.abc import Generator
 from unittest.mock import AsyncMock
+
 import pytest
-from alembic.config import Config as AlembicConfig
-from alembic import command
-
 from aiogram import Bot
-
-from dishka import Provider, Scope, provide, AsyncContainer, make_async_container
+from alembic import command
+from alembic.config import Config as AlembicConfig
+from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 from testcontainers.community.postgres import PostgresContainer
 from testcontainers.community.redis import AsyncRedisContainer
 
 from core.config import Config
-from database.dto import UserDTO
 from di import (
     BotProvider,
     DatabaseProvider,
@@ -22,7 +19,6 @@ from di import (
     RedisProvider,
     UtilsProvider,
 )
-
 from interfaces import BotRegistryProtocol
 
 
@@ -62,7 +58,7 @@ class TestProvider(Provider):
         command.upgrade(alembic_cfg, "head")
 
         yield container
-        
+
         container.stop()
 
     @provide
@@ -76,7 +72,7 @@ class TestProvider(Provider):
         os.environ["REDIS_PORT"] = str(container.get_exposed_port(6379))
 
         yield container
-        
+
         container.stop()
 
     @provide

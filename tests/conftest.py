@@ -1,6 +1,10 @@
+import itertools
+from collections.abc import Callable
 from datetime import UTC, datetime
+
 import pytest
-from database.dto import SuggestionFullDTO, UserDTO, UserProfileDTO
+
+from database.dto import SuggestionFullDTO, UserDTO
 from database.enums import SuggestionStatus
 
 
@@ -12,6 +16,26 @@ def test_user_dto() -> UserDTO:
         name="testing",
         language_code="ru",
     )
+
+
+@pytest.fixture
+def create_user_dto() -> Callable[..., UserDTO]:
+    id_generator = itertools.count(start=666_777)
+
+    def _create_user(**kwargs) -> UserDTO:
+        user_id = next(id_generator)
+
+        default_kwargs = {
+            "user_id": user_id,
+            "username": f"test_user_{user_id}",
+            "name": "testing",
+            "language_code": "ru",
+        }
+        default_kwargs.update(kwargs)
+
+        return UserDTO(**default_kwargs)
+
+    return _create_user
 
 
 @pytest.fixture
