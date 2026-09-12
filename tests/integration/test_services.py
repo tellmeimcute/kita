@@ -8,7 +8,7 @@ from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, UserServi
 
 async def test_register_user(
     request_container: AsyncContainer,
-    create_user_dto: Callable[..., UserDTO],
+    user_dto_factory: Callable[..., UserDTO],
 ):
     """TEST USER MIDDLEWARE CASE"""
 
@@ -16,7 +16,7 @@ async def test_register_user(
     user_service = await request_container.get(UserServiceProtocol)
     user_profile_service = await request_container.get(UserProfileServiceProtocol)
 
-    test_user_dto = create_user_dto()
+    test_user_dto = user_dto_factory()
 
     async with uow.transaction():
         user_dto = await user_service.get_or_create(test_user_dto)
@@ -31,12 +31,12 @@ async def test_register_user(
 
 async def test_redis_stalling_data(
     request_container: AsyncContainer,
-    create_user_dto: Callable[..., UserDTO],
+    user_dto_factory: Callable[..., UserDTO],
 ):
     uow = await request_container.get(UnitOfWorkProtocol)
     user_service = await request_container.get(UserServiceProtocol)
 
-    test_user_dto = create_user_dto()
+    test_user_dto = user_dto_factory()
 
     async with uow.transaction():
         await user_service.create(test_user_dto)
