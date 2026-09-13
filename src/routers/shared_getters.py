@@ -13,3 +13,13 @@ async def get_error_text(
 ):
     i18n_key = dialog_manager.dialog_data.pop("something_wrong", None)
     return {"error": translator.translate(i18n_key)}
+
+
+@inject
+async def get_additional_text(
+    dialog_manager: DialogManager,
+    translator: FromDishka[Translator],
+    **kwargs,
+):
+    i18n_key = dialog_manager.dialog_data.pop("additional_text_key", None)
+    return {"additional_text": translator.translate(i18n_key)}
