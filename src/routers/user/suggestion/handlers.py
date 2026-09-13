@@ -8,7 +8,6 @@ from core.exceptions import UnsupportedPayload
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import SuggestionServiceProtocol, UnitOfWorkProtocol
 from task_queue.tasks import admin_notify_new_suggestion
-from ui.state_groups import SuggestionSG
 
 
 @inject
@@ -37,7 +36,7 @@ async def on_album_received(
         manager.dialog_data["something_wrong"] = "suggestion_error_media"
         return
 
-    await manager.switch_to(SuggestionSG.on_moderation)
+    manager.dialog_data["additional_text_key"] = "suggestion_sent_to_moderation"
 
     await admin_notify_new_suggestion.kiq(
         bot_id=message.bot.id,

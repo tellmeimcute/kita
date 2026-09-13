@@ -9,7 +9,6 @@ class UserMenuSG(StatesGroup):
 
 class SuggestionSG(StatesGroup):
     make_suggestion = State()
-    on_moderation = State()
 
 
 class AdminMenuSG(StatesGroup):
