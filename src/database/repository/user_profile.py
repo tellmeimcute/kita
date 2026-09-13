@@ -71,6 +71,7 @@ class UserProfileRepository(BaseRepository):
         orm = UserProfile(bot_id=self.bot.id, user_id=user_id)
         self._session.add(orm)
         await self._session.flush()
+        await self._session.refresh(orm, attribute_names=["user"])
         return UserProfileDTO.model_validate(orm)
 
     async def update(self, user_id: int, **data: Any):
