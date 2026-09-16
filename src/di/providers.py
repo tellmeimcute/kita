@@ -52,6 +52,7 @@ from usecases import (
     ChangeRoleUseCase,
     MessageUserUseCase,
     ModerateSuggestionUseCase,
+    UserRegisterOrUpdateUseCase,
 )
 from utils.message_parser import MessageParser
 from utils.suggestion_utils import SuggestionUtils
@@ -102,6 +103,7 @@ class InfraProvider(Provider):
     change_role = provide(ChangeRoleUseCase)
     broadcast = provide(BroadcastUseCase)
     message_user = provide(MessageUserUseCase)
+    register_or_update_user = provide(UserRegisterOrUpdateUseCase)
 
     @provide(scope=Scope.APP)
     def config(self) -> Config:
