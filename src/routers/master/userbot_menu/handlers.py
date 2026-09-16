@@ -9,7 +9,13 @@ from loguru import logger
 
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UnitOfWorkProtocol
+from database.enums import UserRole
+from interfaces import (
+    BotRegistryProtocol,
+    MessageNotifierProtocol,
+    UnitOfWorkProtocol,
+    UserProfileServiceProtocol,
+)
 from services import UserBotService, WebhookService
 from ui.state_groups import UserBotSelectSG
 from utils.userbot_checker import UserBotChecker, UserBotCheckResult
@@ -189,3 +195,33 @@ async def update_channel(
     await notifier.send_text(user_dto, "userbot_channel_updated")
 
     await manager.switch_to(UserBotSelectSG.moderation)
+
+
+@inject
+async def demote_all_admins(
+    callback: CallbackQuery,
+    widget: Button,
+    manager: DialogManager,
+    uow: FromDishka[UnitOfWorkProtocol],
+    profile_service: FromDishka[UserProfileServiceProtocol],
+    userbot_service: FromDishka[UserBotService],
+    bot_registry: FromDishka[BotRegistryProtocol],
+    tl: FromDishka[Translator],
+):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    bot_id = int(manager.dialog_data["selected_bot_id"])
+
+    async with uow.transaction():
+        userbot = await userbot_service.get(bot_id)
+
+    if auth_error := action_auth(user_dto, userbot):
+        return await callback.answer(tl.translate(auth_error))
+
+    bot = bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
+
+    async with bot_registry.with_bot(bot), uow.transaction():
+        for admin in await profile_service.get_admins():
+            if admin.user_id != userbot.owner_id:
+                await profile_service.update(admin.user_id, role=UserRole.USER)
+
+    await callback.answer("success")

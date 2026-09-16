@@ -296,6 +296,9 @@ msgstr ""
 msgid "my_userbots_selection_btn"
 msgstr ""
 
+msgid "userbot_demote_all_admins_btn"
+msgstr ""
+
 msgid "userbot_update_token"
 msgstr ""
 
