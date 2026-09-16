@@ -11,7 +11,7 @@ from aiogram.filters import (
 from aiogram.types import CallbackQuery, ChatMemberUpdated, ErrorEvent
 from aiogram.utils.i18n import I18n
 from aiogram.utils.token import extract_bot_id
-from aiogram_dialog.api.exceptions import UnknownIntent
+from aiogram_dialog.api.exceptions import UnknownIntent, UnknownState
 from dishka import FromDishka
 from loguru import logger
 
@@ -94,7 +94,7 @@ async def on_userbot_demoted(
     )
 
 
-async def unknown_intent(
+async def on_unknown_intent_or_state(
     event: ErrorEvent,
     callback: CallbackQuery,
     notifier: FromDishka[MessageNotifierProtocol],
@@ -104,10 +104,12 @@ async def unknown_intent(
     try:
         await notifier.send_text(callback.from_user.id, "warning_unknown_intent")
     except Exception:
-        logger.exception("Failed to send unknown-intent warning to user {}", callback.from_user.id)
+        logger.exception(
+            "Failed to send unknown intent/state warning to user {}", callback.from_user.id
+        )
 
     logger.info(
-        "Unknown intent exception on update {}. Send warning to {} userid",
+        "Unknown intent/state warning sended to {} userid",
         event.update.update_id,
         callback.from_user.id,
     )
@@ -156,7 +158,15 @@ def get_error_router():
     )
 
     router.error.register(
-        unknown_intent, ExceptionTypeFilter(UnknownIntent), F.update.callback_query.as_("callback")
+        on_unknown_intent_or_state,
+        ExceptionTypeFilter(UnknownIntent),
+        F.update.callback_query.as_("callback"),
+    )
+
+    router.error.register(
+        on_unknown_intent_or_state,
+        ExceptionTypeFilter(UnknownState),
+        F.update.callback_query.as_("callback"),
     )
 
     return router
