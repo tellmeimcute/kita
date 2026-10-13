@@ -1,11 +1,21 @@
+import os
 from collections.abc import Callable
 from datetime import UTC, datetime
 from itertools import count
 
 import pytest
+from cryptography.fernet import Fernet
 
 from database.dto import SuggestionFullDTO, UserDTO
 from database.enums import SuggestionStatus
+
+
+def pytest_configure(config: pytest.Config):
+    os.environ["TG_TOKEN"] = "0000000000:test"
+    os.environ["WEBHOOK_SECRET"] = "test-secret"
+    os.environ["ENCRYPTION_KEY"] = Fernet.generate_key().decode()
+    os.environ["WEBHOOK_DOMAIN"] = "www.example.com"
+    os.environ["POSTGRES_PASSWORD"] = "test-postgres-pwd"
 
 
 @pytest.fixture(scope="session")
