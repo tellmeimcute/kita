@@ -30,6 +30,7 @@ from interfaces import (
     SuggestionQueueProtocol,
     SuggestionRepositoryProtocol,
     SuggestionServiceProtocol,
+    SuggestionTaskDispatcherProtocol,
     SuggestionViewerProtocol,
     UnitOfWorkProtocol,
     UserBotRepositoryProtocol,
@@ -47,6 +48,7 @@ from services.user import UserService
 from services.user_profile import UserProfileService
 from services.userbots import UserBotService
 from services.webhooks import WebhookService
+from task_queue.dispatcher import SuggestionTaskDispatcher
 from usecases import (
     BroadcastUseCase,
     ChangeRoleUseCase,
@@ -70,8 +72,12 @@ class InfraProvider(Provider):
     scope = Scope.REQUEST
 
     cryptographer = provide(Cryptographer, scope=Scope.APP)
-
     webhook_service = provide(WebhookService, scope=Scope.APP)
+    suggestion_tasks = provide(
+        SuggestionTaskDispatcher,
+        provides=SuggestionTaskDispatcherProtocol,
+        scope=Scope.APP,
+    )
 
     userbot_service = provide(UserBotService)
     msg_notifier = provide(MessageNotifier, provides=MessageNotifierProtocol)

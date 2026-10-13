@@ -1,4 +1,5 @@
 from .bot_registry import BotRegistryProtocol
+from .dispatcher import SuggestionTaskDispatcherProtocol
 from .notifier import MessageNotifierProtocol, SuggestionNotifierProtocol
 from .repository import (
     MediaRepositoryProtocol,
@@ -33,4 +34,5 @@ __all__ = (
     "SuggestionQueueProtocol",
     "SuggestionViewerProtocol",
     "UnitOfWorkProtocol",
+    "SuggestionTaskDispatcherProtocol",
 )
