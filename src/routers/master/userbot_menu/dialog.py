@@ -10,11 +10,11 @@ from ui.widgets.i18n_text import I18nFormat, I18nText
 
 from .getters import get_selected_userbot, owned_userbots
 from .handlers import (
-    demote_all_admins,
     on_bot_selected,
-    update_channel,
-    update_token,
     userbot_active_toggle,
+    userbot_demote_admins,
+    userbot_update_channel,
+    userbot_update_token,
 )
 
 userbot_main_window = Window(
@@ -63,7 +63,7 @@ userbot_moderation_window = Window(
     Button(
         I18nText("userbot_demote_all_admins_btn"),
         id="userbot_demote_all_admins",
-        on_click=demote_all_admins,
+        on_click=userbot_demote_admins,
     ),
     Start(
         I18nText("menu_btn"),
@@ -77,7 +77,7 @@ userbot_moderation_window = Window(
 update_token_window = Window(
     I18nText("userbot_update_token"),
     Format("{error}", when="error"),
-    MessageInput(update_token),
+    MessageInput(userbot_update_token),
     Start(
         I18nText("menu_btn"),
         id="main_menu",
@@ -90,7 +90,7 @@ update_token_window = Window(
 update_channel_window = Window(
     I18nText("userbot_update_channel"),
     Format("{error}", when="error"),
-    MessageInput(update_channel),
+    MessageInput(userbot_update_channel),
     Start(
         I18nText("menu_btn"),
         id="main_menu",

@@ -54,11 +54,15 @@ from usecases import (
     ChangeRoleUseCase,
     MessageUserUseCase,
     ModerateSuggestionUseCase,
+    UserbotActiveToggleUseCase,
+    UserbotDemoteAdminsUseCase,
+    UserBotRegisterUseCase,
+    UserbotUpdateChannelUseCase,
+    UserbotUpdateTokenUseCase,
     UserRegisterOrUpdateUseCase,
 )
 from utils.message_parser import MessageParser
 from utils.suggestion_utils import SuggestionUtils
-from utils.userbot_checker import UserBotChecker
 
 
 class ViewerProvider(Provider):
@@ -110,6 +114,11 @@ class InfraProvider(Provider):
     broadcast = provide(BroadcastUseCase)
     message_user = provide(MessageUserUseCase)
     register_or_update_user = provide(UserRegisterOrUpdateUseCase)
+    ub_register = provide(UserBotRegisterUseCase)
+    ub_active_toggle = provide(UserbotActiveToggleUseCase)
+    ub_update_token = provide(UserbotUpdateTokenUseCase)
+    ub_update_channel = provide(UserbotUpdateChannelUseCase)
+    ub_demote_admins = provide(UserbotDemoteAdminsUseCase)
 
     @provide(scope=Scope.APP)
     def config(self) -> Config:
@@ -122,7 +131,6 @@ class UtilsProvider(Provider):
     suggestion_utils = provide(SuggestionUtils, scope=Scope.REQUEST)
     translator = provide(Translator)
     message_parser = provide(MessageParser)
-    userbot_checker = provide(UserBotChecker)
 
     @provide
     def i18n(self) -> I18n:

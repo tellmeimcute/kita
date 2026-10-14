@@ -1,4 +1,4 @@
-from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput
@@ -9,12 +9,15 @@ from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
+from core.exceptions import UserbotAlreadyExistsError, UserbotError
+from core.i18n_translator import Translator
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UnitOfWorkProtocol
 from services import UserBotService
 from task_queue.tasks import new_userbot
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
-from utils.userbot_checker import UserBotChecker, UserBotCheckResult
+from usecases import UserBotRegisterUseCase
+from utils.userbot_probe import parse_token, probe_token
 
 
 @inject
@@ -25,6 +28,7 @@ async def start_registration(
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotService],
     config: FromDishka[Config],
+    tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
@@ -32,7 +36,7 @@ async def start_registration(
         userbots = await userbot_service.get_by_owner_id(user_dto.user_id)
 
     if len(userbots) >= config.max_userbots_per_user:
-        return await callback.answer("Userbot limit exceeded!")
+        return await callback.answer(tl.translate("reg_bot_limit_exceeded"))
 
     await manager.start(UserBotRegisterSG.wait_token)
 
@@ -42,34 +46,22 @@ async def bot_token_handler(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
-    notifier: FromDishka[MessageNotifierProtocol],
-    bot_registry: FromDishka[BotRegistryProtocol],
     crypto: FromDishka[Cryptographer],
-    checker: FromDishka[UserBotChecker],
+    bot_registry: FromDishka[BotRegistryProtocol],
 ):
     try:
         await message.delete()
-    except Exception:
-        logger.exception("Token message delete failed")
+    except TelegramBadRequest as e:
+        logger.warning("Token message delete failed: {}", e.message)
 
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    check_result = await checker.check_token(None, message.text, bot_registry.bot_settings)
+    try:
+        token = parse_token(message.text)
+        await probe_token(bot_registry.bot_settings, token)
 
-    if not check_result.success:
-        manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
-        return None
-
-    async with uow.transaction():
-        if await userbot_service.get(check_result.bot_id):
-            await notifier.send_text(user_dto, "reg_bot_alredy_exist")
-            return await manager.start(RegistrarMenuSG.menu)
-
-    manager.dialog_data["new_userbot_token"] = crypto.encrypt(check_result.token)
-    manager.dialog_data["new_userbot_bot_id"] = check_result.bot_id
-
-    await manager.next(ShowMode.DELETE_AND_SEND)
+        manager.dialog_data["new_userbot_token"] = crypto.encrypt(token)
+        await manager.next(ShowMode.DELETE_AND_SEND)
+    except UserbotError as e:
+        manager.dialog_data["something_wrong"] = e.error_key
 
 
 @inject
@@ -77,63 +69,32 @@ async def channel_id_handler(
     message: Message,
     message_input: MessageInput,
     manager: DialogManager,
-    uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
     notifier: FromDishka[MessageNotifierProtocol],
-    bot_registry: FromDishka[BotRegistryProtocol],
-    crypto: FromDishka[Cryptographer],
-    checker: FromDishka[UserBotChecker],
+    register: FromDishka[UserBotRegisterUseCase],
 ):
-    if not message.text:
-        manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
-        return
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    raw_token = manager.dialog_data.get("new_userbot_token")
 
     try:
-        channel_id = checker.get_channel_id(message.text)
-    except ValueError:
-        logger.exception(
-            "Userbot registration failed. Trying channel_id '{}'", message.text.strip()
-        )
-        manager.dialog_data["something_wrong"] = "reg_bot_channel_id_error"
-        return
-
-    raw_token = manager.dialog_data.get("new_userbot_token")
-    if not raw_token:
-        manager.dialog_data["something_wrong"] = "reg_bot_bad_request"
-        return
-
-    token = crypto.decrypt(raw_token)
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
-
-    async with Bot(token=token) as tmp_bot:
-        check_result: UserBotCheckResult = await checker.full_check(tmp_bot, channel_id)
-
-    if not check_result.success:
-        manager.dialog_data["something_wrong"] = check_result.detail_i18n_key
-        return
-
-    async with uow.transaction():
-        await userbot_service.create(
-            token=token,
-            bot_id=check_result.bot_info.id,
-            username=check_result.bot_info.username,
+        bot_info = await register.execute(
+            raw_token,
+            message.text,
             owner_id=user_dto.user_id,
-            channel_id=check_result.channel.id,
-            channel_name=check_result.channel.full_name,
         )
 
-    bot_registry.remove(check_result.bot_info.id)
-    bot_registry.get_or_create(check_result.bot_info.id, token)
+        await notifier.send_text(user_dto, "reg_bot_userbot_registered")
+        await manager.start(
+            RegistrarMenuSG.menu,
+            show_mode=ShowMode.DELETE_AND_SEND,
+        )
 
-    await notifier.send_text(user_dto, "reg_bot_userbot_registered")
-
-    await manager.start(
-        RegistrarMenuSG.menu,
-        show_mode=ShowMode.DELETE_AND_SEND,
-    )
-
-    await new_userbot.kiq(
-        bot_id=message.bot.id,
-        userbot_id=check_result.bot_info.id,
-        owner_id=user_dto.user_id,
-    )
+        await new_userbot.kiq(
+            bot_id=message.bot.id,
+            userbot_id=bot_info.id,
+            owner_id=user_dto.user_id,
+        )
+    except UserbotAlreadyExistsError as e:
+        await notifier.send_text(user_dto, e.error_key)
+        await manager.start(RegistrarMenuSG.menu)
+    except UserbotError as e:
+        manager.dialog_data["something_wrong"] = e.error_key

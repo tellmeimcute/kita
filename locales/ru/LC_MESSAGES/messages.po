@@ -359,11 +359,17 @@ msgstr ""
 "\n"
 "<b>У бота не достаточно прав для публикации сообщений в канале.</b>\n"
 
+msgid "reg_bot_not_a_channel_error"
+msgstr "<b>Переданный channel_id не является каналом.</b>"
+
 msgid "reg_bot_alredy_exist"
 msgstr "Бот уже зарегистрирован."
 
 msgid "reg_bot_userbot_registered"
 msgstr "🎉 <b>Ваш бот успешно зарегистрирован, можете пользоваться предложкой!</b>"
+
+msgid "reg_bot_limit_exceeded"
+msgstr "⚠️ Достигнут лимит ботов."
 
 msgid "userbots_moderation_select"
 msgstr "🤖 <b>Список ваших ботов ниже</b>"
@@ -397,6 +403,15 @@ msgstr "🟢 <b>Токен успешно обновлен</b>"
 
 msgid "userbot_channel_updated"
 msgstr "🟢 <b>Канал успешно обновлен</b>"
+
+msgid "userbot_not_found"
+msgstr "Юзербот не найден."
+
+msgid "userbot_is_banned"
+msgstr "Этот юзербот заблокирован."
+
+msgid "userbot_admins_demoted"
+msgstr "🟢 Все админы разжалованы"
 
 msgid "your_bot_deactivated"
 msgstr "Твой бот @{bot_username} ({bot_id}) деактивирован: {detail}"

@@ -272,10 +272,16 @@ msgstr ""
 msgid "reg_bot_permission_error"
 msgstr ""
 
+msgid "reg_bot_not_a_channel_error"
+msgstr ""
+
 msgid "reg_bot_alredy_exist"
 msgstr ""
 
 msgid "reg_bot_userbot_registered"
+msgstr ""
+
+msgid "reg_bot_limit_exceeded"
 msgstr ""
 
 msgid "userbots_moderation_select"
@@ -309,6 +315,15 @@ msgid "userbot_token_updated"
 msgstr ""
 
 msgid "userbot_channel_updated"
+msgstr ""
+
+msgid "userbot_not_found"
+msgstr ""
+
+msgid "userbot_is_banned"
+msgstr ""
+
+msgid "userbot_admins_demoted"
 msgstr ""
 
 msgid "your_bot_deactivated"

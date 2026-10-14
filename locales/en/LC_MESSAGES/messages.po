@@ -355,6 +355,9 @@ msgstr ""
 "<b>The bot does not have sufficient permissions to post messages in the "
 "channel.</b>\n"
 
+msgid "reg_bot_not_a_channel_error"
+msgstr "<b>The provided channel_id is not a channel.</b>"
+
 msgid "reg_bot_alredy_exist"
 msgstr "Bot is already registered."
 
@@ -362,6 +365,9 @@ msgid "reg_bot_userbot_registered"
 msgstr ""
 "🎉 <b>Your bot has been successfully registered, you can use the "
 "suggestion feature!</b>"
+
+msgid "reg_bot_limit_exceeded"
+msgstr "⚠️ Userbot limit exceeded."
 
 msgid "userbots_moderation_select"
 msgstr "🤖 <b>List of your bots below</b>"
@@ -395,6 +401,15 @@ msgstr "<b>Token updated.</b>"
 
 msgid "userbot_channel_updated"
 msgstr "<b>Channel updated.</b>"
+
+msgid "userbot_not_found"
+msgstr "Userbot not found."
+
+msgid "userbot_is_banned"
+msgstr "This userbot is banned."
+
+msgid "userbot_admins_demoted"
+msgstr "🟢 All admins demoted."
 
 msgid "your_bot_deactivated"
 msgstr "Your bot @{bot_username} ({bot_id}) deactivated: {detail}"
