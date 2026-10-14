@@ -6,6 +6,7 @@ class UserBotStats(BaseModel):
     users: int
     banned: int
     admins: int
+    bot_blocked: int
 
     suggestions: int
     medias: int

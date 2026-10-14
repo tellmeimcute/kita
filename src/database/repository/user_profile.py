@@ -196,6 +196,9 @@ class UserProfileRepository(BaseRepository):
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.USER).label("users"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.ADMIN).label("admins"),
             func.count(UserProfile.id).filter(UserProfile.role == UserRole.BANNED).label("banned"),
+            func.count(UserProfile.id)
+            .filter(UserProfile.is_bot_blocked.is_(True))
+            .label("bot_blocked"),
         ).where(UserProfile.bot_id == self.bot.id)
         result: Result = await self._session.execute(stmt)
         return result.one()

@@ -2,6 +2,7 @@ from aiogram_dialog import DialogManager
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
+from core.i18n_translator import Translator
 from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, UserServiceProtocol
 
 
@@ -23,6 +24,7 @@ async def get_selected_user(
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
+    translator: FromDishka[Translator],
     **kwargs,
 ):
     user_id = dialog_manager.dialog_data.get("selected_user_id")
@@ -35,7 +37,14 @@ async def get_selected_user(
         target_user = await user_service.get(user_id)
         target_profile = await profile_service.get(user_id)
 
+    target_blocked = (
+        translator.translate("user_blocked_bot") + "\n"
+        if target_profile and target_profile.is_bot_blocked
+        else ""
+    )
+
     return {
         "target_dto": target_user,
         "target_profile": target_profile,
+        "target_blocked": target_blocked,
     }

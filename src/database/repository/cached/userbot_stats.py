@@ -51,6 +51,7 @@ class CachedUserBotStatsRepository(CachedRepository):
             users=profile_stats["users"],
             banned=profile_stats["banned"],
             admins=profile_stats["admins"],
+            bot_blocked=profile_stats["bot_blocked"],
             suggestions=suggestions_count,
             medias=media_count,
         )

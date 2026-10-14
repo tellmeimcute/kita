@@ -233,6 +233,9 @@ msgstr ""
 msgid "admin_moderation_user_profile"
 msgstr ""
 
+msgid "user_blocked_bot"
+msgstr ""
+
 msgid "rate_limited_warning"
 msgstr ""
 
