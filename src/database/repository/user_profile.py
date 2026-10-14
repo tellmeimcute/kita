@@ -113,6 +113,21 @@ class UserProfileRepository(BaseRepository):
         orm_models = result.scalars().all()
         return UserProfileDTO.from_model_list(orm_models)
 
+    async def demote_admins(self, owner_id: int) -> Sequence[int]:
+        stmt = (
+            update(UserProfile)
+            .where(
+                UserProfile.bot_id == self.bot.id,
+                UserProfile.role == UserRole.ADMIN,
+                UserProfile.user_id != owner_id,
+            )
+            .values(role=UserRole.USER)
+            .returning(UserProfile.user_id)
+        )
+
+        result = await self._session.execute(stmt)
+        return result.scalars().all()
+
     async def get_banned(self) -> Sequence[UserProfileDTO]:
         stmt = (
             select(UserProfile)

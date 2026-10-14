@@ -65,6 +65,12 @@ class CachedUserProfileRepository(CachedRepository):
     async def get_admins(self) -> Sequence[UserProfileDTO]:
         return await self.repo.get_admins()
 
+    async def demote_admins(self, owner_id: int) -> int:
+        user_ids = await self.repo.demote_admins(owner_id)
+        for user_id in user_ids:
+            await self._redis.delete(self._get_key(user_id))
+        return len(user_ids)
+
     async def get_banned(self) -> Sequence[UserProfileDTO]:
         return await self.repo.get_banned()
 

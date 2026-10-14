@@ -52,5 +52,10 @@ class UserProfileService(BaseService):
     async def get_admins(self):
         return await self.repo.get_admins()
 
+    async def demote_admins(self, owner_id: int) -> int:
+        demoted = await self.repo.demote_admins(owner_id)
+        logger.info("Demoted {} admins for bot {}", demoted, self.bot.id)
+        return demoted
+
     async def decline_suggestion(self, profile_dto: UserProfileDTO):
         await self.repo.decline_all_suggestions(profile_dto.user_id)
