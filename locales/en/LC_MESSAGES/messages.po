@@ -106,6 +106,24 @@ msgstr "Unban"
 msgid "wait_user_id_text"
 msgstr "Waiting for Telegram UserID"
 
+msgid "user_filter_title"
+msgstr "🔎 Filter: <b>{filter_label}</b>"
+
+msgid "user_filter_all"
+msgstr "All"
+
+msgid "user_filter_users"
+msgstr "Users"
+
+msgid "user_filter_admins"
+msgstr "Admins"
+
+msgid "user_filter_banned"
+msgstr "Banned"
+
+msgid "user_filter_blocked"
+msgstr "Blocked bot"
+
 msgid "user_not_found_wait_next_id"
 msgstr ""
 "<b>User not found :(</b>\n"

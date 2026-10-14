@@ -74,6 +74,24 @@ msgstr ""
 msgid "wait_user_id_text"
 msgstr ""
 
+msgid "user_filter_title"
+msgstr ""
+
+msgid "user_filter_all"
+msgstr ""
+
+msgid "user_filter_users"
+msgstr ""
+
+msgid "user_filter_admins"
+msgstr ""
+
+msgid "user_filter_banned"
+msgstr ""
+
+msgid "user_filter_blocked"
+msgstr ""
+
 msgid "user_not_found_wait_next_id"
 msgstr ""
 

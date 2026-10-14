@@ -31,6 +31,16 @@ async def on_user_selected(
     return await manager.switch_to(ModerationMenuSG.user_moderation)
 
 
+async def set_user_filter(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+    **kwargs,
+):
+    manager.dialog_data["user_filter"] = button.widget_id.removeprefix("filter_")
+    await manager.update()
+
+
 @inject
 async def select_user(
     message: Message,
@@ -77,7 +87,7 @@ async def user_change_role(
 
     if button.widget_id == "ban":
         target_role = UserRole.BANNED
-    elif button.widget_id == "change_to_user":
+    elif button.widget_id in {"change_to_user", "unban"}:
         target_role = UserRole.USER
     elif button.widget_id == "promote_admin":
         target_role = UserRole.ADMIN

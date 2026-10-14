@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from database.dto import UserProfileDTO
+from database.enums import UserRole
 from database.redis import IntRedis, KitaKeyBuilder, RedisKey, UserProfileRedis
 from interfaces import BotRegistryProtocol
 
@@ -55,9 +56,14 @@ class CachedUserProfileRepository(CachedRepository):
         return result
 
     async def get_many(
-        self, limit: int = 10, offset: int = 0, order_desc: bool = False
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        order_desc: bool = False,
+        role: UserRole | None = None,
+        bot_blocked: bool | None = None,
     ) -> Sequence[UserProfileDTO]:
-        return await self.repo.get_many(limit, offset, order_desc)
+        return await self.repo.get_many(limit, offset, order_desc, role, bot_blocked)
 
     async def get_active(self) -> Sequence[UserProfileDTO]:
         return await self.repo.get_active()

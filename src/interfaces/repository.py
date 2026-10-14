@@ -10,6 +10,7 @@ from database.dto import (
     UserDTO,
     UserProfileDTO,
 )
+from database.enums import UserRole
 
 
 class UserRepositoryProtocol(Protocol):
@@ -28,7 +29,12 @@ class UserProfileRepositoryProtocol(Protocol):
     async def get_by_id(self, user_id: int) -> UserProfileDTO | None: ...
 
     async def get_many(
-        self, limit: int = 10, offset: int = 0, order_desc: bool = False
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        order_desc: bool = False,
+        role: UserRole | None = None,
+        bot_blocked: bool | None = None,
     ) -> Sequence[UserProfileDTO]: ...
 
     async def get_or_create(self, user_id: int) -> UserProfileDTO: ...

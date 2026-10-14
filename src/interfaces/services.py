@@ -6,6 +6,7 @@ from aiogram_dialog import DialogManager
 
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO, UserProfileDTO
+from database.enums import UserRole
 
 
 class UserServiceProtocol(Protocol):
@@ -27,7 +28,14 @@ class UserProfileServiceProtocol(Protocol):
 
     async def get(self, user_id: int) -> UserProfileDTO | None: ...
 
-    async def get_many(self, limit: int = 10, offset: int = 0, order_desc: bool = False): ...
+    async def get_many(
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        order_desc: bool = False,
+        role: UserRole | None = None,
+        bot_blocked: bool | None = None,
+    ): ...
 
     async def update(self, user_id: int, **data: Any) -> None: ...
 

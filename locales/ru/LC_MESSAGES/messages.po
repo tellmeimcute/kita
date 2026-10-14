@@ -111,6 +111,24 @@ msgstr "Разбанить"
 msgid "wait_user_id_text"
 msgstr "Пришлите <b>Telegram UserID</b> пользователя."
 
+msgid "user_filter_title"
+msgstr "🔎 Фильтр: <b>{filter_label}</b>"
+
+msgid "user_filter_all"
+msgstr "Все"
+
+msgid "user_filter_users"
+msgstr "Пользователи"
+
+msgid "user_filter_admins"
+msgstr "Админы"
+
+msgid "user_filter_banned"
+msgstr "Забаненные"
+
+msgid "user_filter_blocked"
+msgstr "Заблокировали бота"
+
 msgid "user_not_found_wait_next_id"
 msgstr ""
 "<b>Пользователь не найден :(</b>\n"

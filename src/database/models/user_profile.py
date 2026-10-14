@@ -17,6 +17,7 @@ class UserProfile(AbstractModel, TimestampMixin):
     __table_args__ = (
         UniqueConstraint("bot_id", "user_id", name="uq_user_profile_bot_user"),
         Index("ix_user_profile_bot_role", "bot_id", "role"),
+        Index("ix_user_profile_bot_id", "bot_id", "id"),
     )
 
     bot_id: Mapped[int] = mapped_column(BigInteger)

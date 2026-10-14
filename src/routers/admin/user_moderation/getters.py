@@ -3,7 +3,26 @@ from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.i18n_translator import Translator
+from database.enums import UserRole
 from interfaces import UnitOfWorkProtocol, UserProfileServiceProtocol, UserServiceProtocol
+
+DEFAULT_USER_FILTER = "all"
+
+USER_FILTERS: dict[str, dict] = {
+    "all": {},
+    "users": {"role": UserRole.USER},
+    "admins": {"role": UserRole.ADMIN},
+    "banned": {"role": UserRole.BANNED},
+    "blocked": {"bot_blocked": True},
+}
+
+USER_FILTER_LABEL_KEYS: dict[str, str] = {
+    "all": "user_filter_all",
+    "users": "user_filter_users",
+    "admins": "user_filter_admins",
+    "banned": "user_filter_banned",
+    "blocked": "user_filter_blocked",
+}
 
 
 @inject
@@ -11,11 +30,24 @@ async def get_userbot_user_profiles(
     dialog_manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
+    translator: FromDishka[Translator],
     **kwargs,
 ):
+    filter_key = dialog_manager.dialog_data.get("user_filter", DEFAULT_USER_FILTER)
+    if filter_key not in USER_FILTERS:
+        filter_key = DEFAULT_USER_FILTER
+
     async with uow.transaction():
-        profiles = await profile_service.get_many(limit=50, order_desc=True)
-    return {"profiles": profiles}
+        profiles = await profile_service.get_many(
+            limit=50,
+            order_desc=True,
+            **USER_FILTERS[filter_key],
+        )
+
+    return {
+        "profiles": profiles,
+        "filter_label": translator.translate(USER_FILTER_LABEL_KEYS[filter_key]),
+    }
 
 
 @inject

@@ -3,7 +3,7 @@ from typing import Any
 
 from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload, selectinload
 
 from database.dto import UserProfileDTO
 from database.enums import SuggestionStatus, UserRole
@@ -32,7 +32,12 @@ class UserProfileRepository(BaseRepository):
         return UserProfileDTO.model_validate(orm_model)
 
     async def get_many(
-        self, limit: int = 10, offset: int = 0, order_desc: bool = False
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        order_desc: bool = False,
+        role: UserRole | None = None,
+        bot_blocked: bool | None = None,
     ) -> list[UserProfileDTO]:
         order_by = UserProfile.id if not order_desc else UserProfile.id.desc()
 
@@ -41,11 +46,15 @@ class UserProfileRepository(BaseRepository):
             .where(
                 UserProfile.bot_id == self.bot.id,
             )
-            .options(selectinload(UserProfile.user))
+            .options(joinedload(UserProfile.user))
             .limit(limit)
             .offset(offset)
             .order_by(order_by)
         )
+        if role is not None:
+            stmt = stmt.where(UserProfile.role == role)
+        if bot_blocked is not None:
+            stmt = stmt.where(UserProfile.is_bot_blocked.is_(bot_blocked))
 
         result = await self._session.execute(stmt)
         orm_models = result.scalars().all()

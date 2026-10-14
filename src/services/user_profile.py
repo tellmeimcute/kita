@@ -3,6 +3,7 @@ from typing import Any
 from loguru import logger
 
 from database.dto import UserProfileDTO
+from database.enums import UserRole
 from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
 
 from .base import BaseService
@@ -28,8 +29,15 @@ class UserProfileService(BaseService):
     async def get(self, user_id: int) -> UserProfileDTO | None:
         return await self.repo.get_by_id(user_id)
 
-    async def get_many(self, limit: int = 10, offset: int = 0, order_desc: bool = False):
-        return await self.repo.get_many(limit, offset, order_desc)
+    async def get_many(
+        self,
+        limit: int = 10,
+        offset: int = 0,
+        order_desc: bool = False,
+        role: UserRole | None = None,
+        bot_blocked: bool | None = None,
+    ):
+        return await self.repo.get_many(limit, offset, order_desc, role, bot_blocked)
 
     async def create(self, user_id: int) -> UserProfileDTO:
         return await self.repo.create(user_id)

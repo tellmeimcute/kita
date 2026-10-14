@@ -1,7 +1,7 @@
 from aiogram import F
 from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.input import MessageInput
-from aiogram_dialog.widgets.kbd import Button, ScrollingGroup, Select, Start, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, Row, ScrollingGroup, Select, Start, SwitchTo
 from aiogram_dialog.widgets.text import Format
 
 from database.enums import UserRole
@@ -10,12 +10,32 @@ from ui.state_groups import AdminMenuSG, ModerationMenuSG
 from ui.widgets.i18n_text import I18nFormat, I18nText
 
 from .getters import get_selected_user, get_userbot_user_profiles
-from .handlers import message_to_user, on_user_selected, select_user, user_change_role
+from .handlers import (
+    message_to_user,
+    on_user_selected,
+    select_user,
+    set_user_filter,
+    user_change_role,
+)
 
 user_select_window = Window(
     I18nText("wait_user_id_text"),
     Format("{error}", when="error"),
     MessageInput(select_user),
+    I18nFormat("user_filter_title"),
+    Row(
+        Button(I18nText("user_filter_all"), id="filter_all", on_click=set_user_filter),
+        Button(I18nText("user_filter_admins"), id="filter_admins", on_click=set_user_filter),
+        Button(I18nText("user_filter_banned"), id="filter_banned", on_click=set_user_filter),
+    ),
+    Row(
+        Button(I18nText("user_filter_users"), id="filter_users", on_click=set_user_filter),
+        Button(
+            I18nText("user_filter_blocked"),
+            id="filter_blocked",
+            on_click=set_user_filter,
+        ),
+    ),
     ScrollingGroup(
         Select(
             Format("{item.user_id} | {item.user.name:.10}"),
@@ -65,7 +85,7 @@ user_moderation_window = Window(
     ),
     Button(
         I18nText("unban_user_btn"),
-        id="change_to_user",
+        id="unban",
         on_click=user_change_role,
         when=F["target_profile"].role == UserRole.BANNED,
     ),
