@@ -148,7 +148,7 @@ msgid "statistic_btn"
 msgstr "📄 My statistics"
 
 msgid "post_banner_btn"
-msgstr "🖼 Post banner"
+msgstr "🖼 Craft banner"
 
 msgid "banner_wait_for_text"
 msgstr ""
@@ -166,7 +166,7 @@ msgid "channel_banner_btn"
 msgstr "😏 Suggestions"
 
 msgid "banner_confirm"
-msgstr "Confirm sending the banner to the channel."
+msgstr "Confirm banner creation (it will be sent here)."
 
 msgid "wait_verdict_text"
 msgstr "Post or decline? Or maybe ban 😏"

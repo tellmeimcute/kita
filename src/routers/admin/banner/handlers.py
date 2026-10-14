@@ -8,7 +8,7 @@ from dishka.integrations.aiogram_dialog import inject
 
 from core.html import quote
 from core.i18n_translator import Translator
-from database.dto import UserBotDTO
+from database.dto import UserBotDTO, UserDTO
 from ui.state_groups import AdminMenuSG, BannerMenuSG
 
 
@@ -62,31 +62,34 @@ async def execute_banner(
     builder.button(text=btn_text, url=userbot_dto.bot_url)
     markup = builder.as_markup()
 
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    chat_target = user_dto.user_id
+
     text = quote(banner_text)
 
     if not media_type:
         await callback.bot.send_message(
-            userbot_dto.channel_id,
+            chat_target,
             text=text,
             reply_markup=markup,
         )
     elif media_type == "photo":
         await callback.bot.send_photo(
-            userbot_dto.channel_id,
+            chat_target,
             photo=media_file_id,
             caption=text,
             reply_markup=markup,
         )
     elif media_type == "video":
         await callback.bot.send_video(
-            userbot_dto.channel_id,
+            chat_target,
             video=media_file_id,
             caption=text,
             reply_markup=markup,
         )
     elif media_type == "animation":
         await callback.bot.send_animation(
-            userbot_dto.channel_id,
+            chat_target,
             animation=media_file_id,
             caption=text,
             reply_markup=markup,

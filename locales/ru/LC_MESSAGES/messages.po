@@ -153,7 +153,7 @@ msgid "statistic_btn"
 msgstr "📄 Моя статистика"
 
 msgid "post_banner_btn"
-msgstr "🖼 Запостить баннер"
+msgstr "🖼 Создать баннер"
 
 msgid "banner_wait_for_text"
 msgstr ""
@@ -171,7 +171,7 @@ msgid "channel_banner_btn"
 msgstr "😏 Предложка"
 
 msgid "banner_confirm"
-msgstr "Подтвердите отправку баннера в канал."
+msgstr "Подтвердите создание баннера (он отправится сюда)."
 
 msgid "wait_verdict_text"
 msgstr "Запостить или отказать? А может забанить 😏"
