@@ -53,7 +53,7 @@ class UserbotActiveToggleUseCase(BotMixin):
             await self.userbot_deactivate(bot, probe.bot_info, userbot)
         if userbot.active:
             await self._webhook_service.set_webhook(bot)
-        async with self._uow.transaction():
-            await self._userbot_service.save(userbot)
+            async with self._uow.transaction():
+                await self._userbot_service.save(userbot)
 
         return userbot
