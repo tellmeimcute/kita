@@ -12,7 +12,6 @@ from dishka import AsyncContainer
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.cryptographer import Cryptographer
 from core.exceptions import (
     BadRequestError,
     ChannelNotFoundError,
@@ -53,7 +52,7 @@ NEW_CHANNEL_ID = -100987654321
 NEW_CHANNEL_NAME = "New Channel"
 
 
-@dataclass
+@dataclass(frozen=True)
 class ManagementContext:
     uow: UnitOfWorkProtocol
     update_token: UserbotUpdateTokenUseCase
@@ -63,11 +62,9 @@ class ManagementContext:
     userbot_service: UserBotService
     user_repo: UserRepository
     profile_service: UserProfileServiceProtocol
-    crypto: Cryptographer
     set_webhook: AsyncMock
     remove_webhook: AsyncMock
     bot_registry: BotRegistryProtocol
-    session: AsyncSession
     owner: UserDTO
     stranger: UserDTO
     created_user_ids: list[int] = field(default_factory=list)
@@ -134,7 +131,6 @@ async def management_context(
     user_repo = await request_container.get(UserRepository)
     userbot_service = await request_container.get(UserBotService)
     profile_service = await request_container.get(UserProfileServiceProtocol)
-    crypto = await request_container.get(Cryptographer)
     bot_registry = await request_container.get(BotRegistryProtocol)
     webhook_service = await request_container.get(WebhookService)
     session = await request_container.get(AsyncSession)
@@ -179,11 +175,9 @@ async def management_context(
         userbot_service=userbot_service,
         user_repo=user_repo,
         profile_service=profile_service,
-        crypto=crypto,
         set_webhook=set_webhook,
         remove_webhook=remove_webhook,
         bot_registry=bot_registry,
-        session=session,
         owner=owner,
         stranger=stranger,
         created_user_ids=[owner.user_id, stranger.user_id],
@@ -191,16 +185,29 @@ async def management_context(
 
     yield ctx
 
-    await session.execute(delete(UserBot).where(UserBot.bot_id == BOT_ID))
+    await session.execute(delete(UserBot).where(UserBot.owner_id == owner.user_id))
     await session.execute(delete(UserProfile).where(UserProfile.bot_id == BOT_ID))
     await session.execute(delete(UserProfile).where(UserProfile.user_id.in_(ctx.created_user_ids)))
     await session.execute(delete(UserAlchemy).where(UserAlchemy.user_id.in_(ctx.created_user_ids)))
     await session.commit()
 
 
+@pytest.fixture
+async def userbot_save_spy(
+    management_context: ManagementContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> AsyncMock:
+    spy = AsyncMock(wraps=management_context.userbot_service.save)
+    monkeypatch.setattr(UserBotService, "save", spy)
+    return spy
+
+
 class TestUpdateToken:
     async def test_updates_token_and_refreshes_active_bot(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
+        self,
+        management_context: ManagementContext,
+        patched_probe_bot: MagicMock,
+        userbot_save_spy: AsyncMock,
     ):
         ctx = management_context
 
@@ -209,6 +216,7 @@ class TestUpdateToken:
         stored = await ctx.userbot_service.get(BOT_ID)
         assert stored.token.get_secret_value() == NEW_TOKEN
 
+        userbot_save_spy.assert_awaited_once()
         ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
         ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, NEW_TOKEN)
         ctx.set_webhook.assert_awaited_once_with(patched_probe_bot)
@@ -227,9 +235,7 @@ class TestUpdateToken:
         ctx.set_webhook.assert_not_awaited()
         ctx.bot_registry.remove.assert_not_called()
 
-    async def test_invalid_token_format(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
-    ):
+    async def test_invalid_token_format(self, management_context: ManagementContext):
         ctx = management_context
 
         with pytest.raises(InvalidTokenError):
@@ -238,9 +244,7 @@ class TestUpdateToken:
         stored = await ctx.userbot_service.get(BOT_ID)
         assert stored.token.get_secret_value() == BOT_TOKEN
 
-    async def test_token_from_another_bot(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
-    ):
+    async def test_token_from_another_bot(self, management_context: ManagementContext):
         ctx = management_context
 
         with pytest.raises(TokenFromAnotherBotError):
@@ -248,6 +252,7 @@ class TestUpdateToken:
 
         stored = await ctx.userbot_service.get(BOT_ID)
         assert stored.token.get_secret_value() == BOT_TOKEN
+        ctx.bot_registry.remove.assert_not_called()
 
     async def test_token_rejected_by_telegram(
         self,
@@ -265,18 +270,15 @@ class TestUpdateToken:
 
         stored = await ctx.userbot_service.get(BOT_ID)
         assert stored.token.get_secret_value() == BOT_TOKEN
+        ctx.bot_registry.remove.assert_not_called()
 
-    async def test_userbot_not_found(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
-    ):
+    async def test_userbot_not_found(self, management_context: ManagementContext):
         ctx = management_context
 
         with pytest.raises(UserbotNotFoundError):
             await ctx.update_token.execute(ctx.owner, BOT_ID + 1, NEW_TOKEN)
 
-    async def test_banned_userbot(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
-    ):
+    async def test_banned_userbot(self, management_context: ManagementContext):
         ctx = management_context
         async with ctx.uow.transaction():
             await ctx.userbot_service.update(BOT_ID, banned=True)
@@ -296,7 +298,11 @@ class TestUpdateToken:
 
 class TestUpdateChannel:
     async def test_updates_channel(
-        self, management_context: ManagementContext, tg_bot: MagicMock, tg_channel: MagicMock
+        self,
+        management_context: ManagementContext,
+        tg_bot: MagicMock,
+        tg_channel: MagicMock,
+        userbot_save_spy: AsyncMock,
     ):
         ctx = management_context
         tg_channel.id = NEW_CHANNEL_ID
@@ -311,7 +317,9 @@ class TestUpdateChannel:
         assert stored.channel_id == NEW_CHANNEL_ID
         assert stored.channel_name == NEW_CHANNEL_NAME
 
-        tg_bot.get_chat.assert_awaited_once_with(-100987654321)
+        userbot_save_spy.assert_awaited_once()
+        ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, BOT_TOKEN)
+        tg_bot.get_chat.assert_awaited_once_with(NEW_CHANNEL_ID)
 
     async def test_invalid_channel_input(self, management_context: ManagementContext):
         ctx = management_context
@@ -346,6 +354,19 @@ class TestUpdateChannel:
 
         with pytest.raises(InsufficientPermissionsError):
             await ctx.update_channel.execute(ctx.owner, BOT_ID, "987654321")
+
+        stored = await ctx.userbot_service.get(BOT_ID)
+        assert stored.channel_id == CHANNEL_ID
+        assert stored.channel_name == CHANNEL_NAME
+
+    async def test_probe_rejects_non_admin_member(
+        self, management_context: ManagementContext, tg_bot: MagicMock
+    ):
+        ctx = management_context
+        tg_bot.get_chat_member = AsyncMock(return_value=MagicMock(status=ChatMemberStatus.MEMBER))
+
+        with pytest.raises(InsufficientPermissionsError):
+            await ctx.update_channel.execute(ctx.owner, BOT_ID, str(CHANNEL_ID))
 
         stored = await ctx.userbot_service.get(BOT_ID)
         assert stored.channel_id == CHANNEL_ID
@@ -454,7 +475,10 @@ class TestDemoteAdmins:
 
 class TestActiveToggle:
     async def test_active_userbot_becomes_inactive(
-        self, management_context: ManagementContext, tg_bot: MagicMock
+        self,
+        management_context: ManagementContext,
+        tg_bot: MagicMock,
+        userbot_save_spy: AsyncMock,
     ):
         ctx = management_context
 
@@ -462,12 +486,16 @@ class TestActiveToggle:
 
         assert result.active is False
         assert (await ctx.userbot_service.get(BOT_ID)).active is False
+        userbot_save_spy.assert_awaited_once()
         ctx.remove_webhook.assert_awaited_once_with(tg_bot)
         ctx.set_webhook.assert_not_awaited()
         ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
 
     async def test_inactive_userbot_becomes_active(
-        self, management_context: ManagementContext, tg_bot: MagicMock
+        self,
+        management_context: ManagementContext,
+        tg_bot: MagicMock,
+        userbot_save_spy: AsyncMock,
     ):
         ctx = management_context
         async with ctx.uow.transaction():
@@ -477,6 +505,7 @@ class TestActiveToggle:
 
         assert result.active is True
         assert (await ctx.userbot_service.get(BOT_ID)).active is True
+        userbot_save_spy.assert_awaited_once()
         ctx.set_webhook.assert_awaited_once_with(tg_bot)
         ctx.remove_webhook.assert_not_awaited()
         ctx.bot_registry.remove.assert_not_called()
@@ -529,6 +558,10 @@ class TestActiveToggle:
 
         with pytest.raises(UserbotBanned):
             await ctx.active_toggle.execute(ctx.owner, BOT_ID)
+
+        assert (await ctx.userbot_service.get(BOT_ID)).active is True
+        ctx.set_webhook.assert_not_awaited()
+        ctx.remove_webhook.assert_not_awaited()
 
     async def test_userbot_not_found(self, management_context: ManagementContext):
         ctx = management_context

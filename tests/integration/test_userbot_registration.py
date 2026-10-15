@@ -44,7 +44,6 @@ class UserBotTestContext:
     userbot_repo: UserBotRepositoryProtocol
     crypto: Cryptographer
     bot_registry: BotRegistryProtocol
-    session: AsyncSession
     owner_id: int
 
 
@@ -108,7 +107,6 @@ async def userbot_test_context(
         userbot_repo=await request_container.get(UserBotRepositoryProtocol),
         crypto=await request_container.get(Cryptographer),
         bot_registry=bot_registry,
-        session=session,
         owner_id=owner_dto.user_id,
     )
 
@@ -184,10 +182,7 @@ async def test_register_userbot_already_exists(
     ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
 
 
-async def test_register_userbot_without_token(
-    userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
-):
+async def test_register_userbot_without_token(userbot_test_context: UserBotTestContext):
     ctx = userbot_test_context
 
     with pytest.raises(BadRequestError):
@@ -196,10 +191,7 @@ async def test_register_userbot_without_token(
     assert await ctx.userbot_repo.get(BOT_ID) is None
 
 
-async def test_register_userbot_without_channel(
-    userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
-):
+async def test_register_userbot_without_channel(userbot_test_context: UserBotTestContext):
     ctx = userbot_test_context
     raw_token = ctx.crypto.encrypt(BOT_TOKEN)
 
@@ -211,7 +203,6 @@ async def test_register_userbot_without_channel(
 
 async def test_register_userbot_invalid_channel_id(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
 ):
     ctx = userbot_test_context
     raw_token = ctx.crypto.encrypt(BOT_TOKEN)
@@ -246,6 +237,21 @@ async def test_register_userbot_insufficient_permissions(
     tg_bot.get_chat_member = AsyncMock(
         return_value=MagicMock(status=ChatMemberStatus.ADMINISTRATOR, can_post_messages=False)
     )
+    raw_token = ctx.crypto.encrypt(BOT_TOKEN)
+
+    with pytest.raises(InsufficientPermissionsError):
+        await ctx.register.execute(raw_token, str(CHANNEL_ID), owner_id=ctx.owner_id)
+
+    assert await ctx.userbot_repo.get(BOT_ID) is None
+
+
+async def test_register_userbot_not_admin_member(
+    userbot_test_context: UserBotTestContext,
+    patched_bot: MagicMock,
+    tg_bot: MagicMock,
+):
+    ctx = userbot_test_context
+    tg_bot.get_chat_member = AsyncMock(return_value=MagicMock(status=ChatMemberStatus.MEMBER))
     raw_token = ctx.crypto.encrypt(BOT_TOKEN)
 
     with pytest.raises(InsufficientPermissionsError):
