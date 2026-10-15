@@ -32,17 +32,17 @@ async def on_bot_selected(
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    item_id: int = int(item_id)
+    bot_id = int(item_id)
 
     async with uow.transaction():
-        userbot = await userbot_service.get(item_id)
+        userbot = await userbot_service.get(bot_id)
 
     try:
         userbot_action_auth(user_dto, userbot)
     except UserbotError as e:
         return await callback.answer(tl.translate(e.error_key))
 
-    manager.dialog_data.update(selected_bot_id=item_id)
+    manager.dialog_data.update(selected_bot_id=bot_id)
     return await manager.switch_to(UserBotSelectSG.moderation)
 
 
@@ -55,14 +55,14 @@ async def userbot_active_toggle(
     active_toggle: FromDishka[UserbotActiveToggleUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    bot_id = int(manager.dialog_data["selected_bot_id"])
+    bot_id = manager.dialog_data.get("selected_bot_id")
 
     try:
-        userbot = await active_toggle.execute(user_dto, bot_id)
+        await active_toggle.execute(user_dto, int(bot_id))
     except UserbotError as e:
-        return await callback.answer(tl.translate(e.error_key))
+        await callback.answer(tl.translate(e.error_key))
 
-    await manager.update({"selected_userbot": userbot.model_dump(mode="json")})
+    return await manager.switch_to(UserBotSelectSG.moderation)
 
 
 @inject
@@ -79,10 +79,10 @@ async def userbot_update_token(
         logger.exception("Token message delete failed")
 
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    bot_id = int(manager.dialog_data["selected_bot_id"])
+    bot_id = manager.dialog_data.get("selected_bot_id")
 
     try:
-        await update_token.execute(user_dto, bot_id, message.text)
+        await update_token.execute(user_dto, int(bot_id), message.text)
     except (UserbotNotFoundError, UserbotBanned) as e:
         return await notifier.send_text(user_dto, e.error_key)
     except UserbotError as e:
@@ -103,10 +103,10 @@ async def userbot_update_channel(
     notifier: FromDishka[MessageNotifierProtocol],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    bot_id = int(manager.dialog_data["selected_bot_id"])
+    bot_id = manager.dialog_data.get("selected_bot_id")
 
     try:
-        await update_channel.execute(user_dto, bot_id, message.text)
+        await update_channel.execute(user_dto, int(bot_id), message.text)
     except (UserbotNotFoundError, UserbotBanned) as e:
         return await notifier.send_text(user_dto, e.error_key)
     except UserbotError as e:
@@ -127,11 +127,13 @@ async def userbot_demote_admins(
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    bot_id = int(manager.dialog_data["selected_bot_id"])
+    bot_id = manager.dialog_data.get("selected_bot_id")
 
     try:
-        await demote_admins.execute(user_dto, bot_id)
+        await demote_admins.execute(user_dto, int(bot_id))
     except UserbotError as e:
-        return await callback.answer(tl.translate(e.error_key))
+        await callback.answer(tl.translate(e.error_key))
+    else:
+        await callback.answer(tl.translate("userbot_admins_demoted"))
 
-    await callback.answer(tl.translate("userbot_admins_demoted"))
+    return await manager.switch_to(UserBotSelectSG.moderation)

@@ -52,5 +52,7 @@ class UserBotSelectSG(StatesGroup):
     select = State()
     moderation = State()
 
+    confirm_demote = State()
+
     update_token = State()
     update_channel = State()

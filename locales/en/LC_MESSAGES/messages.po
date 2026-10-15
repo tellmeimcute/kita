@@ -319,8 +319,7 @@ msgstr ""
 "<b>Name</b> <code>{target_dto[name]}</code>\n"
 "<b>Username</b> {target_dto[username]}\n"
 "<b>Role</b> <code>{target_profile[role]}</code>\n"
-"{target_blocked}"
-"\n"
+"{target_blocked}\n"
 "<b>Last Updated</b> <code>{target_profile[updated_at]}</code>\n"
 
 msgid "user_blocked_bot"
@@ -439,9 +438,36 @@ msgstr "Your bot @{bot_username} ({bot_id}) deactivated: {detail}"
 
 msgid "userbot_window_description"
 msgstr ""
-"🤖 Бот @{selected_userbot[username]}\n"
-"Active status: {selected_userbot[active]}\n"
-"Ban status: {selected_userbot[banned]}"
+"🤖 <b>ID:</b> <code>{ub_bot_id}</code> | @{ub_username}\n"
+"<b>Status:</b> {ub_status}\n"
+"<b>Access:</b> {ub_ban}\n"
+"\n"
+"<b>Channel:</b> {ub_channel}\n"
+
+msgid "userbot_status_active"
+msgstr "🟢 Active"
+
+msgid "userbot_status_inactive"
+msgstr "🔴 Disabled"
+
+msgid "userbot_ban_clear"
+msgstr "✅ No restrictions"
+
+msgid "userbot_ban_active"
+msgstr "🚫 Banned"
+
+msgid "userbot_no_channel"
+msgstr "❌ not linked"
+
+msgid "userbots_empty_state"
+msgstr ""
+"🔍 <b>You don't have any bots yet.</b>\n"
+"Register your first one via the main menu."
+
+msgid "userbot_demote_confirm"
+msgstr ""
+"⚠️ Demote all admins of @{ub_username}?\n"
+"This action is irreversible."
 
 msgid "locale_ru_string"
 msgstr "🇷🇺 Русский"

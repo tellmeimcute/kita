@@ -353,6 +353,27 @@ msgstr ""
 msgid "userbot_window_description"
 msgstr ""
 
+msgid "userbot_status_active"
+msgstr ""
+
+msgid "userbot_status_inactive"
+msgstr ""
+
+msgid "userbot_ban_clear"
+msgstr ""
+
+msgid "userbot_ban_active"
+msgstr ""
+
+msgid "userbot_no_channel"
+msgstr ""
+
+msgid "userbots_empty_state"
+msgstr ""
+
+msgid "userbot_demote_confirm"
+msgstr ""
+
 msgid "locale_ru_string"
 msgstr ""
 
