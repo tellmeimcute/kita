@@ -11,10 +11,15 @@ from interfaces import BotRegistryProtocol
 
 
 class WebhookService:
-    def __init__(self, config: Config, bot_registry: BotRegistryProtocol):
+    def __init__(
+        self,
+        config: Config,
+        bot_registry: BotRegistryProtocol,
+        crypto: Cryptographer,
+    ):
         self.config = config
         self.bot_registry = bot_registry
-        self.cryptographer = Cryptographer(config)
+        self.cryptographer = crypto
 
     async def set_webhook(
         self,
