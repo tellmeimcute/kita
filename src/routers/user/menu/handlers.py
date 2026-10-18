@@ -2,48 +2,24 @@ from aiogram import Router
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
-from aiogram.utils.i18n import I18n
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.widgets.kbd import Button
 from dishka import FromDishka
 from dishka.integrations.aiogram_dialog import inject
 
 from core.filters import I18nTextFilter
-from core.i18n_translator import Translator
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import (
     MessageNotifierProtocol,
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
-    UserServiceProtocol,
 )
+from routers.shared_handlers import language_selected
 from ui.state_groups import UserMenuSG
 
 router = Router(name="main_menu")
 
-
-@inject
-async def on_language_selected(
-    callback: CallbackQuery,
-    button: Button,
-    manager: DialogManager,
-    tl: FromDishka[Translator],
-    uow: FromDishka[UnitOfWorkProtocol],
-    user_service: FromDishka[UserServiceProtocol],
-):
-    user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    i18n: I18n = manager.middleware_data.get("i18n")
-
-    if user_dto.language_code == button.widget_id:
-        return await callback.answer(tl.translate("same_locale_warning"))
-
-    user_dto.language_code = button.widget_id
-    async with uow.transaction():
-        await user_service.save(user_dto)
-
-    i18n.ctx_locale.set(user_dto.language_code)
-    await callback.answer(tl.translate("locale_changed_msg"))
-    await manager.switch_to(UserMenuSG.settings)
+on_language_selected = language_selected(UserMenuSG.settings)
 
 
 @inject

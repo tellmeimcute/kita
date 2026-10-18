@@ -4,9 +4,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, ShowMode
 
+from routers.shared_handlers import language_selected
 from ui.state_groups import RegistrarMenuSG
 
 router = Router(name="registrar")
+
+on_language_selected = language_selected(RegistrarMenuSG.menu)
 
 
 @router.message(CommandStart())

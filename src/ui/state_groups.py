@@ -41,6 +41,7 @@ class SuggestionViewerSG(StatesGroup):
 
 class RegistrarMenuSG(StatesGroup):
     menu = State()
+    language = State()
 
 
 class UserBotRegisterSG(StatesGroup):
