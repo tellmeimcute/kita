@@ -104,7 +104,7 @@ msgid "unban_btn"
 msgstr "Unban"
 
 msgid "wait_user_id_text"
-msgstr "Waiting for Telegram UserID"
+msgstr "Send target <b>Telegram UserID</b> or choose from list below"
 
 msgid "user_filter_title"
 msgstr "🔎 Filter: <b>{filter_label}</b>"
@@ -249,7 +249,7 @@ msgid "locale_settings_btn"
 msgstr "🌐 Change locale"
 
 msgid "locale_menu_text"
-msgstr "Choose language"
+msgstr "🌐 <b>Choose locale</b>"
 
 msgid "locale_changed_msg"
 msgstr "Your locale changed!"

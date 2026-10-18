@@ -109,7 +109,7 @@ msgid "unban_btn"
 msgstr "Разбанить"
 
 msgid "wait_user_id_text"
-msgstr "Пришлите <b>Telegram UserID</b> пользователя."
+msgstr "Пришлите <b>Telegram UserID</b> пользователя или выберите из списка ниже"
 
 msgid "user_filter_title"
 msgstr "🔎 Фильтр: <b>{filter_label}</b>"
@@ -255,7 +255,7 @@ msgid "locale_settings_btn"
 msgstr "🌐 Изменить язык"
 
 msgid "locale_menu_text"
-msgstr "Выберите язык"
+msgstr "🌐 <b>Выберите язык</b>"
 
 msgid "locale_changed_msg"
 msgstr "Язык изменен!"
@@ -394,7 +394,7 @@ msgid "reg_bot_limit_exceeded"
 msgstr "⚠️ Достигнут лимит ботов."
 
 msgid "userbots_moderation_select"
-msgstr "🤖 <b>Список ваших ботов ниже</b>"
+msgstr "🤖 <b>Список ваших ботов:</b>"
 
 msgid "userbot_set_inactive_btn"
 msgstr "✨ Отключить бота"
