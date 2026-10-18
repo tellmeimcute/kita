@@ -30,7 +30,7 @@ main_window = Window(
 )
 
 bot_stats_window = Window(
-    I18nText("global_stats"),
+    I18nText("userbot_statistic"),
     SwitchTo(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main),
     state=AdminMenuSG.app_stats,
     getter=get_app_stats,

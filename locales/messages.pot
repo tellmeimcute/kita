@@ -176,7 +176,7 @@ msgstr ""
 msgid "author_plus_origin"
 msgstr ""
 
-msgid "global_stats"
+msgid "userbot_statistic"
 msgstr ""
 
 msgid "settings_menu_btn"
