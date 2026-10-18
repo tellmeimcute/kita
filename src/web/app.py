@@ -5,6 +5,7 @@ from loguru import logger
 from core.config import Config
 from lifespan import lifespan
 
+from .endpoints.health import health
 from .endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 
@@ -36,6 +37,8 @@ def get_app(
 
     app.state.registrar_endpoint = registrar_endpoint
     app.state.registrar_dp = registrar_dp
+
+    app.add_api_route("/health", health, methods=["GET"], include_in_schema=False)
 
     path = config.webhook.path + "/{bot_id}"
     endpoint.register(app, path=path)

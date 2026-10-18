@@ -16,7 +16,3 @@ COPY alembic.ini .
 
 RUN uv run pybabel compile -d locales -D messages
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]

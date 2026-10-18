@@ -18,5 +18,10 @@ secrets/
 .ruff_cache
 .pytest_cache
 
+# coverage
+.coverage
+.coverage.*
+htmlcov/
+
 # compiled locales
 *.mo

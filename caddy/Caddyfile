@@ -5,7 +5,7 @@
 
     handle {$WEBHOOK_PATH}* {
         handle @telegram_ips {
-            reverse_proxy bot:{$BOT_PORT} {
+            reverse_proxy bot:5000 {
                 flush_interval -1
             }
         }

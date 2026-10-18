@@ -43,14 +43,34 @@ services:
       retries: 5
     restart: unless-stopped
 
+  migrate:
+    build: .
+    <<: [*logging, *env]
+    entrypoint: ["uv", "run", "alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bot-internal
+    environment:
+      POSTGRES_HOST: postgres
+    secrets:
+      - tg_token
+      - encryption_key
+      - webhook_secret
+    restart: "no"
+
   bot:
     build: .
     <<: [*logging, *env]
+    entrypoint: ["uv", "run", "uvicorn", "main:application", "--host", "0.0.0.0", "--port", "5000", "--factory", "--app-dir", "src"]
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - bot-internal
       - kita-proxy
@@ -61,6 +81,12 @@ services:
       - tg_token
       - encryption_key
       - webhook_secret
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     restart: unless-stopped
 
   worker:
@@ -72,6 +98,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks:
       - bot-internal
     environment:
