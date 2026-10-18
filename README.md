@@ -32,7 +32,7 @@
 ## 🚀 Быстрый старт (Docker)
 
 > [!WARNING]
-> На проде три секрета (`TG_TOKEN`, `WEBHOOK_SECRET`, `ENCRYPTION_KEY`) должны находится **только** в `secrets/`, ни в коем случае не указывайте их в `.env`.
+> На проде все секреты (`TG_TOKEN`, `WEBHOOK_SECRET`, `ENCRYPTION_KEY`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD`) должны находится **только** в `secrets/`, ни в коем случае не указывайте их в `.env`.
 
 
 ### Предварительные требования
@@ -52,9 +52,8 @@ git clone https://github.com/tellmeimcute/kita.git && cd kita
 cp .env.example .env
 ```
 
-Сгенерируйте пароль БД и отредактируйте остальные переменные:
+Отредактируйте остальные переменные:
 ```sh
-sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(openssl rand -hex 32)/" .env
 nano .env
 ```
 
@@ -74,10 +73,21 @@ mkdir -p secrets
 echo YOUR_TOKEN > secrets/.tg_token
 ```
 
-5. **Сгенерируйте ключ шифрования и secret_token для телеграм вебхука**
+5. **Сгенерируйте секреты (ключ шифрования, secret_token вебхука, пароли Postgres и Redis)**
 ```sh
-openssl rand -base64 32 > secrets/.encryption_key && openssl rand -hex 32 > secrets/.webhook_secret
+openssl rand -base64 32 > secrets/.encryption_key
+openssl rand -hex 32 > secrets/.webhook_secret
+openssl rand -hex 32 > secrets/.postgres_password
+openssl rand -hex 32 > secrets/.redis_password
+printf 'user default on >%s ~* &* +@all\n' "$(cat secrets/.redis_password)" > secrets/.redis_acl
 ```
+
+> [!NOTE]
+> Postgres читает пароль из `secrets/.postgres_password` (через `POSTGRES_PASSWORD_FILE`), Redis — ACL-файл `secrets/.redis_acl` (директива `aclfile`), а приложение — пароль из `secrets/.redis_password`.
+> 
+> Если том Postgres уже инициализирован, значение в `secrets/.postgres_password` должно совпадать с текущим паролем БД.
+> 
+> При смене `secrets/.redis_password` перегенерируйте и `secrets/.redis_acl` (командой выше), иначе пароли разойдутся.
 
 6. **Создайте docker network и запустите**
 ```sh
