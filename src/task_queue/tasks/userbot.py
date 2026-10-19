@@ -4,8 +4,10 @@ from loguru import logger
 from database.enums import UserRole
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol
 from services import WebhookService
-from task_queue.broker import broker
+from task_queue.broker import get_broker
 from usecases.ub_token_resolver import UserBotTokenResolver
+
+broker = get_broker()
 
 
 @broker.task

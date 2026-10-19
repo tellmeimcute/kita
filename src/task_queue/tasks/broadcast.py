@@ -8,9 +8,11 @@ from loguru import logger
 from taskiq import AsyncTaskiqTask, TaskiqResult
 
 from interfaces import MessageNotifierProtocol, UnitOfWorkProtocol, UserServiceProtocol
-from task_queue.broker import broker
+from task_queue.broker import get_broker
 from usecases import BroadcastUseCase
 from usecases.broadcast import BatchResult
+
+broker = get_broker()
 
 PAGE_SIZE = 20
 CHUNK_SIZE = 5

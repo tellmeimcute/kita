@@ -5,7 +5,7 @@ from taskiq_redis import RedisStreamBroker
 from core.config import Config
 from core.logging_config import setup_logging
 
-from .broker import broker
+from .broker import get_broker
 from .container import create_taskiq_container
 from .middlewares import BotContextMiddleware
 
@@ -14,6 +14,7 @@ setup_logging(config.log_level)
 
 
 def worker() -> RedisStreamBroker:
+    broker = get_broker()
     container = create_taskiq_container()
     setup_dishka_taskiq(container, broker)
 

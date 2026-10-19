@@ -12,8 +12,10 @@ from interfaces import (
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
-from task_queue.broker import broker
+from task_queue.broker import get_broker
 from utils.suggestion_utils import SuggestionUtils
+
+broker = get_broker()
 
 
 @broker.task

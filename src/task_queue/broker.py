@@ -1,21 +1,25 @@
+from functools import cache
+
 from taskiq.serializers import ORJSONSerializer
 from taskiq_redis import RedisAsyncResultBackend, RedisStreamBroker
 
-from core.config import Config
+from core.config.redis import RedisConfig
 
 
-def create_broker(config: Config):
+def create_broker(redis_url: str) -> RedisStreamBroker:
     result_backend = RedisAsyncResultBackend(
-        redis_url=config.redis.redis_url,
+        redis_url=redis_url,
         keep_results=False,
         result_ex_time=3600,
         serializer=ORJSONSerializer(),
     )
 
     return RedisStreamBroker(
-        url=config.redis.redis_url,
+        url=redis_url,
         maxlen=1000,
     ).with_result_backend(result_backend)
 
 
-broker = create_broker(Config.get())
+@cache
+def get_broker() -> RedisStreamBroker:
+    return create_broker(RedisConfig().redis_url)

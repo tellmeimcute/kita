@@ -10,7 +10,7 @@ from core.config import Config
 from interfaces import BotRegistryProtocol
 from services.webhooks import WebhookService
 from startup import setup_registrar_dp, setup_slave_dp
-from task_queue.broker import broker
+from task_queue.broker import get_broker
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
 
 
@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
 
     config = await container.get(Config)
     webhooks_service = await container.get(WebhookService)
+    broker = get_broker()
 
     await setup_slave_dp(container, dp)
     await setup_registrar_dp(container, registrar_dp)
