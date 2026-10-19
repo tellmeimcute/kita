@@ -6,13 +6,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.enums import UserRole
 
 from .abstract_model import AbstractModel
+from .tenant import UserbotMixin
 from .timestamp import TimestampMixin
 
 if TYPE_CHECKING:
     from .user import UserAlchemy
 
 
-class UserProfile(AbstractModel, TimestampMixin):
+class UserProfile(AbstractModel, TimestampMixin, UserbotMixin):
     __tablename__ = "user_profile"
     __table_args__ = (
         UniqueConstraint("bot_id", "user_id", name="uq_user_profile_bot_user"),
@@ -20,7 +21,6 @@ class UserProfile(AbstractModel, TimestampMixin):
         Index("ix_user_profile_bot_id", "bot_id", "id"),
     )
 
-    bot_id: Mapped[int] = mapped_column(BigInteger)
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.user_id"), nullable=False)
 
     prefer_anonymous: Mapped[bool] = mapped_column(default=False, server_default=text("false"))

@@ -1,18 +1,17 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .abstract_model import AbstractModel
+from .tenant import UserbotMixin
 
 if TYPE_CHECKING:
     from .suggestion import Suggestion
 
 
-class Media(AbstractModel):
+class Media(AbstractModel, UserbotMixin):
     __tablename__ = "media"
-
-    bot_id: Mapped[int] = mapped_column(BigInteger)
 
     filetype: Mapped[str] = mapped_column()
     telegram_file_id: Mapped[str] = mapped_column()

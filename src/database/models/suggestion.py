@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database.enums import SuggestionStatus
 
 from .abstract_model import AbstractModel
+from .tenant import UserbotMixin
 from .timestamp import TimestampMixin
 
 if TYPE_CHECKING:
@@ -13,11 +14,9 @@ if TYPE_CHECKING:
     from .user import UserAlchemy
 
 
-class Suggestion(AbstractModel, TimestampMixin):
+class Suggestion(AbstractModel, TimestampMixin, UserbotMixin):
     __tablename__ = "suggestion"
     __table_args__ = (Index("ix_suggestion_bot_status", "bot_id", "status"),)
-
-    bot_id: Mapped[int] = mapped_column(BigInteger)
 
     caption: Mapped[str | None] = mapped_column(nullable=True)
     media_group_id: Mapped[str | None] = mapped_column(nullable=True, default=None)
