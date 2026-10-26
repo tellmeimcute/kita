@@ -53,7 +53,7 @@ def get_storage(config: Config):
 
 def get_dispatcher(storage: RedisStorage):
     dp = Dispatcher(storage=storage, name="dispatcher")
-    logger.info(f"Initialized Dispatcher with {id(storage)} Redis storage")
+    logger.info("Initialized Dispatcher with {} Redis storage", id(storage))
     return dp
 
 
