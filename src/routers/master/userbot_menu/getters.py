@@ -7,8 +7,7 @@ from dishka.integrations.aiogram_dialog import inject
 from core.html import quote
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO, UserDTO
-from interfaces import UnitOfWorkProtocol
-from services import UserBotService
+from interfaces import UnitOfWorkProtocol, UserBotServiceProtocol
 
 STATUS_BANNED_EMOJI = "🚫"
 STATUS_INACTIVE_EMOJI = "🔴"
@@ -49,7 +48,7 @@ def empty_selected(translator: Translator) -> dict:
 async def owned_userbots(
     dialog_manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     **kwargs,
 ):
     user_dto: UserDTO = dialog_manager.middleware_data.get("user_dto")
@@ -72,7 +71,7 @@ async def owned_userbots(
 async def get_selected_userbot(
     dialog_manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     translator: FromDishka[Translator],
     **kwargs,
 ):

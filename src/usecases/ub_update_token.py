@@ -1,7 +1,11 @@
 from database.dto import UserDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import (
+    BotRegistryProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+    WebhookServiceProtocol,
+)
 from interfaces.mixins import BotMixin
-from services import UserBotService, WebhookService
 from utils.userbot_probe import parse_token, probe_token, userbot_action_auth
 
 
@@ -12,8 +16,8 @@ class UserbotUpdateTokenUseCase(BotMixin):
         self,
         bot_registry: BotRegistryProtocol,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
-        webhook_service: WebhookService,
+        userbot_service: UserBotServiceProtocol,
+        webhook_service: WebhookServiceProtocol,
     ):
         super().__init__(bot_registry)
         self._uow = uow

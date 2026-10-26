@@ -7,9 +7,8 @@ from core.exceptions import (
     ChannelNotFoundError,
     UserbotAlreadyExistsError,
 )
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from interfaces.mixins import BotMixin
-from services import UserBotService
 from utils.userbot_probe import probe_userbot, validate_channel_id
 
 
@@ -20,7 +19,7 @@ class UserBotRegisterUseCase(BotMixin):
         self,
         bot_registry: BotRegistryProtocol,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
+        userbot_service: UserBotServiceProtocol,
         crypto: Cryptographer,
     ):
         super().__init__(bot_registry)

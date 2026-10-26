@@ -24,8 +24,12 @@ from core.exceptions import (
 from database.dto import UserBotDTO, UserDTO
 from database.models import UserAlchemy, UserBot, UserProfile
 from database.repository import UserRepository
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotRepositoryProtocol
-from services import UserBotService
+from interfaces import (
+    BotRegistryProtocol,
+    UnitOfWorkProtocol,
+    UserBotRepositoryProtocol,
+    UserBotServiceProtocol,
+)
 from usecases import UserBotRegisterUseCase
 
 BOT_TOKEN = "123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
@@ -40,7 +44,7 @@ CHANNEL_INPUT = "123456789"
 class UserBotTestContext:
     uow: UnitOfWorkProtocol
     register: UserBotRegisterUseCase
-    userbot_service: UserBotService
+    userbot_service: UserBotServiceProtocol
     userbot_repo: UserBotRepositoryProtocol
     crypto: Cryptographer
     bot_registry: BotRegistryProtocol
@@ -103,7 +107,7 @@ async def userbot_test_context(
     ctx = UserBotTestContext(
         uow=uow,
         register=await request_container.get(UserBotRegisterUseCase),
-        userbot_service=await request_container.get(UserBotService),
+        userbot_service=await request_container.get(UserBotServiceProtocol),
         userbot_repo=await request_container.get(UserBotRepositoryProtocol),
         crypto=await request_container.get(Cryptographer),
         bot_registry=bot_registry,

@@ -12,8 +12,12 @@ from core.cryptographer import Cryptographer
 from core.exceptions import UserbotAlreadyExistsError, UserbotError
 from core.i18n_translator import Translator
 from database.dto import UserDTO
-from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UnitOfWorkProtocol
-from services import UserBotService
+from interfaces import (
+    BotRegistryProtocol,
+    MessageNotifierProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+)
 from task_queue.tasks import new_userbot
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 from usecases import UserBotRegisterUseCase
@@ -26,7 +30,7 @@ async def start_registration(
     button: Button,
     manager: DialogManager,
     uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     config: FromDishka[Config],
     tl: FromDishka[Translator],
 ):

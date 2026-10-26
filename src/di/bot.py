@@ -2,8 +2,8 @@ from aiogram import Bot
 from dishka import Provider, Scope, provide
 
 from database.dto import UserBotDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
-from services import BotRegistry, UserBotService
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
+from services import BotRegistry
 from usecases.ub_token_resolver import UserBotTokenResolver
 
 
@@ -24,7 +24,7 @@ class BotProvider(Provider):
     async def userbot(
         self,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
+        userbot_service: UserBotServiceProtocol,
         bot: Bot,
     ) -> UserBotDTO:
         async with uow.transaction():

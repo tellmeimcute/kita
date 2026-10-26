@@ -29,9 +29,11 @@ from database.repository import UserRepository
 from interfaces import (
     BotRegistryProtocol,
     UnitOfWorkProtocol,
+    UserBotServiceProtocol,
     UserProfileServiceProtocol,
+    WebhookServiceProtocol,
 )
-from services import UserBotService, WebhookService
+from services import UserBotService
 from usecases import (
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
@@ -59,7 +61,7 @@ class ManagementContext:
     update_channel: UserbotUpdateChannelUseCase
     demote_admins: UserbotDemoteAdminsUseCase
     active_toggle: UserbotActiveToggleUseCase
-    userbot_service: UserBotService
+    userbot_service: UserBotServiceProtocol
     user_repo: UserRepository
     profile_service: UserProfileServiceProtocol
     set_webhook: AsyncMock
@@ -129,10 +131,10 @@ async def management_context(
 ) -> AsyncIterator[ManagementContext]:
     uow = await request_container.get(UnitOfWorkProtocol)
     user_repo = await request_container.get(UserRepository)
-    userbot_service = await request_container.get(UserBotService)
+    userbot_service = await request_container.get(UserBotServiceProtocol)
     profile_service = await request_container.get(UserProfileServiceProtocol)
     bot_registry = await request_container.get(BotRegistryProtocol)
-    webhook_service = await request_container.get(WebhookService)
+    webhook_service = await request_container.get(WebhookServiceProtocol)
     session = await request_container.get(AsyncSession)
 
     bot_registry.tmp_bot_settings = {}

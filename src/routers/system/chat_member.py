@@ -22,10 +22,11 @@ from interfaces import (
     BotRegistryProtocol,
     MessageNotifierProtocol,
     UnitOfWorkProtocol,
+    UserBotServiceProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
+    WebhookServiceProtocol,
 )
-from services import UserBotService, WebhookService
 
 
 async def on_user_block_bot(
@@ -45,9 +46,9 @@ async def on_userbot_demoted(
     userbot_dto: UserBotDTO,
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
-    webhook_service: FromDishka[WebhookService],
+    webhook_service: FromDishka[WebhookServiceProtocol],
     notifier: FromDishka[MessageNotifierProtocol],
     config: FromDishka[Config],
     i18n: FromDishka[I18n],
@@ -118,7 +119,7 @@ async def on_unknown_intent_or_state(
 async def userbot_token_invalid(
     event: ErrorEvent,
     uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     bot_registry: FromDishka[BotRegistryProtocol],
 ):
     bot = bot_registry.get_current()

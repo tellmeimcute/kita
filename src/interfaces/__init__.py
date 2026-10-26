@@ -13,8 +13,10 @@ from .services import (
     SuggestionQueueProtocol,
     SuggestionServiceProtocol,
     SuggestionViewerProtocol,
+    UserBotServiceProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
+    WebhookServiceProtocol,
 )
 from .uow import UnitOfWorkProtocol
 
@@ -25,6 +27,7 @@ __all__ = (
     "SuggestionNotifierProtocol",
     "SuggestionRepositoryProtocol",
     "UserBotRepositoryProtocol",
+    "UserBotServiceProtocol",
     "UserBotStatsRepositoryProtocol",
     "UserProfileRepositoryProtocol",
     "UserRepositoryProtocol",
@@ -35,4 +38,5 @@ __all__ = (
     "SuggestionViewerProtocol",
     "UnitOfWorkProtocol",
     "SuggestionTaskDispatcherProtocol",
+    "WebhookServiceProtocol",
 )

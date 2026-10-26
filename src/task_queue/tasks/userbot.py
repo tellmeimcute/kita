@@ -2,8 +2,12 @@ from dishka.integrations.taskiq import FromDishka, inject
 from loguru import logger
 
 from database.enums import UserRole
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol
-from services import WebhookService
+from interfaces import (
+    BotRegistryProtocol,
+    UnitOfWorkProtocol,
+    UserProfileServiceProtocol,
+    WebhookServiceProtocol,
+)
 from task_queue.broker import get_broker
 from usecases.ub_token_resolver import UserBotTokenResolver
 
@@ -19,7 +23,7 @@ async def new_userbot(
     bot_registry: FromDishka[BotRegistryProtocol],
     uow: FromDishka[UnitOfWorkProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
-    webhook_service: FromDishka[WebhookService],
+    webhook_service: FromDishka[WebhookServiceProtocol],
     token_resolver: FromDishka[UserBotTokenResolver],
 ):
     userbot_token = await token_resolver.resolve(userbot_id)

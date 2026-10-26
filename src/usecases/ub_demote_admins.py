@@ -1,7 +1,11 @@
 from database.dto import UserDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserProfileServiceProtocol
+from interfaces import (
+    BotRegistryProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+    UserProfileServiceProtocol,
+)
 from interfaces.mixins import BotMixin
-from services import UserBotService
 from utils.userbot_probe import userbot_action_auth
 
 
@@ -12,7 +16,7 @@ class UserbotDemoteAdminsUseCase(BotMixin):
         self,
         bot_registry: BotRegistryProtocol,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
+        userbot_service: UserBotServiceProtocol,
         profile_service: UserProfileServiceProtocol,
     ):
         super().__init__(bot_registry)

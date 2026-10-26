@@ -17,8 +17,7 @@ from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
-from interfaces import UnitOfWorkProtocol
-from services import UserBotService
+from interfaces import UnitOfWorkProtocol, UserBotServiceProtocol
 
 from .tg_webhook_base import BaseTgWebhookEndpoint, verify_secret_token
 
@@ -30,7 +29,7 @@ class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
         is_token_valid: Annotated[bool, Depends(verify_secret_token)],
         update: Annotated[Update, Body()],
         uow: FromDishka[UnitOfWorkProtocol],
-        userbot_service: FromDishka[UserBotService],
+        userbot_service: FromDishka[UserBotServiceProtocol],
     ):
         async with uow.transaction():
             userbot = await userbot_service.get(bot_id)

@@ -2,9 +2,13 @@ from aiogram import Bot
 from aiogram.types import User as AiogramUser
 
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import (
+    BotRegistryProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+    WebhookServiceProtocol,
+)
 from interfaces.mixins import BotMixin
-from services import UserBotService, WebhookService
 from utils.userbot_probe import probe_userbot, userbot_action_auth
 
 
@@ -15,8 +19,8 @@ class UserbotActiveToggleUseCase(BotMixin):
         self,
         bot_registry: BotRegistryProtocol,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
-        webhook_service: WebhookService,
+        userbot_service: UserBotServiceProtocol,
+        webhook_service: WebhookServiceProtocol,
     ):
         super().__init__(bot_registry)
         self._uow = uow

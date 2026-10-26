@@ -1,11 +1,18 @@
 from collections.abc import Sequence
 from typing import Any, Protocol
 
-from aiogram.types import Message
+from aiogram import Bot
+from aiogram.types import Message, WebhookInfo
 from aiogram_dialog import DialogManager
 
 from core.schemas.objects import UserStats
-from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO, UserProfileDTO
+from database.dto import (
+    SuggestionBaseDTO,
+    SuggestionFullDTO,
+    UserBotDTO,
+    UserDTO,
+    UserProfileDTO,
+)
 from database.enums import UserRole
 
 
@@ -78,3 +85,37 @@ class SuggestionViewerProtocol(Protocol):
     async def get_current(self) -> SuggestionFullDTO | None: ...
 
     async def return_to_menu(self, manager: DialogManager, user_dto: UserDTO): ...
+
+
+class UserBotServiceProtocol(Protocol):
+    async def get(self, bot_id: int) -> UserBotDTO | None: ...
+
+    async def get_active(self) -> Sequence[UserBotDTO]: ...
+
+    async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]: ...
+
+    async def create(
+        self,
+        token: str,
+        bot_id: int,
+        username: str,
+        owner_id: int,
+        channel_id: int,
+        channel_name: str,
+    ) -> None: ...
+
+    async def update(self, bot_id: int, **data: Any) -> None: ...
+
+    async def save(self, userbot_dto: UserBotDTO) -> None: ...
+
+
+class WebhookServiceProtocol(Protocol):
+    async def set_webhook(
+        self,
+        bot: Bot,
+        url: str | None = None,
+        force_update: bool = False,
+        allowed_updates: Sequence[str] | None = None,
+    ) -> WebhookInfo: ...
+
+    async def remove_webhook(self, bot: Bot) -> None: ...

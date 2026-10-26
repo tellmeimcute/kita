@@ -9,8 +9,7 @@ from loguru import logger
 from core.exceptions import UserbotBanned, UserbotError, UserbotNotFoundError
 from core.i18n_translator import Translator
 from database.dto import UserDTO
-from interfaces import MessageNotifierProtocol, UnitOfWorkProtocol
-from services import UserBotService
+from interfaces import MessageNotifierProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from ui.state_groups import UserBotSelectSG
 from usecases import (
     UserbotActiveToggleUseCase,
@@ -28,7 +27,7 @@ async def on_bot_selected(
     manager: DialogManager,
     item_id: str,
     uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotService],
+    userbot_service: FromDishka[UserBotServiceProtocol],
     tl: FromDishka[Translator],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")

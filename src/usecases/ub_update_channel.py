@@ -2,9 +2,8 @@ from loguru import logger
 
 from core.exceptions import ChannelNotFoundError
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from interfaces.mixins import BotMixin
-from services import UserBotService
 from utils.userbot_probe import probe_userbot, userbot_action_auth, validate_channel_id
 
 
@@ -15,7 +14,7 @@ class UserbotUpdateChannelUseCase(BotMixin):
         self,
         bot_registry: BotRegistryProtocol,
         uow: UnitOfWorkProtocol,
-        userbot_service: UserBotService,
+        userbot_service: UserBotServiceProtocol,
     ):
         super().__init__(bot_registry)
         self._uow = uow

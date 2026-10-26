@@ -7,8 +7,7 @@ from fastapi import FastAPI
 from loguru import logger
 
 from core.config import Config
-from interfaces import BotRegistryProtocol
-from services.webhooks import WebhookService
+from interfaces import BotRegistryProtocol, WebhookServiceProtocol
 from startup import setup_registrar_dp, setup_slave_dp
 from task_queue.broker import get_broker
 from web.endpoints.tg_webhook import TelegramWebhookEndpoint, UserBotRegistrarEndpoint
@@ -24,7 +23,7 @@ async def lifespan(app: FastAPI):
     registrar_dp: Dispatcher = app.state.registrar_dp
 
     config = await container.get(Config)
-    webhooks_service = await container.get(WebhookService)
+    webhooks_service = await container.get(WebhookServiceProtocol)
     broker = get_broker()
 
     await setup_slave_dp(container, dp)

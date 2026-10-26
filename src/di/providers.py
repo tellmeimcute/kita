@@ -34,11 +34,13 @@ from interfaces import (
     SuggestionViewerProtocol,
     UnitOfWorkProtocol,
     UserBotRepositoryProtocol,
+    UserBotServiceProtocol,
     UserBotStatsRepositoryProtocol,
     UserProfileRepositoryProtocol,
     UserProfileServiceProtocol,
     UserRepositoryProtocol,
     UserServiceProtocol,
+    WebhookServiceProtocol,
 )
 from services.notifier import MessageNotifier, SuggestionNotifier
 from services.suggestion import SuggestionService
@@ -76,14 +78,14 @@ class InfraProvider(Provider):
     scope = Scope.REQUEST
 
     cryptographer = provide(Cryptographer, scope=Scope.APP)
-    webhook_service = provide(WebhookService, scope=Scope.APP)
+    webhook_service = provide(WebhookService, provides=WebhookServiceProtocol, scope=Scope.APP)
     suggestion_tasks = provide(
         SuggestionTaskDispatcher,
         provides=SuggestionTaskDispatcherProtocol,
         scope=Scope.APP,
     )
 
-    userbot_service = provide(UserBotService)
+    userbot_service = provide(UserBotService, provides=UserBotServiceProtocol)
     msg_notifier = provide(MessageNotifier, provides=MessageNotifierProtocol)
     suggestion_notifier = provide(SuggestionNotifier, provides=SuggestionNotifierProtocol)
     user_service = provide(UserService, provides=UserServiceProtocol)
