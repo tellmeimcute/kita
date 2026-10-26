@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from interfaces import (
+from .repository import (
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
     UserProfileRepositoryProtocol,
