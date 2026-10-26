@@ -15,9 +15,12 @@ from testcontainers.community.redis import AsyncRedisContainer
 from core.config import Config
 from di import (
     BotProvider,
+    ConfigProvider,
     DatabaseProvider,
-    InfraProvider,
     RedisProvider,
+    RepositoryProvider,
+    ServiceProvider,
+    UseCaseProvider,
     UtilsProvider,
 )
 from interfaces import BotRegistryProtocol
@@ -88,8 +91,11 @@ class TestProvider(Provider):
 @pytest.fixture(scope="session", autouse=True)
 async def dishka_container():
     container = make_async_container(
+        ConfigProvider(),
+        RepositoryProvider(),
+        ServiceProvider(),
+        UseCaseProvider(),
         BotProvider(),
-        InfraProvider(),
         UtilsProvider(),
         DatabaseProvider(),
         RedisProvider(),

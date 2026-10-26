@@ -2,16 +2,22 @@ from dishka import AsyncContainer, make_async_container
 
 from di import (
     BotProvider,
+    ConfigProvider,
     DatabaseProvider,
-    InfraProvider,
     RedisProvider,
+    RepositoryProvider,
+    ServiceProvider,
+    UseCaseProvider,
     UtilsProvider,
 )
 
 
 def create_taskiq_container() -> AsyncContainer:
     return make_async_container(
-        InfraProvider(),
+        ConfigProvider(),
+        RepositoryProvider(),
+        ServiceProvider(),
+        UseCaseProvider(),
         UtilsProvider(),
         BotProvider(),
         DatabaseProvider(),

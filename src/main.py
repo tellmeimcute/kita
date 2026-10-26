@@ -14,11 +14,14 @@ from core.config import Config
 from core.logging_config import setup_logging
 from di import (
     BotProvider,
+    ConfigProvider,
     DatabaseProvider,
     FSMProvider,
-    InfraProvider,
     MiddlewareProvider,
     RedisProvider,
+    RepositoryProvider,
+    ServiceProvider,
+    UseCaseProvider,
     UtilsProvider,
     ViewerProvider,
 )
@@ -30,7 +33,10 @@ setup_logging(config.log_level.upper())
 
 def create_container() -> AsyncContainer:
     return make_async_container(
-        InfraProvider(),
+        ConfigProvider(),
+        RepositoryProvider(),
+        ServiceProvider(),
+        UseCaseProvider(),
         UtilsProvider(),
         BotProvider(),
         DatabaseProvider(),

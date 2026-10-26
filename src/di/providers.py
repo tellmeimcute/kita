@@ -5,64 +5,10 @@ from aiogram_dialog.manager.bg_manager import BgManager
 from dishka import Provider, Scope, provide
 from dishka.integrations.aiogram import AiogramMiddlewareData
 
-from core.config import Config
-from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
-from database.repository import (
-    MediaRepository,
-    SuggestionRepository,
-    UserBotRepository,
-    UserProfileRepository,
-    UserRepository,
-)
-from database.repository.cached import (
-    CachedSuggestionRepository,
-    CachedUserBotRepository,
-    CachedUserBotStatsRepository,
-    CachedUserProfileRepository,
-    CachedUserRepository,
-)
-from database.uow import UnitOfWork
-from interfaces import (
-    MediaRepositoryProtocol,
-    MessageNotifierProtocol,
-    SuggestionNotifierProtocol,
-    SuggestionQueueProtocol,
-    SuggestionRepositoryProtocol,
-    SuggestionServiceProtocol,
-    SuggestionTaskDispatcherProtocol,
-    SuggestionViewerProtocol,
-    UnitOfWorkProtocol,
-    UserBotRepositoryProtocol,
-    UserBotServiceProtocol,
-    UserBotStatsRepositoryProtocol,
-    UserProfileRepositoryProtocol,
-    UserProfileServiceProtocol,
-    UserRepositoryProtocol,
-    UserServiceProtocol,
-    WebhookServiceProtocol,
-)
-from services.notifier import MessageNotifier, SuggestionNotifier
-from services.suggestion import SuggestionService
-from services.user import UserService
-from services.user_profile import UserProfileService
-from services.userbots import UserBotService
-from services.webhooks import WebhookService
-from task_queue.dispatcher import SuggestionTaskDispatcher
+from interfaces import SuggestionQueueProtocol, SuggestionViewerProtocol
 from ui.suggestion_queue import SuggestionQueue
 from ui.suggestion_viewer import SuggestionViewer
-from usecases import (
-    BroadcastUseCase,
-    ChangeRoleUseCase,
-    MessageUserUseCase,
-    ModerateSuggestionUseCase,
-    UserbotActiveToggleUseCase,
-    UserbotDemoteAdminsUseCase,
-    UserBotRegisterUseCase,
-    UserbotUpdateChannelUseCase,
-    UserbotUpdateTokenUseCase,
-    UserRegisterOrUpdateUseCase,
-)
 from utils.message_parser import MessageParser
 from utils.suggestion_utils import SuggestionUtils
 
@@ -72,59 +18,6 @@ class ViewerProvider(Provider):
 
     suggestion_queue = provide(SuggestionQueue, provides=SuggestionQueueProtocol)
     suggestion_viewer = provide(SuggestionViewer, provides=SuggestionViewerProtocol)
-
-
-class InfraProvider(Provider):
-    scope = Scope.REQUEST
-
-    cryptographer = provide(Cryptographer, scope=Scope.APP)
-    webhook_service = provide(WebhookService, provides=WebhookServiceProtocol, scope=Scope.APP)
-    suggestion_tasks = provide(
-        SuggestionTaskDispatcher,
-        provides=SuggestionTaskDispatcherProtocol,
-        scope=Scope.APP,
-    )
-
-    userbot_service = provide(UserBotService, provides=UserBotServiceProtocol)
-    msg_notifier = provide(MessageNotifier, provides=MessageNotifierProtocol)
-    suggestion_notifier = provide(SuggestionNotifier, provides=SuggestionNotifierProtocol)
-    user_service = provide(UserService, provides=UserServiceProtocol)
-    user_profile_service = provide(UserProfileService, provides=UserProfileServiceProtocol)
-    suggestion_service = provide(SuggestionService, provides=SuggestionServiceProtocol)
-
-    raw_suggestion_repo = provide(SuggestionRepository)
-    suggestion_repo = provide(CachedSuggestionRepository, provides=SuggestionRepositoryProtocol)
-
-    raw_user_repo = provide(UserRepository)
-    raw_profile_repo = provide(UserProfileRepository)
-
-    user_repo = provide(CachedUserRepository, provides=UserRepositoryProtocol)
-    user_profile_repo = provide(
-        CachedUserProfileRepository, provides=UserProfileRepositoryProtocol
-    )
-
-    media_repo = provide(MediaRepository, provides=MediaRepositoryProtocol)
-
-    raw_userbot_repo = provide(UserBotRepository)
-    userbot_repo = provide(CachedUserBotRepository, provides=UserBotRepositoryProtocol)
-    userbot_stats = provide(CachedUserBotStatsRepository, provides=UserBotStatsRepositoryProtocol)
-
-    uow = provide(UnitOfWork, provides=UnitOfWorkProtocol)
-
-    moderate_suggestion = provide(ModerateSuggestionUseCase)
-    change_role = provide(ChangeRoleUseCase)
-    broadcast = provide(BroadcastUseCase)
-    message_user = provide(MessageUserUseCase)
-    register_or_update_user = provide(UserRegisterOrUpdateUseCase)
-    ub_register = provide(UserBotRegisterUseCase)
-    ub_active_toggle = provide(UserbotActiveToggleUseCase)
-    ub_update_token = provide(UserbotUpdateTokenUseCase)
-    ub_update_channel = provide(UserbotUpdateChannelUseCase)
-    ub_demote_admins = provide(UserbotDemoteAdminsUseCase)
-
-    @provide(scope=Scope.APP)
-    def config(self) -> Config:
-        return Config.get()
 
 
 class UtilsProvider(Provider):
