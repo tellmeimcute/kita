@@ -1,6 +1,7 @@
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram import Bot
@@ -79,24 +80,24 @@ def tg_bot(tg_channel: MagicMock) -> MagicMock:
     return bot
 
 
-@pytest.fixture
-def patched_bot(tg_bot: MagicMock) -> Iterator[MagicMock]:
-    with patch("usecases.ub_register.Bot") as bot_cls:
-        bot_cls.return_value = tg_bot
-        yield bot_cls
+@asynccontextmanager
+async def _temp_bot(bot: Bot) -> AsyncGenerator[Bot]:
+    yield bot
 
 
 @pytest.fixture
 async def userbot_test_context(
     request_container: AsyncContainer,
     user_dto_factory: Callable[..., UserDTO],
+    tg_bot: MagicMock,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> AsyncIterator[UserBotTestContext]:
     uow = await request_container.get(UnitOfWorkProtocol)
     user_repo = await request_container.get(UserRepository)
     bot_registry = await request_container.get(BotRegistryProtocol)
     session = await request_container.get(AsyncSession)
 
-    bot_registry.tmp_bot_settings = {}
+    monkeypatch.setattr(bot_registry, "temp_bot", lambda token: _temp_bot(tg_bot))
     bot_registry.remove.reset_mock()
     bot_registry.get_or_create.reset_mock()
 
@@ -132,7 +133,6 @@ async def userbot_test_context(
 )
 async def test_register_userbot_creates_record(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_bot: MagicMock,
     channel_input: str,
     expected_chat_arg: int | str,
@@ -160,7 +160,6 @@ async def test_register_userbot_creates_record(
 
 async def test_register_userbot_registers_bot_in_registry(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
 ):
     ctx = userbot_test_context
     raw_token = ctx.crypto.encrypt(BOT_TOKEN)
@@ -173,7 +172,6 @@ async def test_register_userbot_registers_bot_in_registry(
 
 async def test_register_userbot_already_exists(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
 ):
     ctx = userbot_test_context
     raw_token = ctx.crypto.encrypt(BOT_TOKEN)
@@ -219,7 +217,6 @@ async def test_register_userbot_invalid_channel_id(
 
 async def test_register_userbot_not_a_channel(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_channel: MagicMock,
 ):
     ctx = userbot_test_context
@@ -234,7 +231,6 @@ async def test_register_userbot_not_a_channel(
 
 async def test_register_userbot_insufficient_permissions(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_bot: MagicMock,
 ):
     ctx = userbot_test_context
@@ -251,7 +247,6 @@ async def test_register_userbot_insufficient_permissions(
 
 async def test_register_userbot_not_admin_member(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_bot: MagicMock,
 ):
     ctx = userbot_test_context
@@ -266,7 +261,6 @@ async def test_register_userbot_not_admin_member(
 
 async def test_register_userbot_chat_not_found(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_bot: MagicMock,
 ):
     ctx = userbot_test_context
@@ -283,7 +277,6 @@ async def test_register_userbot_chat_not_found(
 
 async def test_register_userbot_invalid_token(
     userbot_test_context: UserBotTestContext,
-    patched_bot: MagicMock,
     tg_bot: MagicMock,
 ):
     ctx = userbot_test_context

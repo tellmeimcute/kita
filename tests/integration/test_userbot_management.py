@@ -1,6 +1,7 @@
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncGenerator, AsyncIterator, Callable
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram import Bot
@@ -116,10 +117,9 @@ def tg_bot(tg_channel: MagicMock) -> MagicMock:
     return bot
 
 
-@pytest.fixture
-def patched_probe_bot(tg_bot: MagicMock) -> Iterator[MagicMock]:
-    with patch("utils.userbot_probe.Bot", MagicMock(return_value=tg_bot)):
-        yield tg_bot
+@asynccontextmanager
+async def _temp_bot(bot: Bot) -> AsyncGenerator[Bot]:
+    yield bot
 
 
 @pytest.fixture
@@ -137,8 +137,8 @@ async def management_context(
     webhook_service = await request_container.get(WebhookServiceProtocol)
     session = await request_container.get(AsyncSession)
 
-    bot_registry.tmp_bot_settings = {}
     monkeypatch.setattr(bot_registry, "get_current", MagicMock(return_value=tg_bot))
+    monkeypatch.setattr(bot_registry, "temp_bot", lambda token: _temp_bot(tg_bot))
     monkeypatch.setattr(bot_registry, "remove", MagicMock())
     monkeypatch.setattr(bot_registry, "get_or_create", MagicMock(return_value=tg_bot))
     monkeypatch.setattr(
@@ -208,7 +208,7 @@ class TestUpdateToken:
     async def test_updates_token_and_refreshes_active_bot(
         self,
         management_context: ManagementContext,
-        patched_probe_bot: MagicMock,
+        tg_bot: MagicMock,
         userbot_save_spy: AsyncMock,
     ):
         ctx = management_context
@@ -221,11 +221,9 @@ class TestUpdateToken:
         userbot_save_spy.assert_awaited_once()
         ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
         ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, NEW_TOKEN)
-        ctx.set_webhook.assert_awaited_once_with(patched_probe_bot)
+        ctx.set_webhook.assert_awaited_once_with(tg_bot)
 
-    async def test_inactive_userbot_skips_webhook(
-        self, management_context: ManagementContext, patched_probe_bot: MagicMock
-    ):
+    async def test_inactive_userbot_skips_webhook(self, management_context: ManagementContext):
         ctx = management_context
         async with ctx.uow.transaction():
             await ctx.userbot_service.update(BOT_ID, active=False)
@@ -259,7 +257,6 @@ class TestUpdateToken:
     async def test_token_rejected_by_telegram(
         self,
         management_context: ManagementContext,
-        patched_probe_bot: MagicMock,
         tg_bot: MagicMock,
     ):
         ctx = management_context

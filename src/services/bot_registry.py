@@ -1,5 +1,6 @@
 import contextvars
 from collections import OrderedDict
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from aiogram import Bot
@@ -27,12 +28,13 @@ class BotRegistry:
 
         self.cache_max_size = config.bot_cache_max_size
 
-    @property
-    def tmp_bot_settings(self) -> dict:
-        return {
-            "session": AiohttpSession(proxy=self._proxy),
-            "default": self._default,
-        }
+    @asynccontextmanager
+    async def temp_bot(self, token: str) -> AsyncGenerator[Bot]:
+        bot = Bot(token=token, session=AiohttpSession(proxy=self._proxy), default=self._default)
+        try:
+            yield bot
+        finally:
+            await bot.session.close()
 
     @property
     def allowed_updates(self) -> list[str]:

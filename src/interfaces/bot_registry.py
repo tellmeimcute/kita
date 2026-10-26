@@ -1,12 +1,12 @@
 import contextvars
+from contextlib import AbstractAsyncContextManager
 from typing import Protocol, overload
 
 from aiogram import Bot
 
 
 class BotRegistryProtocol(Protocol):
-    @property
-    def tmp_bot_settings(self) -> dict: ...
+    def temp_bot(self, token: str) -> AbstractAsyncContextManager[Bot]: ...
 
     @property
     def allowed_updates(self) -> list[str]: ...

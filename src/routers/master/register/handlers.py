@@ -60,7 +60,8 @@ async def bot_token_handler(
 
     try:
         token = parse_token(message.text)
-        await probe_token(bot_registry.tmp_bot_settings, token)
+        async with bot_registry.temp_bot(token) as tmp_bot:
+            await probe_token(tmp_bot)
 
         manager.dialog_data["new_userbot_token"] = crypto.encrypt(token)
         await manager.next(ShowMode.DELETE_AND_SEND)

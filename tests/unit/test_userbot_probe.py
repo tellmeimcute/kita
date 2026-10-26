@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram.enums import ChatMemberStatus
@@ -70,23 +70,18 @@ class TestParseToken:
 
 
 class TestProbeToken:
-    @patch("utils.userbot_probe.Bot")
-    async def test_success(self, mock_bot_cls, mock_bot):
-        mock_bot_cls.return_value = mock_bot
-
-        result = await probe_token({}, VALID_TOKEN)
+    async def test_success(self, mock_bot):
+        result = await probe_token(mock_bot)
 
         assert result == mock_bot.get_me.return_value
 
-    @patch("utils.userbot_probe.Bot")
-    async def test_unauthorized(self, mock_bot_cls, mock_bot):
+    async def test_unauthorized(self, mock_bot):
         mock_bot.get_me = AsyncMock(
             side_effect=TelegramUnauthorizedError(method="getMe", message="Unauthorized")
         )
-        mock_bot_cls.return_value = mock_bot
 
         with pytest.raises(InvalidTokenError):
-            await probe_token({}, VALID_TOKEN)
+            await probe_token(mock_bot)
 
 
 class TestProbeUserbot:

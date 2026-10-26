@@ -31,7 +31,8 @@ class UserbotUpdateTokenUseCase(BotMixin):
         userbot_action_auth(caller_dto, userbot)
 
         token = parse_token(raw_token, expected_bot_id=userbot_id)
-        await probe_token(self._bot_registry.tmp_bot_settings, token)
+        async with self._bot_registry.temp_bot(token) as tmp_bot:
+            await probe_token(tmp_bot)
 
         async with self._uow.transaction():
             userbot.token = token

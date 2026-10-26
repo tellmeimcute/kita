@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
@@ -152,29 +151,36 @@ class TestBotRegistryAsync:
         registry._shared_session.close.assert_called_once()
 
 
-class TestBotRegistrySessions:
-    def test_tmp_bot_settings_have_separate_sessions(self, registry):
-        first = registry.tmp_bot_settings
-        second = registry.tmp_bot_settings
+class TestTempBot:
+    async def test_temp_bot_gets_isolated_session(self, registry):
+        async with (
+            registry.temp_bot(TEST_BOT_TOKEN) as first,
+            registry.temp_bot(TEST_BOT_TOKEN) as second,
+        ):
+            assert isinstance(first.session, AiohttpSession)
+            assert first.session is not second.session
+            assert first.session is not registry._shared_session
 
-        assert first["session"] is not second["session"]
-        assert first["session"] is not registry._shared_session
-        assert isinstance(first["session"], AiohttpSession)
+    async def test_temp_bot_uses_given_token(self, registry):
+        async with registry.temp_bot(TEST_BOT_TOKEN) as tmp_bot:
+            assert tmp_bot.token == TEST_BOT_TOKEN
 
-    def test_tmp_bot_settings_keep_default_properties(self, registry):
-        settings = registry.tmp_bot_settings
+    async def test_temp_bot_keeps_default_properties(self, registry):
+        async with registry.temp_bot(TEST_BOT_TOKEN) as tmp_bot:
+            assert isinstance(tmp_bot.default, DefaultBotProperties)
+            assert tmp_bot.default.parse_mode == ParseMode.HTML
 
-        assert isinstance(settings["default"], DefaultBotProperties)
-        assert settings["default"].parse_mode == ParseMode.HTML
+    async def test_temp_bot_keeps_configured_proxy(self, registry, mock_config):
+        async with registry.temp_bot(TEST_BOT_TOKEN) as tmp_bot:
+            assert tmp_bot.session._proxy == mock_config.proxy
 
-    async def test_closing_short_lived_bot_does_not_close_shared_session(self, registry):
+    async def test_temp_bot_closing_does_not_close_shared_session(self, registry):
         shared_client_session = FakeClientSession()
         registry._shared_session._session = shared_client_session
 
-        async with Bot(token=TEST_BOT_TOKEN, **registry.tmp_bot_settings) as tmp_bot:
+        async with registry.temp_bot(TEST_BOT_TOKEN) as tmp_bot:
             bot_client_session = FakeClientSession()
             tmp_bot.session._session = bot_client_session
-            assert tmp_bot.session is not registry._shared_session
 
         assert bot_client_session.closed is True
         assert shared_client_session.closed is False
@@ -184,8 +190,3 @@ class TestBotRegistrySessions:
         second = registry.get_or_create(2, "2:token")
 
         assert first.session is second.session is registry._shared_session
-
-    def test_tmp_bot_settings_session_keeps_configured_proxy(self, registry, mock_config):
-        session = registry.tmp_bot_settings["session"]
-
-        assert session._proxy == mock_config.proxy

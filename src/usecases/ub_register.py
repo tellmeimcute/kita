@@ -1,4 +1,3 @@
-from aiogram import Bot
 from loguru import logger
 
 from core.cryptographer import Cryptographer
@@ -38,7 +37,7 @@ class UserBotRegisterUseCase(BotMixin):
             logger.info("Userbot registration failed: provided channel_id is not valid")
             raise ChannelNotFoundError()
 
-        async with Bot(token=token, **self._bot_registry.tmp_bot_settings) as tmp_bot:
+        async with self._bot_registry.temp_bot(token) as tmp_bot:
             probe = await probe_userbot(tmp_bot, channel_id)
 
         if not probe.ok:
