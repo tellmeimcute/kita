@@ -72,67 +72,69 @@ async def test_register_user(user_test_context: UserTestContext):
     async with ctx.uow.transaction():
         user_dto = await ctx.user_service.get_or_create(ctx.test_user_dto)
         profile_dto = await ctx.profile_service.get_or_create(ctx.test_user_id)
-        await ctx.uow.rollback()
 
     assert isinstance(user_dto, UserDTO)
     assert isinstance(profile_dto, UserProfileDTO)
     assert user_dto.user_id == profile_dto.user_id
 
 
-async def test_redis_stalling_data(user_test_context: UserTestContext):
+async def test_rollback_dont_write_cache(user_test_context: UserTestContext):
     ctx = user_test_context
 
     async with ctx.uow.transaction():
-        await ctx.user_service.create(ctx.test_user_dto)
-        await ctx.profile_service.create(ctx.test_user_id)
+        await ctx.user_service.get_or_create(ctx.test_user_dto)
+        await ctx.profile_service.get_or_create(ctx.test_user_id)
         await ctx.uow.rollback()
 
     async with ctx.uow.transaction():
         user_dto = await ctx.user_service.get(ctx.test_user_id)
         profile_dto = await ctx.profile_service.get(ctx.test_user_id)
-        await ctx.uow.rollback()
 
     assert user_dto is None
     assert profile_dto is None
 
 
+async def test_user_service_get_or_create_redis_stalling_data(user_test_context: UserTestContext):
+    """Rollback after read path: redis should be clear"""
+
+    ctx = user_test_context
+
+    async with ctx.uow.transaction():
+        await ctx.user_service.get_or_create(ctx.test_user_dto) # write path
+        await ctx.user_service.get_or_create(ctx.test_user_dto) # read path (should be cached)
+        await ctx.uow.rollback()
+
+    assert await ctx.user_redis.get(ctx.user_redis_key) is None
+
+
 async def test_user_services_get_or_create_when_register_dont_cache(
     user_test_context: UserTestContext,
 ):
+    """Write path should not put data into Redis"""
     ctx = user_test_context
 
     async with ctx.uow.transaction():
         await ctx.user_service.get_or_create(ctx.test_user_dto)
-        cached_user = await ctx.user_redis.get(ctx.user_redis_key)
-
         await ctx.profile_service.get_or_create(ctx.test_user_id)
-        cached_profile = await ctx.profile_redis.get(ctx.profile_redis_key)
 
-        await ctx.uow.rollback()
-
-    assert cached_user is None
-    assert cached_profile is None
+    assert await ctx.user_redis.get(ctx.user_redis_key) is None
+    assert await ctx.profile_redis.get(ctx.profile_redis_key) is None
 
 
-async def test_user_services_get_or_create_when_existed_cache(user_test_context: UserTestContext):
+async def test_user_services_get_or_create_cache_when_commit(user_test_context: UserTestContext):
+    """Read path + commit data should be put into Redis"""
     ctx = user_test_context
 
     async with ctx.uow.transaction():
-        # 1 Create and dont cache (write path)
-        await ctx.user_service.get_or_create(ctx.test_user_dto)
-        # Get and cache (read path)
-        await ctx.user_service.get_or_create(ctx.test_user_dto)
+        
+        await ctx.user_service.get_or_create(ctx.test_user_dto) # write path
+        await ctx.user_service.get_or_create(ctx.test_user_dto) # read path (cache)
 
-        cached_user = await ctx.user_redis.get(ctx.user_redis_key)
+        await ctx.profile_service.get_or_create(ctx.test_user_id) # write path
+        await ctx.profile_service.get_or_create(ctx.test_user_id) # read path (cache)
 
-        # Create and dont cache (write path)
-        await ctx.profile_service.get_or_create(ctx.test_user_id)
-        # Get and cache (read path)
-        await ctx.profile_service.get_or_create(ctx.test_user_id)
-
-        cached_profile = await ctx.profile_redis.get(ctx.profile_redis_key)
-
-        await ctx.uow.rollback()
+    cached_user = await ctx.user_redis.get(ctx.user_redis_key)
+    cached_profile = await ctx.profile_redis.get(ctx.profile_redis_key)
 
     assert isinstance(cached_user, UserDTO)
     assert isinstance(cached_profile, UserProfileDTO)
@@ -147,7 +149,6 @@ async def test_register_or_update_usecase(
 
     async with ctx.uow.transaction():
         result = await register_or_update.execute(ctx.aiogram_user)
-        await ctx.uow.rollback()
 
     assert isinstance(result, RegisterResult)
     assert isinstance(result.user, UserDTO)
@@ -173,8 +174,6 @@ async def test_register_or_update_usecase_new_username(
         updated_result = await register_or_update.execute(updated_user)
 
         get_user_dto = await ctx.user_service.get(ctx.test_user_id)
-
-        await ctx.uow.rollback()
 
     assert initial_result.user.username != updated_result.user.username
     assert updated_result.user.user_id == get_user_dto.user_id

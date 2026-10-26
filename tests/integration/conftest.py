@@ -8,6 +8,7 @@ from alembic import command
 from alembic.config import Config as AlembicConfig
 from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
 from redis.asyncio import Redis
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from testcontainers.community.postgres import PostgresContainer
 from testcontainers.community.redis import AsyncRedisContainer
@@ -23,7 +24,7 @@ from di import (
     UseCaseProvider,
     UtilsProvider,
 )
-from interfaces import BotRegistryProtocol
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
 
 
 class TestProvider(Provider):
@@ -114,13 +115,29 @@ async def request_container(dishka_container: AsyncContainer):
 
 
 @pytest.fixture(autouse=True)
-async def flush_redis_after(request_container: AsyncContainer):
-    yield
-
+async def clean_state(request_container: AsyncContainer):
     redis = await request_container.get(Redis)
-    await redis.flushall()
+    session = await request_container.get(AsyncSession)
+    uow = await request_container.get(UnitOfWorkProtocol)
 
+    await redis.flushdb()
 
-@pytest.fixture()
-async def db_session(request_container: AsyncContainer) -> AsyncSession:
-    return await request_container.get(AsyncSession)
+    async with uow.transaction():
+        result = await session.execute(
+            text("""
+            SELECT tablename
+            FROM pg_tables
+            WHERE schemaname = 'public'
+            AND tablename != 'alembic_version'
+        """)
+        )
+
+        tables = [row[0] for row in result.fetchall()]
+
+        assert tables
+        
+        tables_str = ", ".join(f'"{table}"' for table in tables)
+        await session.execute(text("SET LOCAL lock_timeout = '5s'"))
+        await session.execute(text(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE"))
+
+    yield
