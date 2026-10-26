@@ -3,7 +3,7 @@ target-version = "py313"
 line-length = 99
 indent-width = 4
 
-exclude = ["alembic", "tests"]
+exclude = ["alembic"]
 src = ["src"]
 
 [lint]
@@ -44,10 +44,13 @@ ignore = [
 fixable = [
     "I", # cортировка испортов
 ]
- 
+
 [format]
 quote-style = "double"
 indent-style = "space"
- 
+
 [lint.flake8-bandit]
 check-typed-exception = true
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
