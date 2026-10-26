@@ -3,14 +3,14 @@ target-version = "py313"
 line-length = 99
 indent-width = 4
 
-exclude = ["alembic"]
+exclude = ["alembic", "tests"]
 src = ["src"]
 
 [lint]
 preview = true
 
 select = [
-    # "C", # TODO: mccabe - code complecity
+    "C", # TODO: mccabe - code complecity
     "A", # flake8-annotations
     "B", # flake8-bugbear
     "C4", # flake8-comprehensions
@@ -26,6 +26,7 @@ select = [
     "T10", # flake8-debugger
     "T20", # flake8-print
     "UP", # pyupgrade
+    "S", # flake8-bandit
 ]
 
 ignore = [
