@@ -104,14 +104,20 @@ class BaseRedisRepository[T]:
             await self.delete(key)
             return None
 
-    async def set_cache(self, key: str, data: T):
+    def serialize(self, data: T) -> bytes:
+        return self._prepare_cache(data)
+
+    async def set_payload(self, key: str, payload: bytes):
         await self._redis.set(
             name=key,
-            value=self._prepare_cache(data),
+            value=payload,
             ex=self.expiry,
         )
 
         logger.info("Cached key {}", key)
+
+    async def set_cache(self, key: str, data: T):
+        await self.set_payload(key, self._prepare_cache(data))
 
     async def rpush(self, key: str, *datas: T):
         to_cache_data = (self._prepare_cache(data) for data in datas)

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from database.dto import UserBotDTO
-from database.redis import KitaKeyBuilder, RedisKey, UserBotRedis
+from database.redis import CacheJournal, KitaKeyBuilder, RedisKey, UserBotRedis
 from interfaces import BotRegistryProtocol
 
 from ..userbots import UserBotRepository
@@ -18,10 +18,11 @@ class CachedUserBotRepository(CachedRepository):
         self,
         bot_registry: BotRegistryProtocol,
         redis: UserBotRedis,
+        journal: CacheJournal,
         repo: UserBotRepository,
     ):
         key_builder = KitaKeyBuilder(with_user_id=False)
-        super().__init__(bot_registry, redis, key_builder)
+        super().__init__(bot_registry, redis, journal, key_builder)
         self.repo = repo
 
     def _get_key(self, bot_id: int):
@@ -57,15 +58,15 @@ class CachedUserBotRepository(CachedRepository):
             channel_id,
             channel_name,
         )
-        await self._redis.delete(self._get_key(bot_id))
+        await self._journal.invalidate(self._redis, self._get_key(bot_id))
         return result
 
     async def update(self, bot_id: int, **data: Any):
         result = await self.repo.update(bot_id, **data)
-        await self._redis.delete(self._get_key(bot_id))
+        await self._journal.invalidate(self._redis, self._get_key(bot_id))
         return result
 
     async def save(self, dto: UserBotDTO):
         result = await self.repo.save(dto)
-        await self._redis.delete(self._get_key(dto.bot_id))
+        await self._journal.invalidate(self._redis, self._get_key(dto.bot_id))
         return result

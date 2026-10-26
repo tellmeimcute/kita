@@ -1,7 +1,7 @@
 from typing import Any
 
 from database.dto import UserDTO
-from database.redis import KitaKeyBuilder, UserRedis
+from database.redis import CacheJournal, KitaKeyBuilder, UserRedis
 from interfaces import BotRegistryProtocol
 
 from ..user import UserRepository
@@ -17,10 +17,11 @@ class CachedUserRepository(CachedRepository):
         self,
         bot_registry: BotRegistryProtocol,
         redis: UserRedis,
+        journal: CacheJournal,
         repo: UserRepository,
     ):
         key_builder = KitaKeyBuilder(with_bot_id=False)
-        super().__init__(bot_registry, redis, key_builder)
+        super().__init__(bot_registry, redis, journal, key_builder)
         self.repo = repo
 
     async def get_by_id(self, user_id: int) -> UserDTO | None:
@@ -38,12 +39,12 @@ class CachedUserRepository(CachedRepository):
 
     async def update(self, user_id: int, **data: Any):
         result = await self.repo.update(user_id, **data)
-        await self._redis.delete(self._get_key(user_id))
+        await self._journal.invalidate(self._redis, self._get_key(user_id))
         return result
 
     async def create(self, dto: UserDTO):
         result = await self.repo.create(dto)
-        await self._redis.delete(self._get_key(dto.user_id))
+        await self._journal.invalidate(self._redis, self._get_key(dto.user_id))
         return result
 
     async def count(self) -> int:

@@ -1,3 +1,4 @@
+from .journal import CacheJournal
 from .key_builder import (
     KitaKeyBuilder,
     MediaGroupKey,
@@ -15,6 +16,7 @@ from .repos import (
 )
 
 __all__ = (
+    "CacheJournal",
     "KitaKeyBuilder",
     "MediaGroupKey",
     "MediaGroupKeyBuilder",

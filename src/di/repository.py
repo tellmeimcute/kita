@@ -1,5 +1,6 @@
 from dishka import Provider, Scope, provide
 
+from database.redis import CacheJournal
 from database.repository import (
     MediaRepository,
     SuggestionRepository,
@@ -45,5 +46,7 @@ class RepositoryProvider(Provider):
     raw_userbot_repo = provide(UserBotRepository)
     userbot_repo = provide(CachedUserBotRepository, provides=UserBotRepositoryProtocol)
     userbot_stats = provide(CachedUserBotStatsRepository, provides=UserBotStatsRepositoryProtocol)
+
+    journal = provide(CacheJournal)
 
     uow = provide(UnitOfWork, provides=UnitOfWorkProtocol)

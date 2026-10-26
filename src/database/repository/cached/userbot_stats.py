@@ -1,5 +1,5 @@
 from database.dto import UserBotStats
-from database.redis import UserBotStatsRedis
+from database.redis import CacheJournal, UserBotStatsRedis
 from interfaces import (
     BotRegistryProtocol,
     MediaRepositoryProtocol,
@@ -21,11 +21,12 @@ class CachedUserBotStatsRepository(CachedRepository):
         self,
         bot_registry: BotRegistryProtocol,
         redis: UserBotStatsRedis,
+        journal: CacheJournal,
         user_profile_repo: UserProfileRepositoryProtocol,
         suggestion_repo: SuggestionRepositoryProtocol,
         media_repo: MediaRepositoryProtocol,
     ):
-        super().__init__(bot_registry, redis)
+        super().__init__(bot_registry, redis, journal)
         self.profile_stats = user_profile_repo.bot_user_stats
         self.suggestions_count = suggestion_repo.count
         self.media_count = media_repo.count
@@ -37,7 +38,7 @@ class CachedUserBotStatsRepository(CachedRepository):
             return stats
 
         stats = await self._load()
-        await self._redis.set_cache(key, stats)
+        await self._journal.set(self._redis, key, stats)
         return stats
 
     async def _load(self) -> UserBotStats:

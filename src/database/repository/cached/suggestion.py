@@ -3,7 +3,7 @@ from typing import Any
 
 from core.schemas import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
-from database.redis import RedisKey, UserStatsRedis
+from database.redis import CacheJournal, RedisKey, UserStatsRedis
 from interfaces import BotRegistryProtocol
 
 from ..suggestions import SuggestionRepository
@@ -17,9 +17,10 @@ class CachedSuggestionRepository(CachedRepository):
         self,
         bot_registry: BotRegistryProtocol,
         user_stats_redis: UserStatsRedis,
+        journal: CacheJournal,
         repo: SuggestionRepository,
     ):
-        super().__init__(bot_registry, user_stats_redis)
+        super().__init__(bot_registry, user_stats_redis, journal)
         self.repo = repo
 
     def _get_user_stats_key(self, user_id: int):
@@ -34,7 +35,7 @@ class CachedSuggestionRepository(CachedRepository):
 
     async def save(self, dto: SuggestionBaseDTO):
         result = await self.repo.save(dto)
-        await self._redis.delete(self._get_user_stats_key(dto.author_id))
+        await self._journal.invalidate(self._redis, self._get_user_stats_key(dto.author_id))
         return result
 
     async def create(
@@ -54,7 +55,7 @@ class CachedSuggestionRepository(CachedRepository):
             media_group_id,
             forwarded_from,
         )
-        await self._redis.delete(self._get_user_stats_key(author_id))
+        await self._journal.invalidate(self._redis, self._get_user_stats_key(author_id))
         return result
 
     async def get_active(
@@ -72,7 +73,7 @@ class CachedSuggestionRepository(CachedRepository):
 
         stats = await self.repo.user_stats(user_id)
         if stats is not None:
-            await self._redis.set_cache(key, stats)
+            await self._journal.set(self._redis, key, stats)
         return stats
 
     async def count(self) -> int:

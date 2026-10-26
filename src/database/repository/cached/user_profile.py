@@ -3,7 +3,7 @@ from typing import Any
 
 from database.dto import UserProfileDTO
 from database.enums import UserRole
-from database.redis import IntRedis, KitaKeyBuilder, RedisKey, UserProfileRedis
+from database.redis import CacheJournal, IntRedis, KitaKeyBuilder, RedisKey, UserProfileRedis
 from interfaces import BotRegistryProtocol
 
 from ..user_profile import UserProfileRepository
@@ -23,10 +23,11 @@ class CachedUserProfileRepository(CachedRepository):
         self,
         bot_registry: BotRegistryProtocol,
         redis: UserProfileRedis,
+        journal: CacheJournal,
         count_redis: IntRedis,
         repo: UserProfileRepository,
     ):
-        super().__init__(bot_registry, redis)
+        super().__init__(bot_registry, redis, journal)
         self._count_redis = count_redis
         self.repo = repo
 
@@ -47,12 +48,12 @@ class CachedUserProfileRepository(CachedRepository):
 
     async def update(self, user_id: int, **data: Any):
         result = await self.repo.update(user_id, **data)
-        await self._redis.delete(self._get_key(user_id))
+        await self._journal.invalidate(self._redis, self._get_key(user_id))
         return result
 
     async def create(self, user_id: int) -> UserProfileDTO:
         result = await self.repo.create(user_id)
-        await self._redis.delete(self._get_key(user_id))
+        await self._journal.invalidate(self._redis, self._get_key(user_id))
         return result
 
     async def get_many(
@@ -74,7 +75,7 @@ class CachedUserProfileRepository(CachedRepository):
     async def demote_admins(self, owner_id: int) -> int:
         user_ids = await self.repo.demote_admins(owner_id)
         for user_id in user_ids:
-            await self._redis.delete(self._get_key(user_id))
+            await self._journal.invalidate(self._redis, self._get_key(user_id))
         return len(user_ids)
 
     async def get_banned(self) -> Sequence[UserProfileDTO]:
