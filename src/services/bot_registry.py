@@ -16,11 +16,10 @@ class BotRegistry:
         self._slaves_allowed_updates = []
         self._storage: OrderedDict[int, Bot] = OrderedDict()
 
-        self._session = AiohttpSession(proxy=config.proxy)
-        self._bot_settings = {
-            "session": self._session,
-            "default": DefaultBotProperties(parse_mode=ParseMode.HTML),
-        }
+        self._proxy = config.proxy
+        self._default = DefaultBotProperties(parse_mode=ParseMode.HTML)
+
+        self._shared_session = AiohttpSession(proxy=self._proxy)
 
         self._current_bot: contextvars.ContextVar[Bot | None] = contextvars.ContextVar(
             "_current_bot", default=None
@@ -29,8 +28,11 @@ class BotRegistry:
         self.cache_max_size = config.bot_cache_max_size
 
     @property
-    def bot_settings(self) -> dict:
-        return self._bot_settings
+    def tmp_bot_settings(self) -> dict:
+        return {
+            "session": AiohttpSession(proxy=self._proxy),
+            "default": self._default,
+        }
 
     @property
     def allowed_updates(self) -> list[str]:
@@ -63,7 +65,7 @@ class BotRegistry:
         if cached and cached.token == token:
             return cached
 
-        bot = Bot(token=token, **self._bot_settings)
+        bot = Bot(token=token, session=self._shared_session, default=self._default)
         self._upsert(bot)
 
         return bot
@@ -99,4 +101,4 @@ class BotRegistry:
             self.reset_current(prev_token)
 
     async def close(self):
-        await self._session.close()
+        await self._shared_session.close()

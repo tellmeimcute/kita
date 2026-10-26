@@ -68,10 +68,10 @@ def parse_token(raw_token: str | None, expected_bot_id: int | None = None) -> st
     return token
 
 
-async def probe_token(bot_settings: dict, token: str) -> AiogramUser:
+async def probe_token(tmp_bot_settings: dict, token: str) -> AiogramUser:
     """Check that the token is alive and return the bot info."""
     try:
-        async with Bot(token=token, **bot_settings) as tmp_bot:
+        async with Bot(token=token, **tmp_bot_settings) as tmp_bot:
             return await tmp_bot.get_me()
     except TelegramUnauthorizedError:
         logger.info("Userbot token probe failed: invalid token")

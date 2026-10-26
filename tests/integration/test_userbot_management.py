@@ -135,7 +135,7 @@ async def management_context(
     webhook_service = await request_container.get(WebhookService)
     session = await request_container.get(AsyncSession)
 
-    bot_registry.bot_settings = {}
+    bot_registry.tmp_bot_settings = {}
     monkeypatch.setattr(bot_registry, "get_current", MagicMock(return_value=tg_bot))
     monkeypatch.setattr(bot_registry, "remove", MagicMock())
     monkeypatch.setattr(bot_registry, "get_or_create", MagicMock(return_value=tg_bot))

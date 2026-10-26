@@ -92,7 +92,7 @@ async def userbot_test_context(
     bot_registry = await request_container.get(BotRegistryProtocol)
     session = await request_container.get(AsyncSession)
 
-    bot_registry.bot_settings = {}
+    bot_registry.tmp_bot_settings = {}
     bot_registry.remove.reset_mock()
     bot_registry.get_or_create.reset_mock()
 

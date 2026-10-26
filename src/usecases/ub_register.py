@@ -39,7 +39,7 @@ class UserBotRegisterUseCase(BotMixin):
             logger.info("Userbot registration failed: provided channel_id is not valid")
             raise ChannelNotFoundError()
 
-        async with Bot(token=token, **self._bot_registry.bot_settings) as tmp_bot:
+        async with Bot(token=token, **self._bot_registry.tmp_bot_settings) as tmp_bot:
             probe = await probe_userbot(tmp_bot, channel_id)
 
         if not probe.ok:
