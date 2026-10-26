@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from database.dto import SuggestionFullDTO
-from services.suggestion_viewer import SuggestionViewer
+from ui.suggestion_viewer import SuggestionViewer
 
 
 @pytest.fixture

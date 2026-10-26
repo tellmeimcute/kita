@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from database.dto import SuggestionFullDTO
-from services.suggestion_queue import SuggestionQueue
+from ui.suggestion_queue import SuggestionQueue
 
 QUEUE_SIZE = 2
 

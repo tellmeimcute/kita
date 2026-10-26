@@ -9,13 +9,12 @@ from interfaces import (
     SuggestionNotifierProtocol,
     SuggestionQueueProtocol,
 )
+from interfaces.mixins import BotMixin
 from ui.state_groups import UserMenuSG
 from utils.suggestion_utils import SuggestionUtils
 
-from .base import BaseService
 
-
-class SuggestionViewer(BaseService):
+class SuggestionViewer(BotMixin):
     __slots__ = (
         "suggestion_queue",
         "suggestion_notifier",

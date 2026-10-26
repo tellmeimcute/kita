@@ -4,11 +4,10 @@ from aiogram.fsm.context import FSMContext
 
 from database.dto import SuggestionFullDTO
 from interfaces import BotRegistryProtocol, SuggestionServiceProtocol, UnitOfWorkProtocol
+from interfaces.mixins import BotMixin
 
-from .base import BaseService
 
-
-class SuggestionQueue(BaseService):
+class SuggestionQueue(BotMixin):
     __slots__ = (
         "suggestion_service",
         "uow",

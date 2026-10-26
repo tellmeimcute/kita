@@ -44,13 +44,13 @@ from interfaces import (
 )
 from services.notifier import MessageNotifier, SuggestionNotifier
 from services.suggestion import SuggestionService
-from services.suggestion_queue import SuggestionQueue
-from services.suggestion_viewer import SuggestionViewer
 from services.user import UserService
 from services.user_profile import UserProfileService
 from services.userbots import UserBotService
 from services.webhooks import WebhookService
 from task_queue.dispatcher import SuggestionTaskDispatcher
+from ui.suggestion_queue import SuggestionQueue
+from ui.suggestion_viewer import SuggestionViewer
 from usecases import (
     BroadcastUseCase,
     ChangeRoleUseCase,
