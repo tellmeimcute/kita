@@ -1,3 +1,4 @@
+from .bot import BotNotRegisteredError
 from .payload import UnsupportedPayload
 from .sql import UserImmuneError
 from .userbot import (
@@ -14,6 +15,7 @@ from .userbot import (
 )
 
 __all__ = (
+    "BotNotRegisteredError",
     "UnsupportedPayload",
     "UserImmuneError",
     "UserbotError",

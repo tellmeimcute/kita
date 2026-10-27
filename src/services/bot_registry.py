@@ -10,6 +10,7 @@ from aiogram.enums import ParseMode
 from loguru import logger
 
 from core.config import Config
+from core.exceptions import BotNotRegisteredError
 
 
 class BotRegistry:
@@ -92,8 +93,12 @@ class BotRegistry:
     async def with_bot(self, bot_or_id: Bot | int, token: str | None = None):
         if isinstance(bot_or_id, Bot):
             bot = bot_or_id
+        elif token is not None:
+            bot = self.get_or_create(bot_or_id, token)
         else:
-            bot = self.get(bot_or_id) if not token else self.get_or_create(bot_or_id, token)
+            bot = self.get(bot_or_id)
+            if bot is None:
+                raise BotNotRegisteredError(bot_or_id)
 
         prev_token = self.set_current(bot)
 

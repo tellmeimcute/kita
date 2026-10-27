@@ -8,6 +8,8 @@ from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatFullInfo
 from aiogram.types import User as AiogramUser
 
+from core.exceptions import BotNotRegisteredError
+
 BOT_TOKEN = "123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
 BOT_ID = 123456789
 BOT_USERNAME = "test_userbot"
@@ -116,6 +118,8 @@ class FakeBotRegistry:
             bot = self.get_or_create(bot_or_id, token)
         else:
             bot = self.get(bot_or_id)
+            if bot is None:
+                raise BotNotRegisteredError(bot_or_id)
 
         prev = self.set_current(bot)
         try:
