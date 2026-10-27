@@ -35,6 +35,7 @@ class UserTestContext:
     test_user_dto: UserDTO
     user_redis_key: str
     profile_redis_key: str
+    session_maker: async_sessionmaker[AsyncSession]
 
 
 @pytest.fixture
@@ -60,6 +61,7 @@ async def user_test_context(
         test_user_dto=test_user_dto,
         user_redis_key=user_repo._get_key(test_user_id),
         profile_redis_key=profile_repo._get_key(test_user_id),
+        session_maker=await request_container.get(async_sessionmaker[AsyncSession]),
     )
 
 
