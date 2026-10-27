@@ -54,7 +54,7 @@ async def test_create_existed(repository_context: RepositoryContext):
     async with ctx.uow.transaction():
         with pytest.raises(IntegrityError):
             await ctx.user_repo.create(ctx.test_user_dto)
-            
+
         await ctx.uow.rollback()
 
     assert await ctx.user_repo.get_by_id(ctx.test_user_dto.user_id) is not None

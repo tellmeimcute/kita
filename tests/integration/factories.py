@@ -37,9 +37,7 @@ def make_tg_message(
     if caption is not None:
         kwargs["caption"] = caption
     if photo is not None:
-        kwargs["photo"] = [
-            PhotoSize(file_id=photo, file_unique_id=photo, width=800, height=600)
-        ]
+        kwargs["photo"] = [PhotoSize(file_id=photo, file_unique_id=photo, width=800, height=600)]
     if video is not None:
         kwargs["video"] = Video(
             file_id=video,
