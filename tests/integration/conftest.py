@@ -1,9 +1,8 @@
 import os
 from collections.abc import Generator
-from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
 
 import pytest
-from aiogram import Bot
 from alembic import command
 from alembic.config import Config as AlembicConfig
 from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
@@ -24,7 +23,9 @@ from di import (
     UseCaseProvider,
     UtilsProvider,
 )
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol
+from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, WebhookServiceProtocol
+
+from .scaffold import FakeBotRegistry, FakeWebhookService
 
 
 class TestProvider(Provider):
@@ -32,13 +33,11 @@ class TestProvider(Provider):
 
     @provide
     def bot_registry_mock(self) -> BotRegistryProtocol:
-        mock = AsyncMock(spec=BotRegistryProtocol)
+        return FakeBotRegistry()
 
-        bot_mock = AsyncMock(spec=Bot)
-        mock.get_current.return_value = bot_mock
-        bot_mock.id = 6767
-
-        return mock
+    @provide
+    def webhook_service_mock(self) -> WebhookServiceProtocol:
+        return FakeWebhookService()
 
     @provide
     def postgres_docker(self) -> Generator[PostgresContainer]:
@@ -114,6 +113,30 @@ async def request_container(dishka_container: AsyncContainer):
         yield req
 
 
+@pytest.fixture
+async def bot_registry(request_container: AsyncContainer) -> FakeBotRegistry:
+    registry: FakeBotRegistry = await request_container.get(BotRegistryProtocol)
+    registry.reset()
+    return registry
+
+
+@pytest.fixture
+async def webhook_service(request_container: AsyncContainer) -> FakeWebhookService:
+    service: FakeWebhookService = await request_container.get(WebhookServiceProtocol)
+    service.reset()
+    return service
+
+
+@pytest.fixture
+async def tg_bot(bot_registry: FakeBotRegistry) -> MagicMock:
+    return bot_registry.bot
+
+
+@pytest.fixture
+async def tg_channel(bot_registry: FakeBotRegistry) -> MagicMock:
+    return bot_registry.channel
+
+
 @pytest.fixture(autouse=True)
 async def clean_state(request_container: AsyncContainer):
     redis = await request_container.get(Redis)
@@ -135,7 +158,7 @@ async def clean_state(request_container: AsyncContainer):
         tables = [row[0] for row in result.fetchall()]
 
         assert tables
-        
+
         tables_str = ", ".join(f'"{table}"' for table in tables)
         await session.execute(text("SET LOCAL lock_timeout = '5s'"))
         await session.execute(text(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE"))
