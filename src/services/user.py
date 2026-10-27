@@ -34,7 +34,7 @@ class UserService(BaseService):
         if existed := await self.repo.get_by_id(prep_user_dto.user_id):
             return existed
 
-        return await self.repo.create(prep_user_dto)
+        return await self.repo.get_or_create(prep_user_dto)
 
     async def update(self, user_id: int, **data: Any):
         await self.repo.update(user_id, **data)

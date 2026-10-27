@@ -24,7 +24,7 @@ class UserProfileService(BaseService):
         if existed := await self.repo.get_by_id(user_id):
             return existed
 
-        return await self.repo.create(user_id)
+        return await self.repo.get_or_create(user_id)
 
     async def get(self, user_id: int) -> UserProfileDTO | None:
         return await self.repo.get_by_id(user_id)

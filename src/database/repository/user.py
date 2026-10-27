@@ -23,7 +23,12 @@ class UserRepository(BaseRepository):
 
     async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
         values = prep_user_dto.model_dump(exclude={"created_at", "updated_at"})
-        stmt = insert(UserAlchemy).values(**values).on_conflict_do_nothing().returning(UserAlchemy)
+        stmt = (
+            insert(UserAlchemy)
+            .values(**values)
+            .on_conflict_do_nothing(index_elements=[UserAlchemy.user_id])
+            .returning(UserAlchemy)
+        )
 
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
