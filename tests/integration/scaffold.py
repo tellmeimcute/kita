@@ -49,21 +49,34 @@ class FakeBotRegistry:
         self._current: contextvars.ContextVar[Bot | None] = contextvars.ContextVar(
             "fake_current_bot", default=None
         )
+        self.storage: dict[int, Bot] = {}
 
         self.channel: MagicMock = make_tg_channel()
         self.bot: MagicMock = make_tg_bot(self.channel)
 
-        self.register = MagicMock()
-        self.get = MagicMock()
+        self.register = MagicMock(side_effect=self._register)
+        self.get = MagicMock(side_effect=self._get)
         self.get_or_create = MagicMock()
-        self.remove = MagicMock()
-        self.get_all = MagicMock()
+        self.remove = MagicMock(side_effect=self._remove)
+        self.get_all = MagicMock(side_effect=self._get_all)
         self.get_current = MagicMock(side_effect=self._get_current)
         self.set_current = MagicMock(side_effect=self._current.set)
         self.reset_current = MagicMock(side_effect=self._current.reset)
         self.close = AsyncMock()
 
         self.reset()
+
+    def _register(self, bot: Bot) -> None:
+        self.storage[bot.id] = bot
+
+    def _get(self, bot_id: int) -> Bot | None:
+        return self.storage.get(bot_id)
+
+    def _remove(self, bot_id: int) -> None:
+        self.storage.pop(bot_id, None)
+
+    def _get_all(self) -> list[Bot]:
+        return list(self.storage.values())
 
     def _get_current(self) -> Bot | None:
         return self._current.get() or self.bot
@@ -72,10 +85,7 @@ class FakeBotRegistry:
         self.channel = make_tg_channel()
         self.bot = make_tg_bot(self.channel)
         self._current.set(None)
-
-        self.get.return_value = self.bot
-        self.get_or_create.return_value = self.bot
-        self.get_all.return_value = [self.bot]
+        self.storage = {self.bot.id: self.bot}
 
         for method in (
             self.register,
@@ -90,6 +100,8 @@ class FakeBotRegistry:
         ):
             method.reset_mock()
 
+        self.get_or_create.return_value = self.bot
+
     @asynccontextmanager
     async def temp_bot(self, token: str) -> AsyncGenerator[Bot]:
         yield self.bot
@@ -98,13 +110,18 @@ class FakeBotRegistry:
     async def with_bot(
         self, bot_or_id: Bot | int, token: str | None = None
     ) -> AsyncGenerator[Bot]:
-        bot = bot_or_id if isinstance(bot_or_id, Bot) else self.bot
+        if isinstance(bot_or_id, Bot):
+            bot = bot_or_id
+        elif token is not None:
+            bot = self.get_or_create(bot_or_id, token)
+        else:
+            bot = self.get(bot_or_id)
 
-        prev = self._current.set(bot)
+        prev = self.set_current(bot)
         try:
             yield bot
         finally:
-            self._current.reset(prev)
+            self.reset_current(prev)
 
 
 class FakeWebhookService:

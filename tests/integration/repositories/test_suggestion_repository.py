@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from core.enums import RenderType
 from core.schemas import MediaInfo
 from database.dto import SuggestionFullDTO
@@ -82,14 +84,13 @@ async def test_get_by_id_returns_none_for_unknown_id(repository_context: Reposit
 async def test_get_by_id_ignores_foreign_bot(
     repository_context: RepositoryContext,
     bot_registry: FakeBotRegistry,
+    foreign_bot: MagicMock,
 ):
     ctx = repository_context
 
     created = await create_suggestion(ctx)
 
-    bot_registry.bot.id = BOT_ID + 1
-
-    async with ctx.uow.transaction():
+    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
         assert await ctx.suggestion_repo.get_by_id(created.id) is None
 
 
@@ -114,17 +115,14 @@ async def test_update_persists_changes(repository_context: RepositoryContext):
 async def test_update_ignores_foreign_bot(
     repository_context: RepositoryContext,
     bot_registry: FakeBotRegistry,
+    foreign_bot: MagicMock,
 ):
     ctx = repository_context
 
     created = await create_suggestion(ctx, caption="intact")
 
-    bot_registry.bot.id = BOT_ID + 1
-
-    async with ctx.uow.transaction():
+    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
         await ctx.suggestion_repo.update(created.id, caption="hacked")
-
-    bot_registry.bot.id = BOT_ID
 
     row = await load_suggestion(ctx, created.id)
 
@@ -195,14 +193,13 @@ async def test_get_active_respects_limit_and_offset(repository_context: Reposito
 async def test_get_active_ignores_foreign_bot(
     repository_context: RepositoryContext,
     bot_registry: FakeBotRegistry,
+    foreign_bot: MagicMock,
 ):
     ctx = repository_context
 
     await create_suggestion(ctx)
 
-    bot_registry.bot.id = BOT_ID + 1
-
-    async with ctx.uow.transaction():
+    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
         assert await ctx.suggestion_repo.get_active() == []
 
 
@@ -237,6 +234,7 @@ async def test_user_stats_are_zero_for_user_without_suggestions(
 async def test_count_counts_only_current_bot(
     repository_context: RepositoryContext,
     bot_registry: FakeBotRegistry,
+    foreign_bot: MagicMock,
 ):
     ctx = repository_context
 
@@ -245,7 +243,5 @@ async def test_count_counts_only_current_bot(
     async with ctx.uow.transaction():
         assert await ctx.suggestion_repo.count() == len(created)
 
-    bot_registry.bot.id = BOT_ID + 1
-
-    async with ctx.uow.transaction():
+    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
         assert await ctx.suggestion_repo.count() == 0
