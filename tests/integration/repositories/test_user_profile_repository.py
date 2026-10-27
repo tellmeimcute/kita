@@ -229,6 +229,8 @@ async def test_get_admins(repository_context: RepositoryContext):
     admins = await ctx.profile_repo.get_admins()
 
     assert [profile.user_id for profile in admins] == [admin_id]
+    assert admins[0].user is not None
+    assert admins[0].user.user_id == admin_id
 
 
 async def test_get_banned(repository_context: RepositoryContext):
