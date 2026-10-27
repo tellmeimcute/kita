@@ -1,8 +1,10 @@
 import os
-from collections.abc import Generator
+from collections.abc import Callable, Generator
+from itertools import count
 from unittest.mock import MagicMock
 
 import pytest
+from aiogram.types import Message
 from alembic import command
 from alembic.config import Config as AlembicConfig
 from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
@@ -25,6 +27,7 @@ from di import (
 )
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, WebhookServiceProtocol
 
+from .factories import make_tg_message as build_tg_message
 from .scaffold import FakeBotRegistry, FakeWebhookService
 
 
@@ -164,3 +167,28 @@ async def clean_state(request_container: AsyncContainer):
         await session.execute(text(f"TRUNCATE TABLE {tables_str} RESTART IDENTITY CASCADE"))
 
     yield
+
+
+@pytest.fixture
+def make_tg_message() -> Callable[..., Message]:
+    message_ids = count(start=1)
+
+    def _make_message(**kwargs) -> Message:
+        return build_tg_message(message_id=next(message_ids), **kwargs)
+
+    return _make_message
+
+
+@pytest.fixture
+def make_tg_album(make_tg_message: Callable[..., Message]) -> Callable[..., list[Message]]:
+    def _make_album(media_count: int = 2, *, caption: str | None = None) -> list[Message]:
+        return [
+            make_tg_message(
+                photo=f"photo-{index}",
+                caption=caption if index == 0 else None,
+                media_group_id="album",
+            )
+            for index in range(media_count)
+        ]
+
+    return _make_album

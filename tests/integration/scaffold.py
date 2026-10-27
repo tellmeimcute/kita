@@ -1,5 +1,3 @@
-"""Общие данные и тест-дублёры для интеграционных тестов юзерботов."""
-
 import contextvars
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
