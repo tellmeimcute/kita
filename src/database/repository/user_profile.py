@@ -22,7 +22,7 @@ class UserProfileRepository(BaseRepository):
                 UserProfile.user_id == user_id,
                 UserProfile.bot_id == self.bot.id,
             )
-            .options(selectinload(UserProfile.user))
+            .options(joinedload(UserProfile.user))
         )
 
         result = await self._session.execute(stmt)
@@ -101,7 +101,7 @@ class UserProfileRepository(BaseRepository):
                 UserProfile.bot_id == self.bot.id,
                 (UserProfile.role != UserRole.BANNED) & UserProfile.is_bot_blocked.is_not(True),
             )
-            .options(selectinload(UserProfile.user))
+            .options(joinedload(UserProfile.user))
         )
 
         result = await self._session.execute(stmt)
@@ -115,7 +115,7 @@ class UserProfileRepository(BaseRepository):
                 UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.ADMIN,
             )
-            .options(selectinload(UserProfile.user))
+            .options(joinedload(UserProfile.user))
         )
 
         result = await self._session.execute(stmt)
@@ -144,7 +144,7 @@ class UserProfileRepository(BaseRepository):
                 UserProfile.bot_id == self.bot.id,
                 UserProfile.role == UserRole.BANNED,
             )
-            .options(selectinload(UserProfile.user))
+            .options(joinedload(UserProfile.user))
         )
 
         result = await self._session.execute(stmt)
