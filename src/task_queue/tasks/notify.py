@@ -3,6 +3,7 @@ import asyncio
 from aiogram.types import Message
 from aiogram.utils.i18n import I18n
 from dishka.integrations.taskiq import FromDishka, inject
+from loguru import logger
 
 from database.dto import UserBotDTO
 from interfaces import (
@@ -23,7 +24,6 @@ broker = get_broker()
 async def admin_notify_new_suggestion(
     bot_id: int,
     suggestion_id: int,
-    user_service: FromDishka[UserServiceProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
     notifier: FromDishka[MessageNotifierProtocol],
     suggestion_utils: FromDishka[SuggestionUtils],
@@ -35,11 +35,14 @@ async def admin_notify_new_suggestion(
 
     with i18n.context():
         for profile in admin_profiles:
-            admin_user = await user_service.get(profile.user_id)
-            with i18n.use_locale(admin_user.language_code):
+            if profile.user is None:
+                logger.warning("Admin profile {} has no user, skipping", profile.user_id)
+                continue
+
+            with i18n.use_locale(profile.user.language_code):
                 i18n_kwargs = suggestion_utils.get_i18n_kwargs(suggestion)
-                await notifier.send_text(admin_user, "suggestion_notify_admin_new", i18n_kwargs)
-                await asyncio.sleep(0.2)
+                await notifier.send_text(profile.user, "suggestion_notify_admin_new", i18n_kwargs)
+                await asyncio.sleep(0.1)
 
 
 @broker.task
