@@ -1,9 +1,12 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
+
+from core.exceptions import BotNotRegisteredError
 
 TEST_BOT_ID = 12345
 TEST_BOT_TOKEN = f"{TEST_BOT_ID}:245872673:AAF7VsJ1ksP4k0f9zk7NpF2nvxd69_ZlPyY"
@@ -140,6 +143,31 @@ class TestBotRegistryAsync:
             async with registry.with_bot(TEST_BOT_ID) as bot:
                 assert registry.get_current() == bot
                 raise RuntimeError("test error")
+
+        assert registry.get_current() is None
+
+    async def test_with_bot_accepts_bot_instance(self, registry):
+        bot = Bot(token=TEST_BOT_TOKEN)
+
+        async with registry.with_bot(bot) as current:
+            assert current is bot
+            assert registry.get_current() is bot
+
+        assert registry.get_current() is None
+
+    async def test_with_bot_raises_for_unknown_bot(self, registry):
+        with pytest.raises(BotNotRegisteredError) as error:
+            async with registry.with_bot(TEST_BOT_ID):
+                pass
+
+        assert error.value.bot_id == TEST_BOT_ID
+        assert registry.get_current() is None
+
+    async def test_with_bot_with_token_creates_bot(self, registry):
+        async with registry.with_bot(TEST_BOT_ID, token=TEST_BOT_TOKEN) as bot:
+            assert isinstance(bot, Bot)
+            assert bot.id == TEST_BOT_ID
+            assert registry.get_current() is bot
 
         assert registry.get_current() is None
 
