@@ -16,7 +16,7 @@ def create_broker(redis_url: str) -> RedisStreamBroker:
 
     return RedisStreamBroker(
         url=redis_url,
-        maxlen=1000,
+        maxlen=10_000,
     ).with_result_backend(result_backend)
 
 
