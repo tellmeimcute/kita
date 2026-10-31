@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -12,6 +13,8 @@ from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
 from database.dto import UserProfileDTO
 from services.bot_registry import BotRegistry
+
+ALLOWED_REPLY = [1, 0, 0]
 
 
 @pytest.fixture
@@ -65,8 +68,9 @@ def mock_config():
     config.webhook_secret.get_secret_value.return_value = "test-master-secret"
     config.encryption_key.get_secret_value.return_value = Fernet.generate_key().decode()
 
-    config.rate_limit = MagicMock()
-    config.rate_limit.model_dump.return_value = {"max_tokens": 5, "refill_rate": 0.3}
+    # SimpleNamespace on purpose: a typo'd attribute raises AttributeError
+    # instead of silently returning a MagicMock that leaks into the Lua ARGV.
+    config.rate_limit = SimpleNamespace(max_tokens=5, refill_rate=0.3)
 
     return config
 
@@ -93,9 +97,17 @@ def registry(mock_config):
     return BotRegistry(mock_config)
 
 
+def _script_stub(_source: str) -> AsyncMock:
+    """Mimic redis-py's AsyncScript: synchronous to create, awaitable to call."""
+    return AsyncMock(return_value=list(ALLOWED_REPLY))
+
+
 @pytest.fixture
 def mock_redis():
-    return AsyncMock()
+    redis = AsyncMock()
+    # register_script() is synchronous on the real client
+    redis.register_script = MagicMock(side_effect=_script_stub)
+    return redis
 
 
 @pytest.fixture
@@ -112,4 +124,5 @@ def mock_fsm():
 def mock_translator():
     translator = MagicMock(spec=Translator)
     translator.translate.return_value = "rate limited warning text"
+    translator.i18n_text.return_value = "rate limited warning text"
     return translator
