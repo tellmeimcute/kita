@@ -328,7 +328,7 @@ msgid "user_blocked_bot"
 msgstr "🚫 This user has blocked the bot"
 
 msgid "rate_limited_warning"
-msgstr "RateLimited. Wait a few seconds 😴"
+msgstr "RateLimited. Wait {pause_for} sec 😴"
 
 msgid "warning_unknown_intent"
 msgstr ""
