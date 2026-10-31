@@ -53,4 +53,4 @@ indent-style = "space"
 check-typed-exception = true
 
 [lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]
+"tests/**" = ["S101", "S105", "S106", "PLR2004"]
