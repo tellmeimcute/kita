@@ -1,6 +1,7 @@
-from .token_bucket import TokenBucketLimiter, TokenBucketResult
+from .limiter import RateLimiter
+from .user_limiter import UserLimiter
 
 __all__ = (
-    "TokenBucketLimiter",
-    "TokenBucketResult",
+    "RateLimiter",
+    "UserLimiter",
 )

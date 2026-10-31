@@ -1,5 +1,7 @@
+from abc import ABC
 from collections.abc import Awaitable, Callable
-from typing import Any
+from math import ceil
+from typing import Any, ClassVar
 
 from aiogram.types import CallbackQuery, Message, TelegramObject
 from aiogram.utils.i18n import I18n
@@ -8,7 +10,7 @@ from redis.asyncio import Redis
 
 from core.config import Config
 from core.i18n_translator import Translator
-from core.rate_limiters import TokenBucketLimiter
+from core.rate_limiters import UserLimiter
 from database.dto import UserDTO
 from interfaces import BotRegistryProtocol
 
@@ -16,8 +18,7 @@ from .base import KitaMiddleware
 
 
 class RateLimitMiddleware(KitaMiddleware):
-    _attemp_action: str = "TG_UPDATE"
-    _warn_key: str = "WARNED"
+    _scope: ClassVar[str] = "tg_update"
 
     def __init__(
         self,
@@ -30,7 +31,13 @@ class RateLimitMiddleware(KitaMiddleware):
         self.i18n = i18n
         self.translator = translator
 
-        self.limiter = TokenBucketLimiter(redis, bot_registry, **config.rate_limit.model_dump())
+        self.limiter = UserLimiter(
+            redis=redis,
+            bot_registry=bot_registry,
+            scope=self._scope,
+            max_tokens=config.rate_limit.max_tokens,
+            refill_rate=config.rate_limit.refill_rate,
+        )
 
     async def __call__(
         self,
@@ -42,28 +49,31 @@ class RateLimitMiddleware(KitaMiddleware):
         if not user_dto or not event.from_user:
             return logger.warning("No user in event. Stop")
 
-        res = await self.limiter.attempt(user_dto, self._attemp_action)
+        res = await self.limiter.attempt(user_dto)
 
         if res.allowed:
-            await self.limiter.unmark_warned(user_dto, self._warn_key)
             return await handler(event, data)
 
-        logger.info("RateLimiting UserID {}", user_dto.user_id)
-
-        if await self.limiter.is_warned(user_dto, self._warn_key):
+        if res.paused:
             if isinstance(event, CallbackQuery):
                 return await event.answer()
             return None
 
-        with self.i18n.use_locale(user_dto.language_code):
-            msg = self.translator.translate("rate_limited_warning")
+        logger.info("RateLimiting UserID {}", user_dto.user_id)
 
-        await self.limiter.mark_warned(user_dto, self._warn_key)
+        # BUCKET_SCRIPT already wrote the pause; wait_ms is the full pause
+        # duration this caller has to report.
+        pause_for = ceil(res.wait_ms / 1000)
+
+        with self.i18n.use_locale(user_dto.language_code):
+            msg = self.translator.i18n_text("rate_limited_warning", {"pause_for": pause_for})
+
         await event.answer(msg)
 
 
-class WidgetRateLimit(RateLimitMiddleware):
-    _unlimited_widget_ids: set = frozenset()
+class BaseWidgetRateLimit(RateLimitMiddleware, ABC):
+    _scope: ClassVar[str]
+    _unlimited_widget_ids: ClassVar[set]
 
     async def __call__(
         self,
@@ -79,10 +89,9 @@ class WidgetRateLimit(RateLimitMiddleware):
         return await super().__call__(handler, event, data)
 
 
-class UserBotRateLimitMiddleware(WidgetRateLimit):
-    _attemp_action: str = "USERBOT_ACTION"
-    _warn_key: str = "USERBOT_WARNED"
-    _unlimited_widget_ids = {"main_menu", "userbot_select_group"}
+class UserBotRateLimitMiddleware(BaseWidgetRateLimit):
+    _scope: ClassVar[str] = "userbot_action"
+    _unlimited_widget_ids: ClassVar[set] = {"main_menu", "userbot_select_group"}
 
     def __init__(
         self,
@@ -94,9 +103,10 @@ class UserBotRateLimitMiddleware(WidgetRateLimit):
         self.i18n = i18n
         self.translator = translator
 
-        self.limiter = TokenBucketLimiter(
-            redis,
-            bot_registry,
+        self.limiter = UserLimiter(
+            redis=redis,
+            bot_registry=bot_registry,
+            scope=self._scope,
             max_tokens=3,
             refill_rate=0.05,
         )
