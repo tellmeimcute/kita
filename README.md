@@ -1,4 +1,4 @@
-# Kita — Multi-tenant Telegram-сервис создания ботов-предложек
+# Kita — multi-tenant Telegram-сервис предложек
 
 ## 📖 О проекте
 
@@ -23,7 +23,7 @@
 | Dependency Injection     | Dishka                                                  |
 | Database                 | PostgreSQL 17, SQLAlchemy 2.0 (async), asyncpg, Alembic |
 | Task Queue               | Taskiq, Redis Streams                                   |
-| Cache / FSM / Rate Limit | Redis, orjson, token-bucket (Lua)                       |
+| Cache / FSM / Rate Limit | Redis, token-bucket + GCRA pacing (Lua)                 |
 | Token Encryption         | cryptography (Fernet)                                   |
 | Infra                    | Docker Compose, Docker Secrets, Caddy                   |
 | Package Manager          | uv                                                      |
