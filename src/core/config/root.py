@@ -2,10 +2,11 @@ from functools import lru_cache
 
 from pydantic import Field, SecretStr
 
+from .api_rate_limit import ApiRateLimitConfig
 from .base import BaseConfig
 from .database import DatabaseConfig
-from .rate_limit import RateLimitConfig
 from .redis import RedisConfig
+from .user_rate_limit import UserRateLimitConfig
 from .webhook import WebhookConfig
 
 
@@ -14,7 +15,8 @@ class Config(BaseConfig):
 
     redis: RedisConfig = Field(default_factory=RedisConfig)
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
-    rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
+    user_rate_limit: UserRateLimitConfig = Field(default_factory=UserRateLimitConfig)
+    api_rate_limit: ApiRateLimitConfig = Field(default_factory=ApiRateLimitConfig)
     webhook: WebhookConfig = Field(default_factory=WebhookConfig)
 
     max_userbots_per_user: int = 1

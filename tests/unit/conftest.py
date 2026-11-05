@@ -70,7 +70,15 @@ def mock_config():
 
     # SimpleNamespace on purpose: a typo'd attribute raises AttributeError
     # instead of silently returning a MagicMock that leaks into the Lua ARGV.
-    config.rate_limit = SimpleNamespace(max_tokens=5, refill_rate=0.3)
+    config.user_rate_limit = SimpleNamespace(max_tokens=5, refill_rate=0.3)
+    config.api_rate_limit = SimpleNamespace(
+        enabled=True,
+        rate=25.0,
+        burst=25,
+        chat_rate=1.0,
+        chat_burst=3,
+        flood_retries=3,
+    )
 
     return config
 

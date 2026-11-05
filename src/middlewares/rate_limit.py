@@ -35,8 +35,8 @@ class RateLimitMiddleware(KitaMiddleware):
             redis=redis,
             bot_registry=bot_registry,
             scope=self._scope,
-            max_tokens=config.rate_limit.max_tokens,
-            refill_rate=config.rate_limit.refill_rate,
+            max_tokens=config.user_rate_limit.max_tokens,
+            refill_rate=config.user_rate_limit.refill_rate,
         )
 
     async def __call__(
