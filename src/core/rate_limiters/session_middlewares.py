@@ -29,7 +29,7 @@ class LogApiErrors(BaseRequestMiddleware):
         except TelegramRetryAfter:
             raise
         except TelegramAPIError:
-            logger.exception("API call {} failed for bot id={}", type(method).__name__, bot.id)
+            logger.error("API call {} failed for bot id={}", type(method).__name__, bot.id)
             raise
 
 
