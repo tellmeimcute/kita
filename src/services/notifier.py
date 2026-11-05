@@ -1,10 +1,6 @@
-import asyncio
-from functools import wraps
 from typing import Any
 
-from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
 from aiogram.types import InlineKeyboardMarkup, MediaUnion, Message, MessageId
-from loguru import logger
 
 from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
@@ -17,32 +13,6 @@ from utils.suggestion_utils import SuggestionUtils
 from .base import BaseService
 
 SendTarget = UserDTO | UserProfileDTO | int
-MAX_RETRY = 3
-
-
-def with_retry(max_retries: int = 3):
-    def wrapper(fn):
-        @wraps(fn)
-        async def decorated(*args, **kwargs):
-            retries = 0
-            while True:
-                try:
-                    return await fn(*args, **kwargs)
-                except TelegramRetryAfter as e:
-                    retries += 1
-                    if retries > max_retries:
-                        logger.error("Telegram rate limiting {} times, giving up", max_retries)
-                        raise
-                    wait = max(float(e.retry_after), 1.0)
-                    logger.warning(e)
-                    await asyncio.sleep(wait)
-                except TelegramAPIError:
-                    logger.exception("Failed to send message")
-                    raise
-
-        return decorated
-
-    return wrapper
 
 
 class NotifierUtilsMixin:
@@ -65,7 +35,6 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         super().__init__(bot_registry)
         self.translator = translator
 
-    @with_retry(MAX_RETRY)
     async def send_text(
         self,
         target: SendTarget,
@@ -85,7 +54,6 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
             disable_web_page_preview=True,
         )
 
-    @with_retry(MAX_RETRY)
     async def send_mediagroup(
         self,
         target: SendTarget,
@@ -94,7 +62,6 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
         target_id = self._parse_target_id(target)
         return await self.bot.send_media_group(target_id, media, disable_notification=True)
 
-    @with_retry(MAX_RETRY)
     async def forward(
         self,
         target: SendTarget,
@@ -108,7 +75,6 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
             message_ids=message_ids,
         )
 
-    @with_retry(MAX_RETRY)
     async def copy(
         self,
         target: SendTarget,
@@ -122,7 +88,6 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
             message_ids=message_ids,
         )
 
-    @with_retry(MAX_RETRY)
     async def edit(
         self,
         chat_id: int,

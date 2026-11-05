@@ -1,16 +1,11 @@
-import asyncio
-from unittest.mock import patch
+from unittest.mock import AsyncMock
 
 import pytest
-from aiogram.exceptions import TelegramAPIError, TelegramRetryAfter
+from aiogram.exceptions import TelegramAPIError
+from aiogram.methods import SendMessage
+from aiogram.types import InlineKeyboardMarkup
 
-from services.notifier import NotifierUtilsMixin, with_retry
-
-MAX_RETRIES = 3
-RETRY_THEN_SUCCESS_CALLS = 2
-MAX_EXCEEDED_CALLS = 3
-RETRY_TWICE_SUCCESS_AT = 3
-EXPECTED_RETRY_SLEEPS = 2
+from services.notifier import MessageNotifier, NotifierUtilsMixin
 
 
 class TestNotifierUtilsMixin:
@@ -28,92 +23,65 @@ class TestNotifierUtilsMixin:
         assert result == value
 
 
-class TestWithRetryDecorator:
-    async def test_successful_call_no_retries(self):
-        call_count = 0
+@pytest.fixture
+def notifier(mock_translator, mock_bot_registry) -> MessageNotifier:
+    return MessageNotifier(translator=mock_translator, bot_registry=mock_bot_registry)
 
-        @with_retry(max_retries=MAX_RETRIES)
-        async def succeed_once():
-            nonlocal call_count
-            call_count += 1
-            return "success"
 
-        result = await succeed_once()
-        assert result == "success"
-        assert call_count == 1
+class TestMessageNotifier:
+    async def test_send_text_targets_the_user_and_translates(
+        self, notifier, test_user_dto, mock_translator
+    ):
+        mock_translator.i18n_text.return_value = "hello"
 
-    async def test_retry_after_then_success(self):
-        call_count = 0
+        await notifier.send_text(test_user_dto, "greeting", {"name": "Ann"})
 
-        async def mock_sleep(_duration):
-            return None
+        mock_translator.i18n_text.assert_called_once_with("greeting", {"name": "Ann"})
+        notifier.bot.send_message.assert_awaited_once_with(
+            chat_id=test_user_dto.user_id,
+            text="hello",
+            reply_markup=None,
+            disable_notification=True,
+            disable_web_page_preview=True,
+        )
 
-        with patch.object(asyncio, "sleep", mock_sleep):
+    async def test_send_text_accepts_a_raw_chat_id(self, notifier):
+        chat_id = 67890
 
-            @with_retry(max_retries=MAX_RETRIES)
-            async def retry_then_succeed():
-                nonlocal call_count
-                call_count += 1
-                if call_count == 1:
-                    raise TelegramRetryAfter(
-                        method="sendMessage", message="Rate limit", retry_after=0.01
-                    )
-                return "success"
+        await notifier.send_text(chat_id, "greeting")
 
-            result = await retry_then_succeed()
+        assert notifier.bot.send_message.await_args.kwargs["chat_id"] == chat_id
 
-        assert result == "success"
-        assert call_count == RETRY_THEN_SUCCESS_CALLS
+    async def test_forward_maps_the_target_to_the_destination_chat(self, notifier):
+        source_chat = 111
+        message_ids = [1, 2]
 
-    async def test_max_retries_exceeded_raises(self):
-        call_count = 0
+        await notifier.forward(222, source_chat, message_ids)
 
-        async def mock_sleep(_duration):
-            return None
+        notifier.bot.forward_messages.assert_awaited_once_with(
+            chat_id=222,
+            from_chat_id=source_chat,
+            message_ids=message_ids,
+        )
 
-        with patch.object(asyncio, "sleep", mock_sleep):
+    async def test_edit_passes_the_keyboard_and_text(self, notifier):
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[])
 
-            @with_retry(max_retries=2)
-            async def always_retry_after():
-                nonlocal call_count
-                call_count += 1
-                raise TelegramRetryAfter(
-                    method="sendMessage", message="Rate limit", retry_after=0.001
-                )
+        await notifier.edit(chat_id=42, message_id=7, new_text="new", new_kb=keyboard)
 
-            with pytest.raises(TelegramRetryAfter):
-                await always_retry_after()
+        notifier.bot.edit_message_text.assert_awaited_once_with(
+            text="new",
+            chat_id=42,
+            message_id=7,
+            reply_markup=keyboard,
+        )
 
-        assert call_count == MAX_EXCEEDED_CALLS
 
-    async def test_api_error_raises_immediately(self):
-        @with_retry(max_retries=MAX_RETRIES)
-        async def api_error():
-            raise TelegramAPIError(method="sendMessage", message="API Error")
+class TestNotifierExceptions:
+    async def test_api_errors_are_not_swallowed(self, notifier):
+        notifier.bot.send_message = AsyncMock(
+            side_effect=TelegramAPIError(method=SendMessage(chat_id=1, text="x"), message="Bad")
+        )
 
         with pytest.raises(TelegramAPIError):
-            await api_error()
-
-    async def test_retry_sleep_duration_exact(self):
-        sleeps = []
-
-        async def mock_sleep(duration):
-            sleeps.append(duration)
-
-        with patch.object(asyncio, "sleep", mock_sleep):
-            call_count = 0
-
-            @with_retry(max_retries=2)
-            async def retry_twice():
-                nonlocal call_count
-                call_count += 1
-                if call_count < RETRY_TWICE_SUCCESS_AT:
-                    raise TelegramRetryAfter(
-                        method="sendMessage", message="Rate limit", retry_after=0.05
-                    )
-                return "success"
-
-            await retry_twice()
-
-        assert len(sleeps) == EXPECTED_RETRY_SLEEPS
-        assert all(s == 1.0 for s in sleeps)
+            await notifier.send_text(1, "greeting")
