@@ -3,6 +3,7 @@ from .config import ConfigProvider
 from .database import DatabaseProvider
 from .middleware import MiddlewareProvider
 from .providers import FSMProvider, UtilsProvider, ViewerProvider
+from .rate_limit import RateLimitProvider
 from .redis import RedisProvider
 from .repository import RepositoryProvider
 from .service import ServiceProvider
@@ -14,6 +15,7 @@ __all__ = (
     "DatabaseProvider",
     "MiddlewareProvider",
     "FSMProvider",
+    "RateLimitProvider",
     "RepositoryProvider",
     "ServiceProvider",
     "UseCaseProvider",
