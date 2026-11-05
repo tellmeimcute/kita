@@ -4,6 +4,7 @@ from di import (
     BotProvider,
     ConfigProvider,
     DatabaseProvider,
+    RateLimitProvider,
     RedisProvider,
     RepositoryProvider,
     ServiceProvider,
@@ -22,4 +23,5 @@ def create_taskiq_container() -> AsyncContainer:
         BotProvider(),
         DatabaseProvider(),
         RedisProvider(),
+        RateLimitProvider(pace=True),
     )

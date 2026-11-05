@@ -1,6 +1,8 @@
 from aiogram import Bot
+from aiogram.client.session.middlewares.base import BaseRequestMiddleware
 from dishka import Provider, Scope, provide
 
+from core.config import Config
 from database.dto import UserBotDTO
 from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from services import BotRegistry
@@ -10,8 +12,15 @@ from usecases.ub_token_resolver import UserBotTokenResolver
 class BotProvider(Provider):
     scope = Scope.REQUEST
 
-    bot_registry = provide(source=BotRegistry, provides=BotRegistryProtocol, scope=Scope.APP)
     ub_token_resolver = provide(UserBotTokenResolver, scope=Scope.APP)
+
+    @provide(scope=Scope.APP)
+    def bot_registry(
+        self,
+        config: Config,
+        request_middlewares: list[BaseRequestMiddleware],
+    ) -> BotRegistryProtocol:
+        return BotRegistry(config, request_middlewares)
 
     @provide
     def get_bot(self, registry: BotRegistryProtocol) -> Bot:

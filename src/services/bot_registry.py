@@ -1,11 +1,12 @@
 import contextvars
 from collections import OrderedDict
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Sequence
 from contextlib import asynccontextmanager
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.client.session.middlewares.base import BaseRequestMiddleware
 from aiogram.enums import ParseMode
 from loguru import logger
 
@@ -14,24 +15,35 @@ from core.exceptions import BotNotRegisteredError
 
 
 class BotRegistry:
-    def __init__(self, config: Config):
+    def __init__(
+        self,
+        config: Config,
+        request_middlewares: Sequence[BaseRequestMiddleware] = (),
+    ):
         self._slaves_allowed_updates = []
         self._storage: OrderedDict[int, Bot] = OrderedDict()
 
         self._proxy = config.proxy
         self._default = DefaultBotProperties(parse_mode=ParseMode.HTML)
 
-        self._shared_session = AiohttpSession(proxy=self._proxy)
+        self._request_middlewares = tuple(request_middlewares)
 
+        self._shared_session = self._make_session()
         self._current_bot: contextvars.ContextVar[Bot | None] = contextvars.ContextVar(
             "_current_bot", default=None
         )
 
         self.cache_max_size = config.bot_cache_max_size
 
+    def _make_session(self) -> AiohttpSession:
+        session = AiohttpSession(proxy=self._proxy)
+        for middleware in self._request_middlewares:
+            session.middleware.register(middleware)
+        return session
+
     @asynccontextmanager
     async def temp_bot(self, token: str) -> AsyncGenerator[Bot]:
-        bot = Bot(token=token, session=AiohttpSession(proxy=self._proxy), default=self._default)
+        bot = Bot(token=token, session=self._make_session(), default=self._default)
         try:
             yield bot
         finally:

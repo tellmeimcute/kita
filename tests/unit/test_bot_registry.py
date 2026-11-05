@@ -7,6 +7,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 from core.exceptions import BotNotRegisteredError
+from services.bot_registry import BotRegistry
 
 TEST_BOT_ID = 12345
 TEST_BOT_TOKEN = f"{TEST_BOT_ID}:245872673:AAF7VsJ1ksP4k0f9zk7NpF2nvxd69_ZlPyY"
@@ -218,3 +219,33 @@ class TestTempBot:
         second = registry.get_or_create(2, "2:token")
 
         assert first.session is second.session is registry._shared_session
+
+
+class TestMiddlewareInstallation:
+    def test_shared_session_gets_the_middlewares(self, mock_config):
+        first, second = MagicMock(), MagicMock()
+
+        registry = BotRegistry(mock_config, [first, second])
+
+        assert list(registry._shared_session.middleware) == [first, second]
+
+    def test_no_middlewares_by_default(self, mock_config):
+        registry = BotRegistry(mock_config)
+
+        assert list(registry._shared_session.middleware) == []
+
+    async def test_cached_bots_carry_the_middlewares(self, mock_config):
+        middleware = MagicMock()
+        registry = BotRegistry(mock_config, [middleware])
+
+        bot = registry.get_or_create(1, "1:token")
+
+        assert list(bot.session.middleware) == [middleware]
+
+    async def test_temp_bot_gets_its_own_install(self, mock_config):
+        middleware = MagicMock()
+        registry = BotRegistry(mock_config, [middleware])
+
+        async with registry.temp_bot(TEST_BOT_TOKEN) as tmp_bot:
+            assert tmp_bot.session is not registry._shared_session
+            assert list(tmp_bot.session.middleware) == [middleware]

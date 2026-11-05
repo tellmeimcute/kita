@@ -19,6 +19,7 @@ from di import (
     BotProvider,
     ConfigProvider,
     DatabaseProvider,
+    RateLimitProvider,
     RedisProvider,
     RepositoryProvider,
     ServiceProvider,
@@ -102,6 +103,7 @@ async def dishka_container():
         UtilsProvider(),
         DatabaseProvider(),
         RedisProvider(),
+        RateLimitProvider(pace=False),
         TestProvider(),
     )
 
