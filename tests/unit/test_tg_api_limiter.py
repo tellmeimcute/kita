@@ -14,6 +14,7 @@ from aiogram.methods import (
     SendPhoto,
     SendSticker,
 )
+from aiogram.methods.base import TelegramMethod
 from aiogram.types import InputMediaPhoto
 
 from core.rate_limiters.tg_api import (
@@ -85,8 +86,6 @@ class TestMessageCost:
         assert message_cost(method) == 0
 
     def test_every_listed_method_is_a_telegram_method(self):
-        from aiogram.methods.base import TelegramMethod
-
         assert all(issubclass(cls, TelegramMethod) for cls in SINGLE_MESSAGE_METHODS)
 
 
@@ -138,18 +137,14 @@ class TestReserve:
     async def test_derives_periods_and_tolerances_from_the_budget(self, limiter, script_mock):
         await limiter.reserve(666, cost=1, chat_id=42)
 
-        period, tolerance, chat_period, chat_tolerance, _, _ = script_mock.call_args.kwargs[
-            "args"
-        ]
+        period, tolerance, chat_period, chat_tolerance, _, _ = script_mock.call_args.kwargs["args"]
 
         assert period == pytest.approx(1 / RATE)
         assert tolerance == pytest.approx((BURST - 1) / RATE)
         assert chat_period == pytest.approx(1 / CHAT_RATE)
         assert chat_tolerance == pytest.approx((CHAT_BURST - 1) / CHAT_RATE)
 
-    async def test_charges_the_chat_budget_only_when_a_chat_is_known(
-        self, limiter, script_mock
-    ):
+    async def test_charges_the_chat_budget_only_when_a_chat_is_known(self, limiter, script_mock):
         await limiter.reserve(666, cost=1, chat_id=None)
         no_chat_args = script_mock.call_args.kwargs["args"]
 

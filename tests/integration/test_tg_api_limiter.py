@@ -31,9 +31,7 @@ async def redis(request_container: AsyncContainer) -> Redis:
 
 @pytest.fixture
 def limiter(redis: Redis) -> TgApiLimiter:
-    return TgApiLimiter(
-        redis, rate=RATE, burst=BURST, chat_rate=CHAT_RATE, chat_burst=CHAT_BURST
-    )
+    return TgApiLimiter(redis, rate=RATE, burst=BURST, chat_rate=CHAT_RATE, chat_burst=CHAT_BURST)
 
 
 async def test_bot_burst_is_immediate(limiter: TgApiLimiter):
@@ -75,9 +73,7 @@ async def test_sustained_pacing_after_sleeping_the_wait(limiter: TgApiLimiter):
 
 
 async def test_chat_burst_is_immediate(limiter: TgApiLimiter):
-    waits = [
-        await limiter.reserve(BOT_ID, cost=1, chat_id=CHAT_ID) for _ in range(CHAT_BURST)
-    ]
+    waits = [await limiter.reserve(BOT_ID, cost=1, chat_id=CHAT_ID) for _ in range(CHAT_BURST)]
 
     assert waits == [0.0, 0.0]
 
@@ -131,14 +127,12 @@ async def test_ttl_covers_the_budget_window(limiter: TgApiLimiter, redis: Redis)
 async def test_concurrent_reservations_are_spread_out(redis: Redis):
     limiter = TgApiLimiter(redis, rate=RATE, burst=1, chat_rate=CHAT_RATE, chat_burst=1)
 
-    waits = await asyncio.gather(
-        *(limiter.reserve(888, cost=1, chat_id=None) for _ in range(5))
-    )
+    waits = await asyncio.gather(*(limiter.reserve(888, cost=1, chat_id=None) for _ in range(5)))
     ordered = sorted(waits)
 
     assert ordered[0] == 0.0
     assert ordered[-1] >= 4 * PERIOD - 0.05
-    for earlier, later in zip(ordered[:-1], ordered[1:]):
+    for earlier, later in zip(ordered[:-1], ordered[1:], strict=True):
         assert later > earlier, "each concurrent caller must get its own slot"
 
 
