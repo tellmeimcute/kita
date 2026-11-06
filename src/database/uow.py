@@ -57,17 +57,14 @@ class UnitOfWork:
         self._journal.begin()
         try:
             yield
-            await self._session.commit()
+            await self.commit()
         except Exception:
-            await self._session.rollback()
-            self._journal.discard()
-            logger.warning("Transaction rollback")
+            await self.rollback()
             raise
         finally:
             self._in_transaction = False
             self._journal.end()
 
-        await self._journal.flush()
         logger.debug("Transaction close")
 
     async def commit(self):
