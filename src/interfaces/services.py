@@ -13,7 +13,7 @@ from database.dto import (
     UserDTO,
     UserProfileDTO,
 )
-from database.enums import UserRole
+from database.enums import SuggestionStatus, UserRole
 
 
 class UserServiceProtocol(Protocol):
@@ -69,6 +69,10 @@ class SuggestionServiceProtocol(Protocol):
     async def update(self, suggestion_dto: SuggestionBaseDTO) -> None: ...
 
     async def update_by_id(self, suggestion_id: int, **data: Any) -> None: ...
+
+    async def apply_verdict(self, suggestion_id: int, verdict: SuggestionStatus) -> bool:
+        """Apply the verdict to a pending suggestion. False → verdict already exists."""
+        ...
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats: ...
 

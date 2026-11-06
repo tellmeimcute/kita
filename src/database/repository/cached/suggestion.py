@@ -3,6 +3,7 @@ from typing import Any
 
 from core.schemas import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
+from database.enums import SuggestionStatus
 from database.redis import CacheJournal, RedisKey, UserStatsRedis
 from interfaces import BotContextProtocol
 
@@ -37,6 +38,14 @@ class CachedSuggestionRepository(CachedRepository):
         result = await self.repo.save(dto)
         await self._journal.invalidate(self._redis, self._get_user_stats_key(dto.author_id))
         return result
+
+    async def apply_verdict(self, suggestion_id: int, verdict: SuggestionStatus) -> int | None:
+        author_id = await self.repo.apply_verdict(suggestion_id, verdict)
+        if author_id is None:
+            return None
+
+        await self._journal.invalidate(self._redis, self._get_user_stats_key(author_id))
+        return author_id
 
     async def create(
         self,

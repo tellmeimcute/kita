@@ -47,6 +47,22 @@ class SuggestionRepository(BaseRepository):
         if changed := dto.prepare_changed_data():
             return await self.update(dto.id, **changed)
 
+    async def apply_verdict(self, suggestion_id: int, verdict: SuggestionStatus) -> int | None:
+        """
+        Returns the author id of the moderated suggestion, None → verdict already exist.
+        """
+        stmt = (
+            update(Suggestion)
+            .where(
+                Suggestion.id == suggestion_id,
+                Suggestion.bot_id == self.bot.id,
+                Suggestion.status == SuggestionStatus.PENDING,
+            )
+            .values(status=verdict)
+            .returning(Suggestion.author_id)
+        )
+        return await self._session.scalar(stmt)
+
     async def create(
         self,
         author_id: int,

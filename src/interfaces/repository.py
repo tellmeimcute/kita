@@ -10,7 +10,7 @@ from database.dto import (
     UserDTO,
     UserProfileDTO,
 )
-from database.enums import UserRole
+from database.enums import SuggestionStatus, UserRole
 
 
 class UserRepositoryProtocol(Protocol):
@@ -72,6 +72,10 @@ class SuggestionRepositoryProtocol(Protocol):
     async def update(self, suggestion_id: int, **data: Any): ...
 
     async def save(self, dto: SuggestionBaseDTO): ...
+
+    async def apply_verdict(self, suggestion_id: int, verdict: SuggestionStatus) -> int | None:
+        """Returns the author id of the moderated suggestion, None → verdict already exists."""
+        ...
 
     async def create(
         self,

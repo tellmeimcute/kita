@@ -7,6 +7,7 @@ from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
+from database.enums import SuggestionStatus
 from interfaces import BotContextProtocol, SuggestionRepositoryProtocol
 from utils.message_parser import MessageParser
 
@@ -51,6 +52,14 @@ class SuggestionService(BaseService):
     async def update_by_id(self, suggestion_id: int, **data: Any):
         await self.repo.update(suggestion_id, **data)
         logger.info("Update suggestion {}", suggestion_id)
+
+    async def apply_verdict(self, suggestion_id: int, verdict: SuggestionStatus) -> bool:
+        if await self.repo.apply_verdict(suggestion_id, verdict) is None:
+            logger.info("Suggestion {} already has a verdict", suggestion_id)
+            return False
+
+        logger.info("Apply verdict {} to suggestion {}", verdict, suggestion_id)
+        return True
 
     async def create(
         self, author_dto: UserDTO, album: list[Message], anonymous: bool = False
