@@ -5,7 +5,7 @@ from aiogram.utils.i18n import I18n
 
 from database.dto import UserDTO, UserProfileDTO
 from interfaces import (
-    BotRegistryProtocol,
+    BotContextProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
@@ -27,12 +27,12 @@ class UserRegisterOrUpdateUseCase(BotMixin):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         i18n: I18n,
         user_service: UserServiceProtocol,
         profile_service: UserProfileServiceProtocol,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self._i18n = i18n
         self._user_service = user_service
         self._profile_service = profile_service

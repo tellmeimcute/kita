@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 
 from core.schemas.broadcast import BroadcastData
 from database.redis import KitaKeyBuilder, RedisKey
-from interfaces import BotRegistryProtocol, MessageNotifierProtocol, UserProfileServiceProtocol
+from interfaces import BotContextProtocol, MessageNotifierProtocol, UserProfileServiceProtocol
 
 
 @dataclass(frozen=True)
@@ -20,16 +20,16 @@ class BroadcastUseCase:
     def __init__(
         self,
         redis: Redis,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         notifier: MessageNotifierProtocol,
         profile_service: UserProfileServiceProtocol,
     ):
         self.redis = redis
-        self.bot_registry = bot_registry
+        self.bot_context = bot_context
         self.notifier = notifier
         self.profile_service = profile_service
 
-        self.bot = bot_registry.get_current()
+        self.bot = bot_context.get_current()
         self.key_builder = KitaKeyBuilder(with_user_id=False)
 
     def lock_key(self):

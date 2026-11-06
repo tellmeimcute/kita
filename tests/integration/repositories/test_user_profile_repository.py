@@ -4,7 +4,7 @@ from core.schemas import MediaInfo
 from database.enums import SuggestionStatus, UserRole
 
 from ..readers import load_profile, load_suggestion
-from ..scaffold import BOT_ID, FakeBotRegistry
+from ..scaffold import BOT_ID, BotStack
 from .conftest import RepositoryContext
 
 
@@ -104,13 +104,13 @@ async def test_get_by_id_returns_none_for_user_without_profile(
 
 async def test_get_by_id_ignores_foreign_bot(
     repository_context: RepositoryContext,
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
     foreign_bot: MagicMock,
 ):
     ctx = repository_context
     user_id = await create_profile(ctx)
 
-    async with bot_registry.with_bot(foreign_bot.id):
+    async with bots.resolver.with_bot(foreign_bot.id):
         assert await ctx.profile_repo.get_by_id(user_id) is None
         assert await ctx.profile_repo.count() == 0
 
@@ -163,13 +163,13 @@ async def test_update_persists_changes(repository_context: RepositoryContext):
 
 async def test_update_ignores_foreign_bot(
     repository_context: RepositoryContext,
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
     foreign_bot: MagicMock,
 ):
     ctx = repository_context
     user_id = await create_profile(ctx)
 
-    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
+    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
         await ctx.profile_repo.update(user_id, role=UserRole.BANNED)
 
     row = await load_profile(ctx, user_id)
@@ -321,14 +321,14 @@ async def test_decline_all_suggestions_declines_only_pending(
 
 async def test_decline_all_suggestions_ignores_foreign_bot(
     repository_context: RepositoryContext,
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
     foreign_bot: MagicMock,
 ):
     ctx = repository_context
     author_id = await create_profile(ctx, offset=1)
     suggestion_id = await create_suggestion(ctx, author_id)
 
-    async with bot_registry.with_bot(foreign_bot.id), ctx.uow.transaction():
+    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
         await ctx.profile_repo.decline_all_suggestions(author_id)
 
     assert (await load_suggestion(ctx, suggestion_id)).status is SuggestionStatus.PENDING

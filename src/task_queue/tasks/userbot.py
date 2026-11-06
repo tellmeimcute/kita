@@ -3,7 +3,7 @@ from loguru import logger
 
 from database.enums import UserRole
 from interfaces import (
-    BotRegistryProtocol,
+    BotResolverProtocol,
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
     WebhookServiceProtocol,
@@ -20,18 +20,19 @@ async def new_userbot(
     bot_id: int,
     userbot_id: int,
     owner_id: int,
-    bot_registry: FromDishka[BotRegistryProtocol],
+    allowed_updates: list[str],
+    bot_resolver: FromDishka[BotResolverProtocol],
     uow: FromDishka[UnitOfWorkProtocol],
     profile_service: FromDishka[UserProfileServiceProtocol],
     webhook_service: FromDishka[WebhookServiceProtocol],
     token_resolver: FromDishka[UserBotTokenResolver],
 ):
     userbot_token = await token_resolver.resolve(userbot_id)
-    bot = bot_registry.get_or_create(userbot_id, userbot_token)
+    bot = bot_resolver.get_or_create(userbot_id, userbot_token)
 
-    async with uow.transaction(), bot_registry.with_bot(bot):
+    async with uow.transaction(), bot_resolver.with_bot(bot):
         await profile_service.get_or_create(owner_id)
         await profile_service.update(owner_id, role=UserRole.ADMIN)
-    await webhook_service.set_webhook(bot)
+    await webhook_service.set_webhook(bot, allowed_updates=allowed_updates)
 
     logger.info("New userbot {} registered, admin {}", userbot_id, owner_id)

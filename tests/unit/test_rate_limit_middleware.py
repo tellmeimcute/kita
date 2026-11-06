@@ -41,12 +41,12 @@ def stub_decision(
 
 @pytest.fixture
 def middleware_kwargs(
-    mock_redis, mock_config, mock_bot_registry, mock_i18n, mock_translator
+    mock_redis, mock_config, mock_bot_context, mock_i18n, mock_translator
 ) -> dict[str, Any]:
     return {
         "redis": mock_redis,
         "config": mock_config,
-        "bot_registry": mock_bot_registry,
+        "bot_context": mock_bot_context,
         "i18n": mock_i18n,
         "translator": mock_translator,
     }
@@ -59,11 +59,11 @@ def middleware(middleware_kwargs) -> RateLimitMiddleware:
 
 @pytest.fixture
 def userbot_middleware(
-    mock_redis, mock_bot_registry, mock_i18n, mock_translator
+    mock_redis, mock_bot_context, mock_i18n, mock_translator
 ) -> UserBotRateLimitMiddleware:
     return UserBotRateLimitMiddleware(
         redis=mock_redis,
-        bot_registry=mock_bot_registry,
+        bot_context=mock_bot_context,
         i18n=mock_i18n,
         translator=mock_translator,
     )

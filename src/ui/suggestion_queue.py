@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from aiogram.fsm.context import FSMContext
 
 from database.dto import SuggestionFullDTO
-from interfaces import BotRegistryProtocol, SuggestionServiceProtocol, UnitOfWorkProtocol
+from interfaces import BotContextProtocol, SuggestionServiceProtocol, UnitOfWorkProtocol
 from interfaces.mixins import BotMixin
 
 
@@ -16,12 +16,12 @@ class SuggestionQueue(BotMixin):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         suggestion_service: SuggestionServiceProtocol,
         uow: UnitOfWorkProtocol,
         fsm_context: FSMContext,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.suggestion_service = suggestion_service
         self.uow = uow
         self.fsm = fsm_context

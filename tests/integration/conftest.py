@@ -1,5 +1,5 @@
 import os
-from collections.abc import Callable, Generator
+from collections.abc import AsyncIterator, Callable, Generator
 from itertools import count
 from unittest.mock import MagicMock
 
@@ -26,18 +26,25 @@ from di import (
     UseCaseProvider,
     UtilsProvider,
 )
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, WebhookServiceProtocol
+from interfaces import (
+    BotContextProtocol,
+    BotResolverProtocol,
+    BotSessionProtocol,
+    UnitOfWorkProtocol,
+    WebhookServiceProtocol,
+)
+from services.bots import BotCache
 
 from .factories import make_tg_message as build_tg_message
-from .scaffold import FakeBotRegistry, FakeWebhookService
+from .scaffold import BotStack, FakeBotSessions, FakeWebhookService
 
 
 class TestProvider(Provider):
     scope = Scope.APP
 
     @provide
-    def bot_registry_mock(self) -> BotRegistryProtocol:
-        return FakeBotRegistry()
+    def bot_sessions_mock(self) -> BotSessionProtocol:
+        return FakeBotSessions()
 
     @provide
     def webhook_service_mock(self) -> WebhookServiceProtocol:
@@ -118,11 +125,22 @@ async def request_container(dishka_container: AsyncContainer):
         yield req
 
 
-@pytest.fixture
-async def bot_registry(request_container: AsyncContainer) -> FakeBotRegistry:
-    registry: FakeBotRegistry = await request_container.get(BotRegistryProtocol)
-    registry.reset()
-    return registry
+@pytest.fixture(autouse=True)
+async def bots(request_container: AsyncContainer) -> AsyncIterator[BotStack]:
+    stack = BotStack(
+        sessions=await request_container.get(BotSessionProtocol),
+        cache=await request_container.get(BotCache),
+        context=await request_container.get(BotContextProtocol),
+        resolver=await request_container.get(BotResolverProtocol),
+    )
+    stack.reset()
+
+    # outside a ``with_bot`` scope the real context is empty
+    token = stack.context.set_current(stack.bot)
+    try:
+        yield stack
+    finally:
+        stack.context.reset_current(token)
 
 
 @pytest.fixture
@@ -133,13 +151,13 @@ async def webhook_service(request_container: AsyncContainer) -> FakeWebhookServi
 
 
 @pytest.fixture
-async def tg_bot(bot_registry: FakeBotRegistry) -> MagicMock:
-    return bot_registry.bot
+async def tg_bot(bots: BotStack) -> MagicMock:
+    return bots.bot
 
 
 @pytest.fixture
-async def tg_channel(bot_registry: FakeBotRegistry) -> MagicMock:
-    return bot_registry.channel
+async def tg_channel(bots: BotStack) -> MagicMock:
+    return bots.channel
 
 
 @pytest.fixture(autouse=True)

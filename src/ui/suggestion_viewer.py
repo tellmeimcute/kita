@@ -4,7 +4,7 @@ from aiogram_dialog import DialogManager, StartMode
 
 from database.dto import SuggestionFullDTO, UserDTO
 from interfaces import (
-    BotRegistryProtocol,
+    BotContextProtocol,
     MessageNotifierProtocol,
     SuggestionNotifierProtocol,
     SuggestionQueueProtocol,
@@ -25,14 +25,14 @@ class SuggestionViewer(BotMixin):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         suggestion_queue: SuggestionQueueProtocol,
         suggestion_notifier: SuggestionNotifierProtocol,
         suggestion_utils: SuggestionUtils,
         notifier: MessageNotifierProtocol,
         fsm_context: FSMContext,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.suggestion_queue = suggestion_queue
         self.suggestion_notifier = suggestion_notifier
         self.utils = suggestion_utils

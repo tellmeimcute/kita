@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.redis import CacheJournal
 from interfaces import (
-    BotRegistryProtocol,
+    BotContextProtocol,
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
     UserProfileRepositoryProtocol,
@@ -16,7 +16,7 @@ from interfaces import (
 class UnitOfWork:
     __slots__ = (
         "_session",
-        "_bot_registry",
+        "_bot_context",
         "_journal",
         "_in_transaction",
         "users",
@@ -28,7 +28,7 @@ class UnitOfWork:
     def __init__(
         self,
         session: AsyncSession,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         journal: CacheJournal,
         user_repo: UserRepositoryProtocol,
         user_profile_repo: UserProfileRepositoryProtocol,
@@ -36,7 +36,7 @@ class UnitOfWork:
         media_repo: MediaRepositoryProtocol,
     ):
         self._session = session
-        self._bot_registry = bot_registry
+        self._bot_context = bot_context
         self._journal = journal
         self._in_transaction = False
 

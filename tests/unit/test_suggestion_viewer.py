@@ -34,7 +34,7 @@ def mock_suggestion_utils():
 
 @pytest.fixture
 def viewer(
-    mock_bot_registry,
+    mock_bot_context,
     mock_suggestion_queue,
     mock_suggestion_notifier,
     mock_msg_notifier,
@@ -42,7 +42,7 @@ def viewer(
     mock_fsm,
 ):
     return SuggestionViewer(
-        bot_registry=mock_bot_registry,
+        bot_context=mock_bot_context,
         suggestion_queue=mock_suggestion_queue,
         suggestion_notifier=mock_suggestion_notifier,
         suggestion_utils=mock_suggestion_utils,

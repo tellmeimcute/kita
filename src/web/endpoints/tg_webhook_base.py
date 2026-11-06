@@ -11,7 +11,7 @@ from loguru import logger
 from core.config import Config
 from core.cryptographer import Cryptographer
 from database.dto import UserBotDTO
-from interfaces import BotRegistryProtocol
+from interfaces import BotResolverProtocol
 
 
 @inject
@@ -35,7 +35,7 @@ class BaseTgWebhookEndpoint(ABC):
         dp: Dispatcher,
         config: Config,
     ):
-        self.bot_registry: BotRegistryProtocol = None
+        self.bot_resolver: BotResolverProtocol | None = None
 
         self.dp = dp
         self.config = config
@@ -43,8 +43,8 @@ class BaseTgWebhookEndpoint(ABC):
 
         self._semaphore = asyncio.Semaphore(config.webhook.max_concurrent_updates)
 
-    def assign_registry(self, registry: BotRegistryProtocol):
-        self.bot_registry = registry
+    def assign_resolver(self, resolver: BotResolverProtocol):
+        self.bot_resolver = resolver
 
     def register(self, app: FastAPI, path: str):
         app.add_api_route(
@@ -73,7 +73,7 @@ class BaseTgWebhookEndpoint(ABC):
         logger.info("Dispatcher shutdown and {} tasks cleaned up", len(tasks))
 
     async def _feed_update(self, bot: Bot, update: Update, userbot: UserBotDTO) -> None:
-        async with self._semaphore, self.bot_registry.with_bot(bot):
+        async with self._semaphore, self.bot_resolver.with_bot(bot):
             try:
                 await self.dp.feed_update(bot, update, userbot_dto=userbot)
             except Exception:

@@ -2,7 +2,7 @@ from redis.asyncio import Redis
 
 from database.dto import UserDTO
 from database.redis import KitaKeyBuilder, RedisKey
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 
 from .limiter import LimiterResponse, RateLimiter
 
@@ -17,20 +17,20 @@ class UserLimiter:
     def __init__(
         self,
         redis: Redis,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         *,
         scope: str,
         max_tokens: int = 5,
         refill_rate: float = 0.3,
     ):
-        self._bot_registry = bot_registry
+        self._bot_context = bot_context
         self._limiter = RateLimiter(redis, rate=refill_rate, max_tokens=max_tokens)
         self._key_builder = KitaKeyBuilder()
         self._scope = scope
 
     @property
     def bot(self):
-        return self._bot_registry.get_current()
+        return self._bot_context.get_current()
 
     def _keys(self, user_dto: UserDTO) -> tuple[str, str]:
         keybase = RedisKey(bot_id=self.bot.id, user_id=user_dto.user_id)

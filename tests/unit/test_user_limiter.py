@@ -13,10 +13,10 @@ DEFAULT_REFILL_RATE = 0.3
 
 
 @pytest.fixture
-def limiter(mock_redis, mock_bot_registry) -> UserLimiter:
+def limiter(mock_redis, mock_bot_context) -> UserLimiter:
     return UserLimiter(
         redis=mock_redis,
-        bot_registry=mock_bot_registry,
+        bot_context=mock_bot_context,
         scope=SCOPE,
         max_tokens=DEFAULT_MAX_TOKENS,
         refill_rate=DEFAULT_REFILL_RATE,
@@ -31,9 +31,9 @@ class TestKeys:
         assert limit_key == f"{prefix}:{SCOPE}"
         assert pause_key == f"{prefix}:{SCOPE}:pause"
 
-    def test_scopes_are_isolated(self, mock_redis, mock_bot_registry, test_user_dto):
-        main = UserLimiter(mock_redis, mock_bot_registry, scope=SCOPE)
-        userbot = UserLimiter(mock_redis, mock_bot_registry, scope=OTHER_SCOPE)
+    def test_scopes_are_isolated(self, mock_redis, mock_bot_context, test_user_dto):
+        main = UserLimiter(mock_redis, mock_bot_context, scope=SCOPE)
+        userbot = UserLimiter(mock_redis, mock_bot_context, scope=OTHER_SCOPE)
 
         main_limit, main_pause = main._keys(test_user_dto)
         userbot_limit, userbot_pause = userbot._keys(test_user_dto)

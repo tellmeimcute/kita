@@ -2,21 +2,20 @@ from loguru import logger
 
 from core.exceptions import ChannelNotFoundError
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
-from interfaces.mixins import BotMixin
+from interfaces import BotResolverProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from utils.userbot_probe import probe_userbot, userbot_action_auth, validate_channel_id
 
 
-class UserbotUpdateChannelUseCase(BotMixin):
-    __slots__ = ("_uow", "_userbot_service")
+class UserbotUpdateChannelUseCase:
+    __slots__ = ("_resolver", "_uow", "_userbot_service")
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
     ):
-        super().__init__(bot_registry)
+        self._resolver = resolver
         self._uow = uow
         self._userbot_service = userbot_service
 
@@ -33,7 +32,7 @@ class UserbotUpdateChannelUseCase(BotMixin):
             logger.warning("Userbot {} channel_id change failed", userbot_id)
             raise ChannelNotFoundError()
 
-        bot = self._bot_registry.get_or_create(userbot_id, userbot.token.get_secret_value())
+        bot = self._resolver.get_or_create(userbot_id, userbot.token.get_secret_value())
 
         probe = await probe_userbot(bot, channel_id)
         if not probe.ok:

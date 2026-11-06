@@ -24,10 +24,10 @@ def mock_parser():
 
 
 @pytest.fixture
-def service(mock_repo, mock_bot_registry, mock_parser):
+def service(mock_repo, mock_bot_context, mock_parser):
     return SuggestionService(
         repo=mock_repo,
-        bot_registry=mock_bot_registry,
+        bot_context=mock_bot_context,
         parser=mock_parser,
     )
 

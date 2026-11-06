@@ -12,7 +12,7 @@ from core.exceptions import (
 )
 from database.models import UserBot
 
-from ..scaffold import BOT_ID, BOT_TOKEN
+from ..scaffold import BOT_ID, BOT_TOKEN, USERBOT_ALLOWED_UPDATES
 from .conftest import ManagementContext
 
 NEW_TOKEN = "123456789:BBHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
@@ -34,9 +34,10 @@ async def test_updates_token_and_refreshes_active_bot(
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.token == NEW_TOKEN
 
-    ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
-    ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, NEW_TOKEN)
-    ctx.set_webhook.assert_awaited_once_with(tg_bot)
+    cached = ctx.cache.get(BOT_ID)
+    assert cached.token == NEW_TOKEN
+    assert ctx.resolver.get_or_create(BOT_ID, NEW_TOKEN) is cached
+    ctx.set_webhook.assert_awaited_once_with(tg_bot, allowed_updates=list(USERBOT_ALLOWED_UPDATES))
 
 
 async def test_inactive_userbot_skips_webhook(management_context: ManagementContext):
@@ -54,7 +55,7 @@ async def test_inactive_userbot_skips_webhook(management_context: ManagementCont
     assert row.token == NEW_TOKEN
 
     ctx.set_webhook.assert_not_awaited()
-    ctx.bot_registry.remove.assert_not_called()
+    assert ctx.cache.get(BOT_ID) is not None
 
 
 async def test_invalid_token_format(management_context: ManagementContext):
@@ -77,7 +78,7 @@ async def test_token_from_another_bot(management_context: ManagementContext):
     async with ctx.session_maker() as session:
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.token == BOT_TOKEN
-    ctx.bot_registry.remove.assert_not_called()
+    assert ctx.cache.get(BOT_ID) is not None
 
 
 async def test_token_rejected_by_telegram(
@@ -95,7 +96,7 @@ async def test_token_rejected_by_telegram(
     async with ctx.session_maker() as session:
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.token == BOT_TOKEN
-    ctx.bot_registry.remove.assert_not_called()
+    assert ctx.cache.get(BOT_ID) is not None
 
 
 async def test_userbot_not_found(management_context: ManagementContext):

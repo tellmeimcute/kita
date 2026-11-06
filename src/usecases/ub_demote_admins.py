@@ -1,25 +1,24 @@
 from database.dto import UserDTO
 from interfaces import (
-    BotRegistryProtocol,
+    BotResolverProtocol,
     UnitOfWorkProtocol,
     UserBotServiceProtocol,
     UserProfileServiceProtocol,
 )
-from interfaces.mixins import BotMixin
 from utils.userbot_probe import userbot_action_auth
 
 
-class UserbotDemoteAdminsUseCase(BotMixin):
-    __slots__ = ("_uow", "_userbot_service", "_profile_service")
+class UserbotDemoteAdminsUseCase:
+    __slots__ = ("_resolver", "_uow", "_userbot_service", "_profile_service")
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
         profile_service: UserProfileServiceProtocol,
     ):
-        super().__init__(bot_registry)
+        self._resolver = resolver
         self._uow = uow
         self._userbot_service = userbot_service
         self._profile_service = profile_service
@@ -30,7 +29,7 @@ class UserbotDemoteAdminsUseCase(BotMixin):
 
         userbot_action_auth(caller_dto, userbot)
 
-        bot = self._bot_registry.get_or_create(userbot_id, userbot.token.get_secret_value())
+        bot = self._resolver.get_or_create(userbot_id, userbot.token.get_secret_value())
 
-        async with self._bot_registry.with_bot(bot), self._uow.transaction():
+        async with self._resolver.with_bot(bot), self._uow.transaction():
             return await self._profile_service.demote_admins(userbot.owner_id)

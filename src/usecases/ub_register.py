@@ -6,22 +6,21 @@ from core.exceptions import (
     ChannelNotFoundError,
     UserbotAlreadyExistsError,
 )
-from interfaces import BotRegistryProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
-from interfaces.mixins import BotMixin
+from interfaces import BotResolverProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
 from utils.userbot_probe import probe_userbot, validate_channel_id
 
 
-class UserBotRegisterUseCase(BotMixin):
-    __slots__ = ("_uow", "_userbot_service", "_crypto")
+class UserBotRegisterUseCase:
+    __slots__ = ("_resolver", "_uow", "_userbot_service", "_crypto")
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
         crypto: Cryptographer,
     ):
-        super().__init__(bot_registry)
+        self._resolver = resolver
         self._uow = uow
         self._userbot_service = userbot_service
         self._crypto = crypto
@@ -37,7 +36,7 @@ class UserBotRegisterUseCase(BotMixin):
             logger.info("Userbot registration failed: provided channel_id is not valid")
             raise ChannelNotFoundError()
 
-        async with self._bot_registry.temp_bot(token) as tmp_bot:
+        async with self._resolver.temp_bot(token) as tmp_bot:
             probe = await probe_userbot(tmp_bot, channel_id)
 
         if not probe.ok:
@@ -56,7 +55,7 @@ class UserBotRegisterUseCase(BotMixin):
                 channel_name=probe.channel.full_name,
             )
 
-        self._bot_registry.remove(probe.bot_info.id)
-        self._bot_registry.get_or_create(probe.bot_info.id, token)
+        self._resolver.remove(probe.bot_info.id)
+        self._resolver.get_or_create(probe.bot_info.id, token)
 
         return probe.bot_info

@@ -2,7 +2,7 @@ from typing import Any
 
 from database.dto import UserDTO
 from database.redis import CacheJournal, KitaKeyBuilder, UserRedis
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 
 from ..user import UserRepository
 from .base import CachedRepository
@@ -15,13 +15,13 @@ class CachedUserRepository(CachedRepository):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         redis: UserRedis,
         journal: CacheJournal,
         repo: UserRepository,
     ):
         key_builder = KitaKeyBuilder(with_bot_id=False)
-        super().__init__(bot_registry, redis, journal, key_builder)
+        super().__init__(bot_context, redis, journal, key_builder)
         self.repo = repo
 
     async def get_by_id(self, user_id: int) -> UserDTO | None:

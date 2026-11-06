@@ -1,6 +1,6 @@
 from database.redis import CacheJournal, KitaKeyBuilder, RedisKey
 from database.redis.base import BaseRedisRepository
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 from interfaces.mixins import BotMixin
 
 
@@ -8,7 +8,7 @@ class CachedRepository(BotMixin):
     REDIS_KEY_PART = "base_key"
 
     __slots__ = (
-        "_bot_registry",
+        "_bot_context",
         "_journal",
         "_key_builder",
         "_redis",
@@ -16,12 +16,12 @@ class CachedRepository(BotMixin):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         redis: BaseRedisRepository,
         journal: CacheJournal,
         key_builder: KitaKeyBuilder | None = None,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self._redis = redis
         self._journal = journal
 

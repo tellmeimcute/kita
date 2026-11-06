@@ -1,4 +1,8 @@
-from .bot_registry import BotRegistryProtocol
+from .bot import (
+    BotContextProtocol,
+    BotResolverProtocol,
+    BotSessionProtocol,
+)
 from .dispatcher import SuggestionTaskDispatcherProtocol
 from .notifier import MessageNotifierProtocol, SuggestionNotifierProtocol
 from .repository import (
@@ -21,7 +25,9 @@ from .services import (
 from .uow import UnitOfWorkProtocol
 
 __all__ = (
-    "BotRegistryProtocol",
+    "BotContextProtocol",
+    "BotResolverProtocol",
+    "BotSessionProtocol",
     "MessageNotifierProtocol",
     "MediaRepositoryProtocol",
     "SuggestionNotifierProtocol",

@@ -11,9 +11,10 @@ from core.config import Config
 from core.cryptographer import Cryptographer
 from core.exceptions import UserbotAlreadyExistsError, UserbotError
 from core.i18n_translator import Translator
+from core.userbot_dispatcher import UserbotDispatcherState
 from database.dto import UserDTO
 from interfaces import (
-    BotRegistryProtocol,
+    BotResolverProtocol,
     MessageNotifierProtocol,
     UnitOfWorkProtocol,
     UserBotServiceProtocol,
@@ -51,7 +52,7 @@ async def bot_token_handler(
     message_input: MessageInput,
     manager: DialogManager,
     crypto: FromDishka[Cryptographer],
-    bot_registry: FromDishka[BotRegistryProtocol],
+    bot_resolver: FromDishka[BotResolverProtocol],
 ):
     try:
         await message.delete()
@@ -60,7 +61,7 @@ async def bot_token_handler(
 
     try:
         token = parse_token(message.text)
-        async with bot_registry.temp_bot(token) as tmp_bot:
+        async with bot_resolver.temp_bot(token) as tmp_bot:
             await probe_token(tmp_bot)
 
         manager.dialog_data["new_userbot_token"] = crypto.encrypt(token)
@@ -76,6 +77,7 @@ async def channel_id_handler(
     manager: DialogManager,
     notifier: FromDishka[MessageNotifierProtocol],
     register: FromDishka[UserBotRegisterUseCase],
+    userbot_dispatcher: FromDishka[UserbotDispatcherState],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     raw_token = manager.dialog_data.get("new_userbot_token")
@@ -97,6 +99,7 @@ async def channel_id_handler(
             bot_id=message.bot.id,
             userbot_id=bot_info.id,
             owner_id=user_dto.user_id,
+            allowed_updates=userbot_dispatcher.allowed_updates,
         )
     except UserbotAlreadyExistsError as e:
         await notifier.send_text(user_dto, e.error_key)

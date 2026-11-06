@@ -7,26 +7,20 @@ from loguru import logger
 
 from core.config import Config
 from core.cryptographer import Cryptographer
-from interfaces import BotRegistryProtocol
 
 
 class WebhookService:
-    def __init__(
-        self,
-        config: Config,
-        bot_registry: BotRegistryProtocol,
-        crypto: Cryptographer,
-    ):
+    def __init__(self, config: Config, crypto: Cryptographer):
         self.config = config
-        self.bot_registry = bot_registry
         self.cryptographer = crypto
 
     async def set_webhook(
         self,
         bot: Bot,
+        *,
+        allowed_updates: Sequence[str],
         url: str | None = None,
         force_update: bool = False,
-        allowed_updates: Sequence[str] | None = None,
     ) -> WebhookInfo:
         webhook_url = url or f"{self.config.webhook_base_url}/{bot.id}"
         should_force = force_update or self.config.webhook.force_update
@@ -43,7 +37,7 @@ class WebhookService:
         webhook_request = SetWebhook(
             url=webhook_url,
             secret_token=secret_token,
-            allowed_updates=allowed_updates or self.bot_registry.allowed_updates,
+            allowed_updates=allowed_updates,
             drop_pending_updates=True,
         )
 

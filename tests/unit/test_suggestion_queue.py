@@ -23,9 +23,9 @@ def mock_uow():
 
 
 @pytest.fixture
-def queue(mock_bot_registry, mock_suggestion_service, mock_uow, mock_fsm):
+def queue(mock_bot_context, mock_suggestion_service, mock_uow, mock_fsm):
     return SuggestionQueue(
-        bot_registry=mock_bot_registry,
+        bot_context=mock_bot_context,
         suggestion_service=mock_suggestion_service,
         uow=mock_uow,
         fsm_context=mock_fsm,

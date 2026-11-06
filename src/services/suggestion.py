@@ -7,7 +7,7 @@ from core.consts import SUGGESTION_CAPTION_LIMIT, SUGGESTION_TEXT_LIMIT
 from core.exceptions import UnsupportedPayload
 from core.schemas.objects import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO, UserDTO
-from interfaces import BotRegistryProtocol, SuggestionRepositoryProtocol
+from interfaces import BotContextProtocol, SuggestionRepositoryProtocol
 from utils.message_parser import MessageParser
 
 from .base import BaseService
@@ -22,10 +22,10 @@ class SuggestionService(BaseService):
     def __init__(
         self,
         repo: SuggestionRepositoryProtocol,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         parser: MessageParser,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
 
         self.repo = repo
         self.parser = parser

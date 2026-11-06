@@ -1,11 +1,11 @@
 from .cache import BotCache
 from .context import BotContext
-from .registry import BotRegistry
+from .resolver import BotResolver
 from .session import BotSessionFactory
 
 __all__ = (
     "BotCache",
     "BotContext",
-    "BotRegistry",
+    "BotResolver",
     "BotSessionFactory",
 )

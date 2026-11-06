@@ -9,7 +9,7 @@ from database.dto import UserDTO
 from database.repository import SuggestionRepository, UserProfileRepository, UserRepository
 from interfaces import UnitOfWorkProtocol
 
-from ..scaffold import BOT_ID, FakeBotRegistry, make_tg_bot, make_tg_channel
+from ..scaffold import BOT_ID, BotStack, make_tg_bot, make_tg_channel
 
 
 @dataclass(frozen=True)
@@ -43,9 +43,9 @@ async def repository_context(
 
 
 @pytest.fixture
-def foreign_bot(bot_registry: FakeBotRegistry) -> MagicMock:
+def foreign_bot(bots: BotStack) -> MagicMock:
     bot = make_tg_bot(make_tg_channel())
     bot.id = BOT_ID + 1
-    bot_registry.register(bot)
+    bots.cache.put(bot)
 
     return bot

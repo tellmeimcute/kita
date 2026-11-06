@@ -19,7 +19,8 @@ from core.config import Config
 from core.i18n_translator import Translator
 from database.dto import UserBotDTO
 from interfaces import (
-    BotRegistryProtocol,
+    BotContextProtocol,
+    BotResolverProtocol,
     MessageNotifierProtocol,
     UnitOfWorkProtocol,
     UserBotServiceProtocol,
@@ -47,7 +48,8 @@ async def on_userbot_demoted(
     uow: FromDishka[UnitOfWorkProtocol],
     user_service: FromDishka[UserServiceProtocol],
     userbot_service: FromDishka[UserBotServiceProtocol],
-    bot_registry: FromDishka[BotRegistryProtocol],
+    bot_context: FromDishka[BotContextProtocol],
+    bot_resolver: FromDishka[BotResolverProtocol],
     webhook_service: FromDishka[WebhookServiceProtocol],
     notifier: FromDishka[MessageNotifierProtocol],
     config: FromDishka[Config],
@@ -61,7 +63,7 @@ async def on_userbot_demoted(
     ):
         return
 
-    bot = bot_registry.get_current()
+    bot = bot_context.get_current()
     new = event.new_chat_member
     if new.status == ChatMemberStatus.ADMINISTRATOR and new.can_post_messages:
         return
@@ -71,13 +73,13 @@ async def on_userbot_demoted(
         owner_dto = await user_service.get(userbot_dto.owner_id)
 
     await webhook_service.remove_webhook(bot)
-    bot_registry.remove(bot.id)
+    bot_resolver.remove(bot.id)
 
     main_token = config.tg_token.get_secret_value()
     main_bot_id = extract_bot_id(main_token)
 
     with i18n.context(), i18n.use_locale(owner_dto.language_code):
-        async with bot_registry.with_bot(main_bot_id, main_token):
+        async with bot_resolver.with_bot(main_bot_id, token=main_token):
             await notifier.send_text(
                 owner_dto,
                 i18n_key="your_bot_deactivated",
@@ -120,14 +122,15 @@ async def userbot_token_invalid(
     event: ErrorEvent,
     uow: FromDishka[UnitOfWorkProtocol],
     userbot_service: FromDishka[UserBotServiceProtocol],
-    bot_registry: FromDishka[BotRegistryProtocol],
+    bot_context: FromDishka[BotContextProtocol],
+    bot_resolver: FromDishka[BotResolverProtocol],
 ):
-    bot = bot_registry.get_current()
+    bot = bot_context.get_current()
 
     async with uow.transaction():
         await userbot_service.update(bot.id, active=False)
 
-    bot_registry.remove(bot.id)
+    bot_resolver.remove(bot.id)
 
     logger.info("Token invalid for bot {}, set userbot inactive", bot.id)
 

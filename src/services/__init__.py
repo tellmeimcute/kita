@@ -1,4 +1,3 @@
-from .bots import BotRegistry
 from .notifier import MessageNotifier, SuggestionNotifier
 from .suggestion import SuggestionService
 from .user import UserService
@@ -12,7 +11,6 @@ __all__ = (
     "UserService",
     "UserProfileService",
     "SuggestionService",
-    "BotRegistry",
     "UserBotService",
     "WebhookService",
 )

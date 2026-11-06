@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from aiogram import Bot
@@ -7,7 +7,8 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 
 from core.exceptions import BotNotRegisteredError
-from services.bots import BotCache, BotContext, BotSessionFactory
+from interfaces import BotSessionProtocol
+from services.bots import BotCache, BotResolver, BotSessionFactory
 
 TEST_BOT_ID = 12345
 TEST_BOT_TOKEN = f"{TEST_BOT_ID}:245872673:AAF7VsJ1ksP4k0f9zk7NpF2nvxd69_ZlPyY"
@@ -77,37 +78,33 @@ class TestBotCache:
 
 
 class TestBotContext:
-    def test_starts_empty(self):
-        assert BotContext().current() is None
+    def test_starts_empty(self, bot_context):
+        assert bot_context.get_current() is None
 
-    def test_set_and_reset(self):
-        context = BotContext()
+    def test_set_and_reset(self, bot_context):
         bot = make_bot(TEST_BOT_ID)
 
-        token = context.set(bot)
-        assert context.current() is bot
+        token = bot_context.set_current(bot)
+        assert bot_context.get_current() is bot
 
-        context.reset(token)
-        assert context.current() is None
+        bot_context.reset_current(token)
+        assert bot_context.get_current() is None
 
-    async def test_using_sets_and_clears_the_bot(self):
-        context = BotContext()
+    async def test_using_sets_and_clears_the_bot(self, bot_context):
         bot = make_bot(TEST_BOT_ID)
 
-        async with context.using(bot) as current:
+        async with bot_context.using(bot) as current:
             assert current is bot
-            assert context.current() is bot
+            assert bot_context.get_current() is bot
 
-        assert context.current() is None
+        assert bot_context.get_current() is None
 
-    async def test_using_clears_the_bot_on_exception(self):
-        context = BotContext()
-
+    async def test_using_clears_the_bot_on_exception(self, bot_context):
         with pytest.raises(RuntimeError):
-            async with context.using(make_bot(TEST_BOT_ID)):
+            async with bot_context.using(make_bot(TEST_BOT_ID)):
                 raise RuntimeError("boom")
 
-        assert context.current() is None
+        assert bot_context.get_current() is None
 
 
 class TestBotSessionFactory:
@@ -156,92 +153,84 @@ class TestBotSessionFactory:
         factory._shared_session.close.assert_awaited_once()
 
 
-class TestBotRegistry:
-    def test_get_or_create_reuses_the_same_token(self, registry):
-        first = registry.get_or_create(1, "1:token")
-        second = registry.get_or_create(1, "1:token")
+class TestBotResolver:
+    def test_get_or_create_reuses_the_same_token(self, resolver):
+        first = resolver.get_or_create(1, "1:token")
+        second = resolver.get_or_create(1, "1:token")
 
         assert first is second
 
-    @patch("services.bots.session.Bot")
-    def test_get_or_create_replaces_a_changed_token(self, bot_cls, registry):
+    def test_get_or_create_rejects_a_token_of_another_bot(self, resolver):
+        with pytest.raises(ValueError, match="Token belongs to bot 2"):
+            resolver.get_or_create(1, "2:token")
+
+        assert resolver.get_or_create(1, "1:token").id == 1
+
+    def test_get_or_create_replaces_a_changed_token(self, bot_context):
         old_bot = make_bot(1)
         old_bot.token = "1:old"
         new_bot = make_bot(1)
         new_bot.token = "1:new"
-        bot_cls.side_effect = [old_bot, new_bot]
 
-        first = registry.get_or_create(1, "1:old")
-        second = registry.get_or_create(1, "1:new")
+        sessions = MagicMock(spec=BotSessionProtocol)
+        sessions.create.side_effect = [old_bot, new_bot]
+        resolver = BotResolver(sessions, BotCache(CACHE_SIZE), bot_context)
+
+        first = resolver.get_or_create(1, "1:old")
+        second = resolver.get_or_create(1, "1:new")
 
         assert first is old_bot
         assert second is new_bot
-        assert registry.get_or_create(1, "1:new") is new_bot
+        assert resolver.get_or_create(1, "1:new") is new_bot
 
-    async def test_remove_forgets_the_bot(self, registry):
-        registry.get_or_create(1, "1:token")
+    async def test_remove_forgets_the_bot(self, resolver):
+        resolver.get_or_create(1, "1:token")
 
-        registry.remove(1)
+        resolver.remove(1)
 
         with pytest.raises(BotNotRegisteredError):
-            async with registry.with_bot(1):
+            async with resolver.with_bot(1):
                 pass
 
-    async def test_with_bot_targets_a_cached_bot(self, registry):
-        bot = registry.get_or_create(1, "1:token")
+    async def test_with_bot_targets_a_cached_bot(self, resolver, bot_context):
+        bot = resolver.get_or_create(1, "1:token")
 
-        async with registry.with_bot(1) as current:
+        async with resolver.with_bot(1) as current:
             assert current is bot
-            assert registry.get_current() is bot
+            assert bot_context.get_current() is bot
 
-        assert registry.get_current() is None
+        assert bot_context.get_current() is None
 
-    async def test_with_bot_clears_the_current_bot_on_exception(self, registry):
-        registry.get_or_create(1, "1:token")
+    async def test_with_bot_clears_the_current_bot_on_exception(self, resolver, bot_context):
+        resolver.get_or_create(1, "1:token")
 
         with pytest.raises(RuntimeError):
-            async with registry.with_bot(1):
+            async with resolver.with_bot(1):
                 raise RuntimeError("boom")
 
-        assert registry.get_current() is None
+        assert bot_context.get_current() is None
 
-    async def test_with_bot_accepts_a_bot_instance(self, registry):
+    async def test_with_bot_accepts_a_bot_instance(self, resolver, bot_context):
         bot = Bot(token=TEST_BOT_TOKEN)
 
-        async with registry.with_bot(bot) as current:
+        async with resolver.with_bot(bot) as current:
             assert current is bot
+            assert bot_context.get_current() is bot
 
-        assert registry.get_current() is None
+        assert bot_context.get_current() is None
 
-    async def test_with_bot_raises_for_unknown_bot(self, registry):
+    async def test_with_bot_raises_for_unknown_bot(self, resolver):
         with pytest.raises(BotNotRegisteredError) as error:
-            async with registry.with_bot(42):
+            async with resolver.with_bot(42):
                 pass
 
         assert error.value.bot_id == 42
-        assert registry.get_current() is None
 
-    async def test_with_bot_with_token_creates_the_bot(self, registry):
-        async with registry.with_bot(1, token="1:token") as bot:
+    async def test_with_bot_with_token_creates_the_bot(self, resolver):
+        async with resolver.with_bot(1, token="1:token") as bot:
             assert bot.id == 1
 
-    async def test_temp_bot_delegates_to_the_factory(self, registry):
-        async with registry.temp_bot(TEST_BOT_TOKEN) as bot:
+    async def test_temp_bot_comes_from_the_session_factory(self, resolver, bot_sessions):
+        async with resolver.temp_bot(TEST_BOT_TOKEN) as bot:
             assert isinstance(bot.session, AiohttpSession)
-            assert bot.session is not registry._sessions._shared_session
-
-    def test_allowed_updates_roundtrip(self, registry):
-        registry.allowed_updates = ["message", "callback_query"]
-
-        assert registry.allowed_updates == ["message", "callback_query"]
-
-    def test_allowed_updates_rejects_other_types(self, registry):
-        with pytest.raises(ValueError, match="allowed updates should be list"):
-            registry.allowed_updates = ("message",)
-
-    async def test_close_closes_the_shared_session(self, registry):
-        registry._sessions._shared_session.close = AsyncMock()
-
-        await registry.close()
-
-        registry._sessions._shared_session.close.assert_awaited_once()
+            assert bot.session is not bot_sessions._shared_session

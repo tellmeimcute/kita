@@ -12,7 +12,7 @@ from core.exceptions import (
 )
 from database.models import UserBot
 
-from ..scaffold import BOT_ID
+from ..scaffold import BOT_ID, USERBOT_ALLOWED_UPDATES
 from .conftest import ManagementContext
 
 
@@ -32,7 +32,7 @@ async def test_active_userbot_becomes_inactive(
 
     ctx.remove_webhook.assert_awaited_once_with(tg_bot)
     ctx.set_webhook.assert_not_awaited()
-    ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
+    assert ctx.cache.get(BOT_ID) is None
 
 
 async def test_inactive_userbot_becomes_active(
@@ -51,9 +51,9 @@ async def test_inactive_userbot_becomes_active(
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.active is True
 
-    ctx.set_webhook.assert_awaited_once_with(tg_bot)
+    ctx.set_webhook.assert_awaited_once_with(tg_bot, allowed_updates=list(USERBOT_ALLOWED_UPDATES))
     ctx.remove_webhook.assert_not_awaited()
-    ctx.bot_registry.remove.assert_not_called()
+    assert ctx.cache.get(BOT_ID) is not None
 
 
 async def test_probe_failure_deactivates_userbot(
@@ -73,7 +73,7 @@ async def test_probe_failure_deactivates_userbot(
     assert row.active is False
     ctx.remove_webhook.assert_awaited_once_with(tg_bot)
     ctx.set_webhook.assert_not_awaited()
-    ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
+    assert ctx.cache.get(BOT_ID) is None
 
 
 async def test_invalid_token_deactivates_without_webhook_removal(
@@ -92,7 +92,7 @@ async def test_invalid_token_deactivates_without_webhook_removal(
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.active is False
     ctx.remove_webhook.assert_not_awaited()
-    ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
+    assert ctx.cache.get(BOT_ID) is None
 
 
 async def test_rejects_foreign_user(management_context: ManagementContext):

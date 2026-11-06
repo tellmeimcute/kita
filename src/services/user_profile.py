@@ -4,7 +4,7 @@ from loguru import logger
 
 from database.dto import UserProfileDTO
 from database.enums import UserRole
-from interfaces import BotRegistryProtocol, UserProfileRepositoryProtocol
+from interfaces import BotContextProtocol, UserProfileRepositoryProtocol
 
 from .base import BaseService
 
@@ -15,9 +15,9 @@ class UserProfileService(BaseService):
     def __init__(
         self,
         repo: UserProfileRepositoryProtocol,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.repo = repo
 
     async def get_or_create(self, user_id: int) -> UserProfileDTO:

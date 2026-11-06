@@ -4,7 +4,7 @@ from typing import Any
 from database.dto import UserProfileDTO
 from database.enums import UserRole
 from database.redis import CacheJournal, IntRedis, KitaKeyBuilder, RedisKey, UserProfileRedis
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 
 from ..user_profile import UserProfileRepository
 from .base import CachedRepository
@@ -21,13 +21,13 @@ class CachedUserProfileRepository(CachedRepository):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         redis: UserProfileRedis,
         journal: CacheJournal,
         count_redis: IntRedis,
         repo: UserProfileRepository,
     ):
-        super().__init__(bot_registry, redis, journal)
+        super().__init__(bot_context, redis, journal)
         self._count_redis = count_redis
         self.repo = repo
 

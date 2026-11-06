@@ -12,9 +12,10 @@ from cryptography.fernet import Fernet
 from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
 from database.dto import UserProfileDTO
-from services.bots import BotRegistry
+from services.bots import BotCache, BotContext, BotResolver, BotSessionFactory
 
 ALLOWED_REPLY = [1, 0, 0]
+CACHE_SIZE = 2
 
 
 @pytest.fixture
@@ -94,15 +95,25 @@ def mock_cryptographer():
 
 
 @pytest.fixture
-def mock_bot_registry(mock_bot):
-    registry = MagicMock()
-    registry.get_current.return_value = mock_bot
-    return registry
+def mock_bot_context(mock_bot):
+    context = MagicMock()
+    context.get_current.return_value = mock_bot
+    return context
 
 
 @pytest.fixture
-def registry(mock_config):
-    return BotRegistry(mock_config)
+def bot_sessions(mock_config):
+    return BotSessionFactory(mock_config)
+
+
+@pytest.fixture
+def bot_context():
+    return BotContext()
+
+
+@pytest.fixture
+def resolver(bot_sessions, bot_context):
+    return BotResolver(bot_sessions, BotCache(CACHE_SIZE), bot_context)
 
 
 def _script_stub(_source: str) -> AsyncMock:

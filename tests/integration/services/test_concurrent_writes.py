@@ -5,7 +5,7 @@ from services.user_profile import UserProfileService
 
 from ..concurrency import run_in_parallel
 from ..readers import load_profile, load_user
-from ..scaffold import FakeBotRegistry
+from ..scaffold import BotStack
 from .conftest import UserTestContext
 
 RACE_USER_ID_OFFSET = 9_000
@@ -22,7 +22,7 @@ def race_user_dto(ctx: UserTestContext) -> UserDTO:
 
 async def test_get_or_create_survives_concurrent_registration(
     user_test_context: UserTestContext,
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
 ):
     ctx = user_test_context
     user_dto = race_user_dto(ctx)
@@ -30,7 +30,7 @@ async def test_get_or_create_survives_concurrent_registration(
     first, second = await run_in_parallel(
         ctx.session_maker,
         service_factory=lambda session: UserService(
-            UserRepository(session, bot_registry), bot_registry
+            UserRepository(session, bots.context), bots.context
         ),
         action=lambda service: service.get_or_create(user_dto),
     )
@@ -44,18 +44,18 @@ async def test_get_or_create_survives_concurrent_registration(
 
 async def test_profile_get_or_create_survives_concurrent_creation(
     user_test_context: UserTestContext,
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
 ):
     ctx = user_test_context
     user_dto = race_user_dto(ctx)
 
     async with ctx.session_maker.begin() as session:
-        await UserRepository(session, bot_registry).create(user_dto)
+        await UserRepository(session, bots.context).create(user_dto)
 
     first, second = await run_in_parallel(
         ctx.session_maker,
         service_factory=lambda session: UserProfileService(
-            UserProfileRepository(session, bot_registry), bot_registry
+            UserProfileRepository(session, bots.context), bots.context
         ),
         action=lambda service: service.get_or_create(user_dto.user_id),
     )

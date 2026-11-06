@@ -12,7 +12,7 @@ from core.config import Config
 from core.i18n_translator import Translator
 from core.rate_limiters import UserLimiter
 from database.dto import UserDTO
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 
 from .base import KitaMiddleware
 
@@ -24,7 +24,7 @@ class RateLimitMiddleware(KitaMiddleware):
         self,
         redis: Redis,
         config: Config,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         i18n: I18n,
         translator: Translator,
     ):
@@ -33,7 +33,7 @@ class RateLimitMiddleware(KitaMiddleware):
 
         self.limiter = UserLimiter(
             redis=redis,
-            bot_registry=bot_registry,
+            bot_context=bot_context,
             scope=self._scope,
             max_tokens=config.user_rate_limit.max_tokens,
             refill_rate=config.user_rate_limit.refill_rate,
@@ -96,7 +96,7 @@ class UserBotRateLimitMiddleware(BaseWidgetRateLimit):
     def __init__(
         self,
         redis: Redis,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         i18n: I18n,
         translator: Translator,
     ):
@@ -105,7 +105,7 @@ class UserBotRateLimitMiddleware(BaseWidgetRateLimit):
 
         self.limiter = UserLimiter(
             redis=redis,
-            bot_registry=bot_registry,
+            bot_context=bot_context,
             scope=self._scope,
             max_tokens=3,
             refill_rate=0.05,

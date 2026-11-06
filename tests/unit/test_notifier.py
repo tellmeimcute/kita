@@ -24,8 +24,8 @@ class TestNotifierUtilsMixin:
 
 
 @pytest.fixture
-def notifier(mock_translator, mock_bot_registry) -> MessageNotifier:
-    return MessageNotifier(translator=mock_translator, bot_registry=mock_bot_registry)
+def notifier(mock_translator, mock_bot_context) -> MessageNotifier:
+    return MessageNotifier(translator=mock_translator, bot_context=mock_bot_context)
 
 
 class TestMessageNotifier:

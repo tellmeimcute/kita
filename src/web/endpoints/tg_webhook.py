@@ -40,7 +40,7 @@ class TelegramWebhookEndpoint(BaseTgWebhookEndpoint):
                 status_code=status.HTTP_200_OK, detail="Bot not exists or inactive"
             )
 
-        bot = self.bot_registry.get_or_create(bot_id, userbot.token.get_secret_value())
+        bot = self.bot_resolver.get_or_create(bot_id, userbot.token.get_secret_value())
 
         task = asyncio.create_task(self._feed_update(bot, update, userbot))
         self.tasks.add(task)

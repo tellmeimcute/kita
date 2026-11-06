@@ -7,23 +7,15 @@ from dishka import AsyncContainer
 from loguru import logger
 
 from core.consts import DISHKA_CONTAINER_KEY
-from interfaces import (
-    BotRegistryProtocol,
-    UnitOfWorkProtocol,
-)
+from interfaces import UnitOfWorkProtocol
 from usecases import UserRegisterOrUpdateUseCase
 
 from .base import KitaMiddleware
 
 
 class UserMiddleware(KitaMiddleware):
-    def __init__(
-        self,
-        i18n: I18n,
-        bot_registry: BotRegistryProtocol,
-    ):
+    def __init__(self, i18n: I18n):
         self.i18n = i18n
-        self.bot_registry = bot_registry
 
     async def __call__(
         self,

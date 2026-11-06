@@ -43,7 +43,7 @@ async def test_updates_channel(
     assert row.channel_id == NEW_CHANNEL_ID
     assert row.channel_name == NEW_CHANNEL_NAME
 
-    ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, BOT_TOKEN)
+    assert ctx.resolver.get_or_create(BOT_ID, BOT_TOKEN).token == BOT_TOKEN
     tg_bot.get_chat.assert_awaited_once_with(NEW_CHANNEL_ID)
 
 

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
 from interfaces import (
-    BotRegistryProtocol,
+    BotContextProtocol,
     SuggestionServiceProtocol,
     SuggestionTaskDispatcherProtocol,
     UnitOfWorkProtocol,
@@ -22,12 +22,12 @@ class ModerateSuggestionUseCase(BotMixin):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         uow: UnitOfWorkProtocol,
         suggestion_service: SuggestionServiceProtocol,
         task_dispatcher: SuggestionTaskDispatcherProtocol,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self._uow = uow
         self._suggestion_service = suggestion_service
         self._task_dispatcher = task_dispatcher

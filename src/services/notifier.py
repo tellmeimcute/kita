@@ -6,7 +6,7 @@ from core.enums import RenderType
 from core.exceptions import UnsupportedPayload
 from core.i18n_translator import Translator
 from database.dto import SuggestionFullDTO, UserDTO, UserProfileDTO
-from interfaces import BotRegistryProtocol, MessageNotifierProtocol
+from interfaces import BotContextProtocol, MessageNotifierProtocol
 from ui.keyboards import ReplyKeyboard
 from utils.suggestion_utils import SuggestionUtils
 
@@ -30,9 +30,9 @@ class MessageNotifier(NotifierUtilsMixin, BaseService):
     def __init__(
         self,
         translator: Translator,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.translator = translator
 
     async def send_text(
@@ -113,11 +113,11 @@ class SuggestionNotifier(NotifierUtilsMixin, BaseService):
     def __init__(
         self,
         translator: Translator,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         message_notifier: MessageNotifierProtocol,
         utils: SuggestionUtils,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.translator = translator
         self.msg_notifier = message_notifier
         self.utils = utils

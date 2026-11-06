@@ -7,14 +7,17 @@ from dishka import AsyncContainer
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from core.cryptographer import Cryptographer
+from core.userbot_dispatcher import UserbotDispatcherState
 from database.dto import UserDTO
 from database.repository import UserRepository
 from interfaces import (
+    BotResolverProtocol,
     UnitOfWorkProtocol,
     UserBotRepositoryProtocol,
     UserBotServiceProtocol,
     UserProfileServiceProtocol,
 )
+from services.bots import BotCache
 from usecases import (
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
@@ -29,7 +32,8 @@ from ..scaffold import (
     BOT_USERNAME,
     CHANNEL_ID,
     CHANNEL_NAME,
-    FakeBotRegistry,
+    USERBOT_ALLOWED_UPDATES,
+    BotStack,
     FakeWebhookService,
 )
 
@@ -38,7 +42,8 @@ from ..scaffold import (
 class BaseContext:
     uow: UnitOfWorkProtocol
     userbot_service: UserBotServiceProtocol
-    bot_registry: FakeBotRegistry
+    resolver: BotResolverProtocol
+    cache: BotCache
     session_maker: async_sessionmaker[AsyncSession]
 
 
@@ -68,7 +73,7 @@ class ManagementContext(BaseContext):
 async def userbot_test_context(
     request_container: AsyncContainer,
     user_dto_factory: Callable[..., UserDTO],
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
 ) -> UserBotTestContext:
     uow = await request_container.get(UnitOfWorkProtocol)
     user_repo = await request_container.get(UserRepository)
@@ -83,7 +88,8 @@ async def userbot_test_context(
         register=await request_container.get(UserBotRegisterUseCase),
         userbot_service=await request_container.get(UserBotServiceProtocol),
         userbot_repo=await request_container.get(UserBotRepositoryProtocol),
-        bot_registry=bot_registry,
+        resolver=bots.resolver,
+        cache=bots.cache,
         session_maker=await request_container.get(async_sessionmaker[AsyncSession]),
         owner_id=owner_dto.user_id,
         raw_token=crypto.encrypt(BOT_TOKEN),
@@ -94,13 +100,17 @@ async def userbot_test_context(
 async def management_context(
     request_container: AsyncContainer,
     user_dto_factory: Callable[..., UserDTO],
-    bot_registry: FakeBotRegistry,
+    bots: BotStack,
     webhook_service: FakeWebhookService,
 ) -> ManagementContext:
     uow = await request_container.get(UnitOfWorkProtocol)
     user_repo = await request_container.get(UserRepository)
     userbot_service = await request_container.get(UserBotServiceProtocol)
     profile_service = await request_container.get(UserProfileServiceProtocol)
+
+    # the webhook update types normaly come from the userbot dispatcher at startup
+    dispatcher_state = await request_container.get(UserbotDispatcherState)
+    dispatcher_state.allowed_updates = list(USERBOT_ALLOWED_UPDATES)
 
     owner = user_dto_factory()
     stranger = user_dto_factory()
@@ -129,7 +139,8 @@ async def management_context(
         profile_service=profile_service,
         set_webhook=webhook_service.set_webhook,
         remove_webhook=webhook_service.remove_webhook,
-        bot_registry=bot_registry,
+        resolver=bots.resolver,
+        cache=bots.cache,
         session_maker=await request_container.get(async_sessionmaker[AsyncSession]),
         owner=owner,
         stranger=stranger,

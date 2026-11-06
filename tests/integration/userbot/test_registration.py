@@ -66,8 +66,9 @@ async def test_register_userbot_registers_bot_in_registry(
 
     await ctx.register.execute(ctx.raw_token, str(CHANNEL_ID), owner_id=ctx.owner_id)
 
-    ctx.bot_registry.remove.assert_called_once_with(BOT_ID)
-    ctx.bot_registry.get_or_create.assert_called_once_with(BOT_ID, BOT_TOKEN)
+    cached = ctx.cache.get(BOT_ID)
+    assert cached is not None
+    assert cached.token == BOT_TOKEN
 
 
 async def test_register_userbot_already_exists(

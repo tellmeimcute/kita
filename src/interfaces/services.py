@@ -113,9 +113,10 @@ class WebhookServiceProtocol(Protocol):
     async def set_webhook(
         self,
         bot: Bot,
+        *,
+        allowed_updates: Sequence[str],
         url: str | None = None,
         force_update: bool = False,
-        allowed_updates: Sequence[str] | None = None,
     ) -> WebhookInfo: ...
 
     async def remove_webhook(self, bot: Bot) -> None: ...

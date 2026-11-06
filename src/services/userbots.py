@@ -3,7 +3,7 @@ from typing import Any
 from loguru import logger
 
 from database.dto import UserBotDTO
-from interfaces import BotRegistryProtocol, UserBotRepositoryProtocol
+from interfaces import BotContextProtocol, UserBotRepositoryProtocol
 
 from .base import BaseService
 
@@ -14,9 +14,9 @@ class UserBotService(BaseService):
     def __init__(
         self,
         repo: UserBotRepositoryProtocol,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
     ):
-        super().__init__(bot_registry)
+        super().__init__(bot_context)
         self.repo = repo
 
     async def get(self, bot_id: int) -> UserBotDTO | None:

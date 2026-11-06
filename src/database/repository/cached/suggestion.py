@@ -4,7 +4,7 @@ from typing import Any
 from core.schemas import UserStats
 from database.dto import SuggestionBaseDTO, SuggestionFullDTO
 from database.redis import CacheJournal, RedisKey, UserStatsRedis
-from interfaces import BotRegistryProtocol
+from interfaces import BotContextProtocol
 
 from ..suggestions import SuggestionRepository
 from .base import CachedRepository
@@ -15,12 +15,12 @@ class CachedSuggestionRepository(CachedRepository):
 
     def __init__(
         self,
-        bot_registry: BotRegistryProtocol,
+        bot_context: BotContextProtocol,
         user_stats_redis: UserStatsRedis,
         journal: CacheJournal,
         repo: SuggestionRepository,
     ):
-        super().__init__(bot_registry, user_stats_redis, journal)
+        super().__init__(bot_context, user_stats_redis, journal)
         self.repo = repo
 
     def _get_user_stats_key(self, user_id: int):

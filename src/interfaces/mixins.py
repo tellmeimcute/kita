@@ -1,12 +1,12 @@
-from .bot_registry import BotRegistryProtocol
+from .bot import BotContextProtocol
 
 
 class BotMixin:
-    __slots__ = ("_bot_registry",)
+    __slots__ = ("_bot_context",)
 
-    def __init__(self, bot_registry: BotRegistryProtocol):
-        self._bot_registry = bot_registry
+    def __init__(self, bot_context: BotContextProtocol):
+        self._bot_context = bot_context
 
     @property
     def bot(self):
-        return self._bot_registry.get_current()
+        return self._bot_context.get_current()
