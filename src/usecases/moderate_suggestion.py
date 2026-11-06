@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from database.dto import SuggestionFullDTO
 from database.enums import SuggestionStatus as Status
 from interfaces import (
     BotContextProtocol,
@@ -13,8 +12,9 @@ from interfaces.mixins import BotMixin
 
 @dataclass
 class ModerationResult:
-    suggestion_dto: SuggestionFullDTO
-    verdict_exists: bool
+    suggestion_id: int
+    applied: bool
+    status: Status | None  # None → suggestion not found
 
 
 class ModerateSuggestionUseCase(BotMixin):
@@ -34,18 +34,26 @@ class ModerateSuggestionUseCase(BotMixin):
 
     async def execute(
         self,
-        suggestion_dto: SuggestionFullDTO,
+        suggestion_id: int,
         verdict: Status,
-        force_update: bool = False,
     ) -> ModerationResult:
-        if suggestion_dto.status != Status.PENDING and not force_update:
-            return ModerationResult(suggestion_dto, True)
-
-        suggestion_dto.status = verdict
-
         async with self._uow.transaction():
-            await self._suggestion_service.update(suggestion_dto)
+            applied = await self._suggestion_service.apply_verdict(suggestion_id, verdict)
+
+        if not applied:
+            return ModerationResult(
+                suggestion_id,
+                applied=False,
+                status=await self._current_status(suggestion_id),
+            )
 
         if verdict == Status.ACCEPTED:
-            await self._task_dispatcher.accepted(self.bot.id, suggestion_dto.id)
-        return ModerationResult(suggestion_dto, False)
+            await self._task_dispatcher.accepted(self.bot.id, suggestion_id)
+
+        return ModerationResult(suggestion_id, applied=True, status=verdict)
+
+    async def _current_status(self, suggestion_id: int) -> Status | None:
+        async with self._uow.transaction():
+            suggestion_dto = await self._suggestion_service.get(suggestion_id)
+
+        return suggestion_dto.status if suggestion_dto else None

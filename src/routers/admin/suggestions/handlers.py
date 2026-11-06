@@ -66,8 +66,6 @@ async def viewer_verdict(
     message: Message,
     dialog_manager: DialogManager,
     user_dto: UserDTO,
-    uow: FromDishka[UnitOfWorkProtocol],
-    suggestion_service: FromDishka[SuggestionServiceProtocol],
     notifier: FromDishka[MessageNotifierProtocol],
     moderate: FromDishka[ModerateSuggestionUseCase],
     suggestion_viewer: FromDishka[SuggestionViewerProtocol],
@@ -77,18 +75,22 @@ async def viewer_verdict(
     if not current_suggestion:
         return await suggestion_viewer.return_to_menu(dialog_manager, user_dto)
 
-    async with uow.transaction():
-        updated_dto = await suggestion_service.get(current_suggestion.id)
+    result = await moderate.execute(current_suggestion.id, verdict)
 
-    result = await moderate.execute(updated_dto, verdict)
+    if not result.applied:
+        if result.status is None:
+            return await notifier.send_text(
+                user_dto,
+                "suggestion_not_found",
+                i18n_kwargs=dict(suggestion_id=result.suggestion_id),
+            )
 
-    if result.verdict_exists:
         return await notifier.send_text(
             user_dto,
             "suggestion_verdict_exists",
             i18n_kwargs=dict(
-                id=result.suggestion_dto.id,
-                verdict=result.suggestion_dto.status,
+                id=result.suggestion_id,
+                verdict=result.status,
             ),
         )
 
