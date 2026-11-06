@@ -1,4 +1,4 @@
-from .bot_registry import BotRegistry
+from .bots import BotRegistry
 from .notifier import MessageNotifier, SuggestionNotifier
 from .suggestion import SuggestionService
 from .user import UserService

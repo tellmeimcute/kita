@@ -12,7 +12,7 @@ from cryptography.fernet import Fernet
 from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
 from database.dto import UserProfileDTO
-from services.bot_registry import BotRegistry
+from services.bots import BotRegistry
 
 ALLOWED_REPLY = [1, 0, 0]
 
