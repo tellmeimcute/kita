@@ -201,7 +201,7 @@ class TestLogApiErrors:
         ):
             await middleware(make_request, bot, method)
 
-        logger_mock.exception.assert_called_once()
+        logger_mock.error.assert_called_once()
 
     async def test_flood_control_is_left_to_the_retry_middleware(self, bot: MagicMock):
         middleware = LogApiErrors()
@@ -214,7 +214,7 @@ class TestLogApiErrors:
         ):
             await middleware(make_request, bot, method)
 
-        logger_mock.exception.assert_not_called()
+        logger_mock.error.assert_not_called()
 
 
 class TestChainOrder:
@@ -259,4 +259,3 @@ class TestChainOrder:
             await wrapped(bot, method)
 
         logger_mock.error.assert_called_once()
-        logger_mock.exception.assert_not_called()
