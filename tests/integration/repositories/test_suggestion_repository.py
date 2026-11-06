@@ -161,6 +161,57 @@ async def test_save_of_untouched_dto_keeps_row_as_is(repository_context: Reposit
     assert row.status is SuggestionStatus.PENDING
 
 
+async def test_apply_verdict_moderates_pending_suggestion(repository_context: RepositoryContext):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx)
+
+    async with ctx.uow.transaction():
+        author_id = await ctx.suggestion_repo.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    assert author_id == ctx.test_user_dto.user_id
+    assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.ACCEPTED
+
+
+async def test_apply_verdict_returns_none_when_verdict_exists(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx)
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_repo.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    async with ctx.uow.transaction():
+        author_id = await ctx.suggestion_repo.apply_verdict(created.id, SuggestionStatus.DECLINED)
+
+    assert author_id is None
+    assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.ACCEPTED
+
+
+async def test_apply_verdict_returns_none_for_unknown_id(repository_context: RepositoryContext):
+    ctx = repository_context
+
+    async with ctx.uow.transaction():
+        assert await ctx.suggestion_repo.apply_verdict(999_999, SuggestionStatus.ACCEPTED) is None
+
+
+async def test_apply_verdict_ignores_foreign_bot(
+    repository_context: RepositoryContext,
+    bots: BotStack,
+    foreign_bot: MagicMock,
+):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx)
+
+    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
+        await ctx.suggestion_repo.apply_verdict(created.id, SuggestionStatus.DECLINED)
+
+    assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.PENDING
+
+
 async def test_get_active_returns_only_pending_in_id_order(repository_context: RepositoryContext):
     ctx = repository_context
 

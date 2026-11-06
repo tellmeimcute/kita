@@ -191,6 +191,37 @@ async def test_update_persists_status_change(
     assert row.status is SuggestionStatus.ACCEPTED
 
 
+async def test_apply_verdict_moderates_pending_suggestion(
+    suggestion_context: SuggestionServiceContext,
+    make_tg_message: Callable[..., Message],
+):
+    ctx = suggestion_context
+    created = await create_suggestion(ctx, make_tg_message(text="moderate me"))
+
+    async with ctx.uow.transaction():
+        applied = await ctx.suggestion_service.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    assert applied is True
+    assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.ACCEPTED
+
+
+async def test_apply_verdict_returns_false_for_moderated_suggestion(
+    suggestion_context: SuggestionServiceContext,
+    make_tg_message: Callable[..., Message],
+):
+    ctx = suggestion_context
+    created = await create_suggestion(ctx, make_tg_message(text="moderate me"))
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_service.apply_verdict(created.id, SuggestionStatus.DECLINED)
+
+    async with ctx.uow.transaction():
+        applied = await ctx.suggestion_service.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    assert applied is False
+    assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.DECLINED
+
+
 async def test_user_stats_are_zero_without_suggestions(
     suggestion_context: SuggestionServiceContext,
 ):
@@ -262,3 +293,26 @@ async def test_user_stats_cache_invalidated_on_create(
         stats = await ctx.suggestion_service.get_user_stats(ctx.author)
 
     assert stats.total == 1
+
+
+async def test_user_stats_cache_invalidated_on_verdict(
+    suggestion_context: SuggestionServiceContext,
+    make_tg_message: Callable[..., Message],
+):
+    ctx = suggestion_context
+    created = await create_suggestion(ctx, make_tg_message(text="moderate me"))
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_service.get_user_stats(ctx.author)
+
+    assert await ctx.stats_redis.get(ctx.stats_key) is not None
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_service.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    assert await ctx.stats_redis.get(ctx.stats_key) is None
+
+    async with ctx.uow.transaction():
+        stats = await ctx.suggestion_service.get_user_stats(ctx.author)
+
+    assert (stats.total, stats.accepted, stats.declined) == (1, 1, 0)
