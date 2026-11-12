@@ -1,7 +1,12 @@
 from core.exceptions import UserImmuneError
 from database.dto import UserBotDTO, UserDTO
 from database.enums import UserRole
-from interfaces import UserProfileServiceProtocol, UserServiceProtocol
+from events import UserBanned
+from interfaces import (
+    EventBusProtocol,
+    UserProfileServiceProtocol,
+    UserServiceProtocol,
+)
 
 
 class ChangeRoleUseCase:
@@ -9,6 +14,7 @@ class ChangeRoleUseCase:
         "_user_service",
         "_user_profile_service",
         "_userbot",
+        "_events",
     )
 
     def __init__(
@@ -16,10 +22,12 @@ class ChangeRoleUseCase:
         user_service: UserServiceProtocol,
         user_profile_service: UserProfileServiceProtocol,
         userbot: UserBotDTO,
+        events: EventBusProtocol,
     ):
         self._user_service = user_service
         self._user_profile_service = user_profile_service
         self._userbot = userbot
+        self._events = events
 
     async def execute(
         self,
@@ -38,6 +46,12 @@ class ChangeRoleUseCase:
 
         if target_role == UserRole.BANNED:
             await self._user_profile_service.decline_suggestion(profile_dto)
+            await self._events.publish(
+                UserBanned(
+                    bot_id=self._userbot.bot_id,
+                    user_id=profile_dto.user_id,
+                    admin_id=caller.user_id,
+                )
+            )
 
-        # TODO: Dispatch UserBannedEvent with banned_user_dto and admin_dto
         return profile_dto

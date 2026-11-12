@@ -7,23 +7,29 @@ from aiogram.utils.i18n import I18n
 from dishka import AsyncContainer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.dto import SuggestionFullDTO
-from database.enums import SuggestionStatus
+from database.dto import SuggestionFullDTO, UserDTO
+from database.enums import SuggestionStatus, UserRole
 from database.repository import UserProfileRepository, UserRepository
 from events import (
     Event,
     EventBus,
     SuggestionAccepted,
     SuggestionDeclined,
+    UserBanned,
     UserProfileCreated,
     UserRegistered,
 )
+from interfaces import EventBusProtocol
 from services.user import UserService
 from services.user_profile import UserProfileService
-from usecases import ModerateSuggestionUseCase, UserRegisterOrUpdateUseCase
+from usecases import (
+    ChangeRoleUseCase,
+    ModerateSuggestionUseCase,
+    UserRegisterOrUpdateUseCase,
+)
 
 from ..concurrency import run_in_parallel
-from ..scaffold import BOT_ID, BotStack, EventRecorder
+from ..scaffold import BOT_ID, BotStack, EventRecorder, make_userbot_dto
 from .conftest import SuggestionServiceContext, UserTestContext
 
 
@@ -147,3 +153,57 @@ async def test_concurrent_first_updates_publish_each_event_once(
     assert published.count(UserRegistered(bot_id=BOT_ID, user_id=aiogram_user.id)) == 1
     assert published.count(UserProfileCreated(bot_id=BOT_ID, user_id=aiogram_user.id)) == 1
     assert len(published) == 2
+
+
+@pytest.fixture
+async def change_role(
+    request_container: AsyncContainer,
+    user_test_context: UserTestContext,
+    bots: BotStack,
+) -> ChangeRoleUseCase:
+    return ChangeRoleUseCase(
+        user_service=user_test_context.user_service,
+        user_profile_service=user_test_context.profile_service,
+        userbot=make_userbot_dto(owner_id=user_test_context.test_user_dto.user_id),
+        events=await request_container.get(EventBusProtocol),
+    )
+
+
+async def test_ban_publishes_the_user_banned_event(
+    change_role: ChangeRoleUseCase,
+    user_test_context: UserTestContext,
+    user_dto_factory: Callable[..., UserDTO],
+    event_recorder: EventRecorder,
+):
+    admin = user_test_context.test_user_dto
+    target = user_dto_factory()
+
+    async with user_test_context.uow.transaction():
+        await user_test_context.user_service.get_or_create(target)
+
+    async with user_test_context.uow.transaction():
+        banned = await change_role.execute(target.user_id, UserRole.BANNED, caller=admin)
+
+    assert banned.role is UserRole.BANNED
+    assert event_recorder.events == [
+        UserBanned(bot_id=BOT_ID, user_id=target.user_id, admin_id=admin.user_id)
+    ]
+
+
+async def test_role_change_that_is_not_a_ban_publishes_nothing(
+    change_role: ChangeRoleUseCase,
+    user_test_context: UserTestContext,
+    user_dto_factory: Callable[..., UserDTO],
+    event_recorder: EventRecorder,
+):
+    admin = user_test_context.test_user_dto
+    target = user_dto_factory()
+
+    async with user_test_context.uow.transaction():
+        await user_test_context.user_service.get_or_create(target)
+
+    async with user_test_context.uow.transaction():
+        promoted = await change_role.execute(target.user_id, UserRole.ADMIN, caller=admin)
+
+    assert promoted.role is UserRole.ADMIN
+    assert event_recorder.events == []

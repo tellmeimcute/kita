@@ -7,7 +7,9 @@ from aiogram import Bot
 from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatFullInfo
 from aiogram.types import User as AiogramUser
+from pydantic import SecretStr
 
+from database.dto import UserBotDTO
 from events import Event
 from events import definitions as events_definitions
 from interfaces import BotContextProtocol, BotResolverProtocol
@@ -21,6 +23,17 @@ USERBOT_ALLOWED_UPDATES = ("callback_query", "message", "my_chat_member")
 CHANNEL_ID = -100123456789
 CHANNEL_NAME = "Test Channel"
 CHANNEL_INPUT = "123456789"
+
+
+def make_userbot_dto(owner_id: int) -> UserBotDTO:
+    return UserBotDTO(
+        token=SecretStr(BOT_TOKEN),
+        bot_id=BOT_ID,
+        username=BOT_USERNAME,
+        owner_id=owner_id,
+        active=True,
+        banned=False,
+    )
 
 
 def make_tg_channel() -> MagicMock:

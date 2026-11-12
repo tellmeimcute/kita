@@ -31,6 +31,14 @@ class UserProfileCreated(Event):
 
 
 @dataclass(frozen=True, slots=True)
+class UserBanned(Event):
+    """``admin_id`` banned ``user_id`` in the bot ``bot_id``."""
+
+    user_id: int
+    admin_id: int
+
+
+@dataclass(frozen=True, slots=True)
 class UserbotRegistered(Event):
     userbot_id: int
     owner_id: int
