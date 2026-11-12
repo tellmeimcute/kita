@@ -6,8 +6,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload, selectinload
 
 from database.dto import Created, UserProfileDTO
-from database.enums import SuggestionStatus, UserRole
-from database.models import Suggestion, UserProfile
+from database.enums import UserRole
+from database.models import UserProfile
 
 from .base import BaseRepository
 
@@ -211,15 +211,3 @@ class UserProfileRepository(BaseRepository):
         ).where(UserProfile.bot_id == self.bot.id)
         result: Result = await self._session.execute(stmt)
         return result.one()
-
-    async def decline_all_suggestions(self, user_id: int):
-        stmt = (
-            update(Suggestion)
-            .where(
-                Suggestion.author_id == user_id,
-                Suggestion.bot_id == self.bot.id,
-                Suggestion.status == SuggestionStatus.PENDING,
-            )
-            .values(status=SuggestionStatus.DECLINED)
-        )
-        await self._session.execute(stmt)

@@ -296,3 +296,48 @@ async def test_count_counts_only_current_bot(
 
     async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
         assert await ctx.suggestion_repo.count() == 0
+
+
+async def test_decline_pending_by_author_declines_only_the_pending_ones(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+
+    first = await create_suggestion(ctx)
+    second = await create_suggestion(ctx)
+    accepted = await create_suggestion(ctx)
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_repo.apply_verdict(accepted.id, SuggestionStatus.ACCEPTED)
+        declined = await ctx.suggestion_repo.decline_pending_by_author(ctx.test_user_dto.user_id)
+
+    assert set(declined) == {first.id, second.id}
+    assert (await load_suggestion(ctx, first.id)).status is SuggestionStatus.DECLINED
+    assert (await load_suggestion(ctx, second.id)).status is SuggestionStatus.DECLINED
+    assert (await load_suggestion(ctx, accepted.id)).status is SuggestionStatus.ACCEPTED
+
+
+async def test_decline_pending_by_author_returns_nothing_without_pending(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+
+    async with ctx.uow.transaction():
+        declined = await ctx.suggestion_repo.decline_pending_by_author(ctx.test_user_dto.user_id)
+
+    assert declined == []
+
+
+async def test_decline_pending_by_author_ignores_foreign_bot(
+    repository_context: RepositoryContext,
+    bots: BotStack,
+    foreign_bot: MagicMock,
+):
+    ctx = repository_context
+    suggestion = await create_suggestion(ctx)
+
+    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
+        declined = await ctx.suggestion_repo.decline_pending_by_author(ctx.test_user_dto.user_id)
+
+    assert declined == []
+    assert (await load_suggestion(ctx, suggestion.id)).status is SuggestionStatus.PENDING

@@ -11,7 +11,6 @@ from core.filters import I18nTextFilter
 from core.i18n_translator import Translator
 from database.dto import UserDTO
 from database.enums import SuggestionStatus as status
-from database.enums import UserRole
 from interfaces import (
     MessageNotifierProtocol,
     SuggestionQueueProtocol,
@@ -21,7 +20,7 @@ from interfaces import (
 )
 from ui.keyboards import ReplyKeyboard
 from ui.state_groups import SuggestionViewerSG
-from usecases import ChangeRoleUseCase, MessageUserUseCase
+from usecases import BanUserUseCase, MessageUserUseCase
 from usecases.moderate_suggestion import ModerateSuggestionUseCase
 
 router = Router(name="admin_suggestions")
@@ -104,17 +103,15 @@ async def viewer_ban_author(
     message: Message,
     dialog_manager: DialogManager,
     user_dto: UserDTO,
-    uow: FromDishka[UnitOfWorkProtocol],
     notifier: FromDishka[MessageNotifierProtocol],
-    change_role_usecase: FromDishka[ChangeRoleUseCase],
+    ban_user: FromDishka[BanUserUseCase],
     suggestion_viewer: FromDishka[SuggestionViewerProtocol],
 ):
     current_suggestion = await suggestion_viewer.get_current()
     target_id = current_suggestion.author_id
 
     try:
-        async with uow.transaction():
-            await change_role_usecase.execute(target_id, UserRole.BANNED, caller=user_dto)
+        await ban_user.execute(target_id, caller=user_dto)
     except UserImmuneError:
         return await notifier.send_text(user_dto, "error_user_immune")
 

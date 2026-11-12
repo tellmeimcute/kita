@@ -1,10 +1,12 @@
 from dishka import Provider, Scope, provide
 
 from usecases import (
+    BanUserUseCase,
     BroadcastUseCase,
-    ChangeRoleUseCase,
+    DemoteUserUseCase,
     MessageUserUseCase,
     ModerateSuggestionUseCase,
+    PromoteUserUseCase,
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
@@ -18,7 +20,9 @@ class UseCaseProvider(Provider):
     scope = Scope.REQUEST
 
     moderate_suggestion = provide(ModerateSuggestionUseCase)
-    change_role = provide(ChangeRoleUseCase)
+    ban_user = provide(BanUserUseCase)
+    promote_user = provide(PromoteUserUseCase)
+    demote_user = provide(DemoteUserUseCase)
     broadcast = provide(BroadcastUseCase)
     message_user = provide(MessageUserUseCase)
     register_or_update_user = provide(UserRegisterOrUpdateUseCase)

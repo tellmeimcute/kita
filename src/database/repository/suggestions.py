@@ -109,6 +109,20 @@ class SuggestionRepository(BaseRepository):
         orm_models = result.scalars().all()
         return SuggestionFullDTO.from_model_list(orm_models)
 
+    async def decline_pending_by_author(self, author_id: int) -> Sequence[int]:
+        stmt = (
+            update(Suggestion)
+            .where(
+                Suggestion.author_id == author_id,
+                Suggestion.bot_id == self.bot.id,
+                Suggestion.status == SuggestionStatus.PENDING,
+            )
+            .values(status=SuggestionStatus.DECLINED)
+            .returning(Suggestion.id)
+        )
+
+        return list(await self._session.scalars(stmt))
+
     async def user_stats(self, user_id: int) -> UserStats | None:
         stmt = select(
             func.count(Suggestion.id).label("total"),

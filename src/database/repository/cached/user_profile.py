@@ -121,6 +121,3 @@ class CachedUserProfileRepository(CachedRepository):
 
     async def bot_user_stats(self) -> int:
         return await self.repo.bot_user_stats()
-
-    async def decline_all_suggestions(self, user_id: int):
-        return await self.repo.decline_all_suggestions(user_id)

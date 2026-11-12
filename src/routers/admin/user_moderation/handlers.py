@@ -10,14 +10,19 @@ from core.exceptions import UserImmuneError
 from core.i18n_translator import Translator
 from core.schemas import IDCommand
 from database.dto import UserDTO
-from database.enums import UserRole
 from interfaces import (
     UnitOfWorkProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
 from ui.state_groups import ModerationMenuSG
-from usecases import ChangeRoleUseCase, MessageUserUseCase
+from usecases import (
+    BanUserUseCase,
+    DemoteUserUseCase,
+    MessageUserUseCase,
+    PromoteUserUseCase,
+)
+from usecases.role_changers import RoleChangeUseCase
 
 
 @inject
@@ -68,48 +73,62 @@ async def select_user(
 
 
 @inject
-async def user_change_role(
+async def _apply_role_change(
     callback: CallbackQuery,
     button: Button,
     manager: DialogManager,
+    usecase: RoleChangeUseCase,
     translator: FromDishka[Translator],
-    uow: FromDishka[UnitOfWorkProtocol],
-    user_service: FromDishka[UserServiceProtocol],
-    change_role: FromDishka[ChangeRoleUseCase],
-):
+) -> None:
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
-    user_id = manager.dialog_data["selected_user_id"]
-    if not user_id:
+    target_id = manager.dialog_data.get("selected_user_id")
+    if not target_id:
         return
 
-    async with uow.transaction():
-        target_dto = await user_service.get(int(user_id))
-
-    if button.widget_id == "ban":
-        target_role = UserRole.BANNED
-    elif button.widget_id in {"change_to_user", "unban"}:
-        target_role = UserRole.USER
-    elif button.widget_id == "promote_admin":
-        target_role = UserRole.ADMIN
-
     try:
-        async with uow.transaction():
-            new_profile_dto = await change_role.execute(
-                target_dto.user_id,
-                target_role,
-                caller=user_dto,
-            )
-
-        await callback.answer()
-        await manager.update(
-            {
-                "target_profile": new_profile_dto.model_dump(mode="json"),
-                "target_profile_i18n": new_profile_dto.to_i18n_kwargs(),
-            }
-        )
+        new_profile_dto = await usecase.execute(int(target_id), caller=user_dto)
     except UserImmuneError:
         error_msg = translator.translate("error_user_immune")
         await callback.answer(error_msg)
+        return
+
+    await callback.answer()
+    await manager.update(
+        {
+            "target_profile": new_profile_dto.model_dump(mode="json"),
+            "target_profile_i18n": new_profile_dto.to_i18n_kwargs(),
+        }
+    )
+
+
+@inject
+async def user_promote(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+    usecase: FromDishka[PromoteUserUseCase],
+):
+    await _apply_role_change(callback, button, manager, usecase=usecase)
+
+
+@inject
+async def user_demote(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+    usecase: FromDishka[DemoteUserUseCase],
+):
+    await _apply_role_change(callback, button, manager, usecase=usecase)
+
+
+@inject
+async def user_ban(
+    callback: CallbackQuery,
+    button: Button,
+    manager: DialogManager,
+    usecase: FromDishka[BanUserUseCase],
+):
+    await _apply_role_change(callback, button, manager, usecase=usecase)
 
 
 @inject

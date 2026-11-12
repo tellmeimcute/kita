@@ -1,9 +1,8 @@
 from unittest.mock import MagicMock
 
-from core.schemas import MediaInfo
-from database.enums import SuggestionStatus, UserRole
+from database.enums import UserRole
 
-from ..readers import load_profile, load_suggestion
+from ..readers import load_profile
 from ..scaffold import BOT_ID, BotStack
 from .conftest import RepositoryContext
 
@@ -37,28 +36,6 @@ async def create_profile(
             await ctx.profile_repo.update(user_id, role=role, is_bot_blocked=is_bot_blocked)
 
     return user_id
-
-
-async def create_suggestion(
-    ctx: RepositoryContext,
-    author_id: int,
-    *,
-    status: SuggestionStatus = SuggestionStatus.PENDING,
-) -> int:
-    async with ctx.uow.transaction():
-        created = await ctx.suggestion_repo.create(
-            author_id=author_id,
-            anonymous=False,
-            mediainfo=[MediaInfo("photo", "photo-1")],
-            caption="caption",
-            media_group_id=None,
-            forwarded_from=None,
-        )
-
-        if status is not SuggestionStatus.PENDING:
-            await ctx.suggestion_repo.update(created.id, status=status)
-
-    return created.id
 
 
 async def test_create_returns_profile_with_user(repository_context: RepositoryContext):
@@ -301,37 +278,3 @@ async def test_bot_user_stats_counts_by_role(repository_context: RepositoryConte
     assert stats.admins == len(admin_ids)
     assert stats.banned == len(banned_ids)
     assert stats.bot_blocked == len(blocked_ids)
-
-
-async def test_decline_all_suggestions_declines_only_pending(
-    repository_context: RepositoryContext,
-):
-    ctx = repository_context
-    author_id = await create_profile(ctx, offset=1)
-    other_author_id = await create_profile(ctx, offset=2)
-
-    pending_id = await create_suggestion(ctx, author_id)
-    accepted_id = await create_suggestion(ctx, author_id, status=SuggestionStatus.ACCEPTED)
-    foreign_id = await create_suggestion(ctx, other_author_id)
-
-    async with ctx.uow.transaction():
-        await ctx.profile_repo.decline_all_suggestions(author_id)
-
-    assert (await load_suggestion(ctx, pending_id)).status is SuggestionStatus.DECLINED
-    assert (await load_suggestion(ctx, accepted_id)).status is SuggestionStatus.ACCEPTED
-    assert (await load_suggestion(ctx, foreign_id)).status is SuggestionStatus.PENDING
-
-
-async def test_decline_all_suggestions_ignores_foreign_bot(
-    repository_context: RepositoryContext,
-    bots: BotStack,
-    foreign_bot: MagicMock,
-):
-    ctx = repository_context
-    author_id = await create_profile(ctx, offset=1)
-    suggestion_id = await create_suggestion(ctx, author_id)
-
-    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
-        await ctx.profile_repo.decline_all_suggestions(author_id)
-
-    assert (await load_suggestion(ctx, suggestion_id)).status is SuggestionStatus.PENDING

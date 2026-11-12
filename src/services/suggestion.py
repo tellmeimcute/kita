@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any
 
 from aiogram.types import Message
@@ -30,6 +31,13 @@ class SuggestionService(BaseService):
 
         self.repo = repo
         self.parser = parser
+
+    async def decline_pending_by_author(self, author_id: int) -> Sequence[int]:
+        declined = await self.repo.decline_pending_by_author(author_id)
+        if declined:
+            logger.info("Declined {} suggestion(s) of user {}", len(declined), author_id)
+
+        return declined
 
     async def get_user_stats(self, user_dto: UserDTO) -> UserStats:
         return await self.repo.user_stats(user_dto.user_id) or UserStats(

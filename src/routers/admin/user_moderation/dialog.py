@@ -15,7 +15,9 @@ from .handlers import (
     on_user_selected,
     select_user,
     set_user_filter,
-    user_change_role,
+    user_ban,
+    user_demote,
+    user_promote,
 )
 
 user_select_window = Window(
@@ -68,25 +70,25 @@ user_moderation_window = Window(
     Button(
         I18nText("demote_user_btn"),
         id="change_to_user",
-        on_click=user_change_role,
+        on_click=user_demote,
         when=F["target_profile"].role == UserRole.ADMIN,
     ),
     Button(
         I18nText("promote_admin_btn"),
         id="promote_admin",
-        on_click=user_change_role,
+        on_click=user_promote,
         when=F["target_profile"].role == UserRole.USER,
     ),
     Button(
         I18nText("ban_user_btn"),
         id="ban",
-        on_click=user_change_role,
+        on_click=user_ban,
         when=F["target_profile"].role != UserRole.BANNED,
     ),
     Button(
         I18nText("unban_user_btn"),
         id="unban",
-        on_click=user_change_role,
+        on_click=user_demote,
         when=F["target_profile"].role == UserRole.BANNED,
     ),
     Start(I18nText("back_admin_menu_btn"), id="admin_menu", state=AdminMenuSG.main),
