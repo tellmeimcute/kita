@@ -28,3 +28,7 @@ class EventListenerProtocol(Protocol):
     event_type: type
 
     async def handle(self, event: "Event") -> None: ...
+
+
+class ListenerResolverProtocol(Protocol):
+    async def get[T](self, key: type[T]) -> T: ...

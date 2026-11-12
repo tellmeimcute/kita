@@ -3,7 +3,7 @@ from .bot import (
     BotResolverProtocol,
     BotSessionProtocol,
 )
-from .events import EventBusProtocol, EventListenerProtocol
+from .events import EventBusProtocol, EventListenerProtocol, ListenerResolverProtocol
 from .notifier import MessageNotifierProtocol, SuggestionNotifierProtocol
 from .repository import (
     MediaRepositoryProtocol,
@@ -30,6 +30,7 @@ __all__ = (
     "BotSessionProtocol",
     "EventBusProtocol",
     "EventListenerProtocol",
+    "ListenerResolverProtocol",
     "MessageNotifierProtocol",
     "MediaRepositoryProtocol",
     "SuggestionNotifierProtocol",

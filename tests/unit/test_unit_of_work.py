@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 from database.redis import CacheJournal
 from database.uow import UnitOfWork
-from events import EventBus, EventListener, SuggestionAccepted
+from events import EventBus, EventListener, ListenerRegistry, SuggestionAccepted
 
 EVENT = SuggestionAccepted(bot_id=100, suggestion_id=1)
 
@@ -28,7 +28,9 @@ class Probe(EventListener[SuggestionAccepted]):
 
 
 async def test_listener_runs_outside_the_transaction():
-    session, journal, redis, bus = AsyncMock(), CacheJournal(), AsyncMock(), EventBus([])
+    session, journal, redis = AsyncMock(), CacheJournal(), AsyncMock()
+    registry = ListenerRegistry()
+    bus = EventBus(registry, AsyncMock())
     uow = UnitOfWork(
         session=session,
         bot_context=None,
@@ -40,7 +42,7 @@ async def test_listener_runs_outside_the_transaction():
         media_repo=None,
     )
     probe = Probe(uow, journal, redis)
-    bus.subscribe(probe)
+    registry.add(probe)
 
     async with uow.transaction():
         await bus.publish(EVENT)

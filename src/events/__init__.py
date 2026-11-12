@@ -11,11 +11,13 @@ from .definitions import (
     UserProfileCreated,
     UserRegistered,
 )
+from .registry import ListenerRegistry
 
 __all__ = (
     "Event",
     "EventBus",
     "EventListener",
+    "ListenerRegistry",
     "SuggestionAccepted",
     "SuggestionCreated",
     "SuggestionDeclined",

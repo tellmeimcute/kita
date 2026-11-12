@@ -139,6 +139,11 @@ class RecordingListener:
         self._sink.events.append(event)
 
 
+class NoListenerResolver:
+    async def get(self, key: type):
+        raise AssertionError(f"a listener type was looked up: {key!r}")
+
+
 class EventRecorder:
     def __init__(self) -> None:
         self.events: list[Event] = []

@@ -7,7 +7,7 @@ from core.logging_config import setup_logging
 
 from .broker import get_broker
 from .container import create_taskiq_container
-from .middlewares import BotContextMiddleware
+from .middlewares import BotContextMiddleware, ListenerSubscriptionMiddleware
 
 config = Config.get()
 setup_logging(config.log_level)
@@ -19,6 +19,9 @@ def worker() -> RedisStreamBroker:
     setup_dishka_taskiq(container, broker)
 
     broker.add_dependency_context({AsyncContainer: container})
-    broker.add_middlewares(BotContextMiddleware(container))
+    broker.add_middlewares(
+        BotContextMiddleware(container),
+        ListenerSubscriptionMiddleware(container),
+    )
 
     return broker

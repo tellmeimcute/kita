@@ -8,6 +8,8 @@ from loguru import logger
 
 from core.config import Config
 from core.userbot_dispatcher import UserbotDispatcherState
+from di.event import register_listeners
+from events import ListenerRegistry
 from interfaces import BotResolverProtocol, BotSessionProtocol, WebhookServiceProtocol
 from startup import setup_registrar_dp, setup_slave_dp
 from task_queue.broker import get_broker
@@ -26,6 +28,8 @@ async def lifespan(app: FastAPI):
     config = await container.get(Config)
     webhooks_service = await container.get(WebhookServiceProtocol)
     broker = get_broker()
+
+    register_listeners(await container.get(ListenerRegistry))
 
     await setup_slave_dp(container, dp)
     await setup_registrar_dp(container, registrar_dp)

@@ -1,10 +1,9 @@
-from collections.abc import Sequence
-
 from loguru import logger
 
-from interfaces import EventListenerProtocol
+from interfaces import EventListenerProtocol, ListenerResolverProtocol
 
 from .base import Event
+from .registry import ListenerEntry, ListenerRegistry
 
 
 class EventBus:
@@ -12,24 +11,21 @@ class EventBus:
 
     While a transaction is open (``begin`` was called by the unit of work) events are
     buffered and dispatched only after the COMMIT. A rollback throws the buffer away.
+
+    Listeners come from a :class:`ListenerRegistry`
     """
 
-    __slots__ = ("_depth", "_listeners", "_pending")
+    __slots__ = ("_depth", "_pending", "_registry", "_resolver")
 
-    def __init__(self, listeners: Sequence[EventListenerProtocol]):
-        self._listeners: dict[type[Event], list[EventListenerProtocol]] = {}
-        for listener in listeners:
-            self.subscribe(listener)
-
+    def __init__(self, registry: ListenerRegistry, resolver: ListenerResolverProtocol):
+        self._registry = registry
+        self._resolver = resolver
         self._pending: list[Event] = []
         self._depth = 0
 
     @property
     def deferred(self) -> bool:
         return self._depth > 0
-
-    def subscribe(self, listener: EventListenerProtocol) -> None:
-        self._listeners.setdefault(listener.event_type, []).append(listener)
 
     def begin(self) -> None:
         self._depth += 1
@@ -55,15 +51,22 @@ class EventBus:
         self._pending.clear()
 
     async def _dispatch(self, event: Event) -> None:
-        listeners = self._listeners.get(type(event), ())
-        logger.debug("Dispatch {} to {} listener(s)", event, len(listeners))
+        entries = self._registry.entries_for(type(event))
+        logger.debug("Dispatch {} to {} listener(s)", event, len(entries))
 
-        for listener in listeners:
+        for entry in entries:
             try:
+                listener = await self._resolve(entry)
                 await listener.handle(event)
             except Exception:
-                logger.exception(
-                    "Listener {} failed on {}",
-                    type(listener).__name__,
-                    event,
-                )
+                logger.exception("Listener {} failed on {}", _label(entry), event)
+
+    async def _resolve(self, entry: ListenerEntry) -> EventListenerProtocol:
+        if isinstance(entry, type):
+            return await self._resolver.get(entry)
+
+        return entry
+
+
+def _label(entry: ListenerEntry) -> str:
+    return entry.__name__ if isinstance(entry, type) else type(entry).__name__

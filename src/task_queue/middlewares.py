@@ -4,6 +4,8 @@ from dishka import AsyncContainer
 from taskiq.abc.middleware import TaskiqMiddleware
 from taskiq.message import TaskiqMessage
 
+from di.event import register_listeners
+from events import ListenerRegistry
 from interfaces import BotContextProtocol, BotResolverProtocol
 from usecases.ub_token_resolver import UserBotTokenResolver
 
@@ -40,3 +42,11 @@ class BotContextMiddleware(TaskiqMiddleware):
         if ctx_token := self._state.pop(message.task_id, None):
             context = await self._container.get(BotContextProtocol)
             context.reset_current(ctx_token)
+
+
+class ListenerSubscriptionMiddleware(TaskiqMiddleware):
+    def __init__(self, container: AsyncContainer):
+        self._container = container
+
+    async def startup(self) -> None:
+        register_listeners(await self._container.get(ListenerRegistry))

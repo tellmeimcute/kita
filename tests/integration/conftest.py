@@ -27,11 +27,11 @@ from di import (
     UseCaseProvider,
     UtilsProvider,
 )
+from events import ListenerRegistry
 from interfaces import (
     BotContextProtocol,
     BotResolverProtocol,
     BotSessionProtocol,
-    EventListenerProtocol,
     UnitOfWorkProtocol,
     WebhookServiceProtocol,
 )
@@ -57,8 +57,8 @@ class TestProvider(Provider):
         return EventRecorder()
 
     @provide(scope=Scope.REQUEST, override=True)
-    def event_listeners(self, recorder: EventRecorder) -> list[EventListenerProtocol]:
-        return recorder.listeners()
+    def listener_registry(self, recorder: EventRecorder) -> ListenerRegistry:
+        return ListenerRegistry(recorder.listeners())
 
     @provide
     def postgres_docker(self) -> Generator[PostgresContainer]:

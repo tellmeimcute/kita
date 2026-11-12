@@ -13,6 +13,7 @@ from database.repository import UserProfileRepository, UserRepository
 from events import (
     Event,
     EventBus,
+    ListenerRegistry,
     SuggestionAccepted,
     SuggestionDeclined,
     UserBanned,
@@ -29,7 +30,13 @@ from usecases import (
 )
 
 from ..concurrency import run_in_parallel
-from ..scaffold import BOT_ID, BotStack, EventRecorder, make_userbot_dto
+from ..scaffold import (
+    BOT_ID,
+    BotStack,
+    EventRecorder,
+    NoListenerResolver,
+    make_userbot_dto,
+)
 from .conftest import SuggestionServiceContext, UserTestContext
 
 
@@ -136,7 +143,7 @@ async def test_concurrent_first_updates_publish_each_event_once(
             profile_service=UserProfileService(
                 UserProfileRepository(session, bots.context), bots.context
             ),
-            events=EventBus(recorder.listeners()),
+            events=EventBus(ListenerRegistry(recorder.listeners()), NoListenerResolver()),
         )
 
     first, second = await run_in_parallel(
