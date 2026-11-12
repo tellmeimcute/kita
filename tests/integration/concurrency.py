@@ -21,12 +21,14 @@ async def run_in_parallel(
     async def first_request():
         async with first_session.begin():
             try:
-                await action(service_factory(first_session))
+                result = await action(service_factory(first_session))
             finally:
                 first_written.set()
 
             await second_inserting.wait()
             await asyncio.sleep(RACE_WINDOW)
+
+            return result
 
     async def second_request():
         await first_written.wait()

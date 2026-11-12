@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 
-from database.dto import UserDTO
+from database.dto import Created, UserDTO
 from database.models import UserAlchemy
 
 from .base import BaseRepository
@@ -21,7 +21,7 @@ class UserRepository(BaseRepository):
             return None
         return UserDTO.model_validate(orm_model)
 
-    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
+    async def get_or_create(self, prep_user_dto: UserDTO) -> Created[UserDTO]:
         values = prep_user_dto.model_dump(exclude={"created_at", "updated_at"})
         stmt = (
             insert(UserAlchemy)
@@ -33,9 +33,9 @@ class UserRepository(BaseRepository):
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
         if orm_model is None:
-            return await self.get_by_id(prep_user_dto.user_id)
+            return Created(await self.get_by_id(prep_user_dto.user_id), created=False)
 
-        return UserDTO.model_validate(orm_model)
+        return Created(UserDTO.model_validate(orm_model), created=True)
 
     async def update(self, user_id: int, **data: Any):
         stmt = update(UserAlchemy).where(UserAlchemy.user_id == user_id).values(**data)

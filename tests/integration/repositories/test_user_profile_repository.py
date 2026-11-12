@@ -125,8 +125,10 @@ async def test_get_or_create_creates_profile_once(repository_context: Repository
     async with ctx.uow.transaction():
         second = await ctx.profile_repo.get_or_create(user_id)
 
-    assert first.user_id == second.user_id
-    assert first.created_at == second.created_at
+    assert first.created is True
+    assert second.created is False
+    assert first.dto.user_id == second.dto.user_id
+    assert first.dto.created_at == second.dto.created_at
     assert await ctx.profile_repo.count() == 1
 
 
@@ -137,9 +139,10 @@ async def test_get_or_create_returns_created_profile(repository_context: Reposit
     async with ctx.uow.transaction():
         created = await ctx.profile_repo.get_or_create(user_id)
 
-    assert created.user_id == user_id
-    assert created.role is UserRole.USER
-    assert created.user is not None
+    assert created.created is True
+    assert created.dto.user_id == user_id
+    assert created.dto.role is UserRole.USER
+    assert created.dto.user is not None
 
 
 async def test_update_persists_changes(repository_context: RepositoryContext):

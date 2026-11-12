@@ -20,6 +20,15 @@ def race_user_dto(ctx: UserTestContext) -> UserDTO:
     )
 
 
+def assert_only_one_created(results: list) -> None:
+    created_flags = []
+    for result in results:
+        assert not isinstance(result, BaseException), result
+        created_flags.append(result.created)
+
+    assert created_flags.count(True) == 1
+
+
 async def test_get_or_create_survives_concurrent_registration(
     user_test_context: UserTestContext,
     bots: BotStack,
@@ -35,10 +44,8 @@ async def test_get_or_create_survives_concurrent_registration(
         action=lambda service: service.get_or_create(user_dto),
     )
 
-    for result in (first, second):
-        assert not isinstance(result, BaseException), result
-
-    assert second.user_id == user_dto.user_id
+    assert_only_one_created([first, second])
+    assert second.dto.user_id == user_dto.user_id
     assert await load_user(ctx, user_dto.user_id) is not None
 
 
@@ -60,8 +67,6 @@ async def test_profile_get_or_create_survives_concurrent_creation(
         action=lambda service: service.get_or_create(user_dto.user_id),
     )
 
-    for result in (first, second):
-        assert not isinstance(result, BaseException), result
-
-    assert second.user_id == user_dto.user_id
+    assert_only_one_created([first, second])
+    assert second.dto.user_id == user_dto.user_id
     assert await load_profile(ctx, user_dto.user_id) is not None

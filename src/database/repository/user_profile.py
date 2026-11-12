@@ -5,7 +5,7 @@ from sqlalchemy import Result, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload, selectinload
 
-from database.dto import UserProfileDTO
+from database.dto import Created, UserProfileDTO
 from database.enums import SuggestionStatus, UserRole
 from database.models import Suggestion, UserProfile
 
@@ -60,7 +60,7 @@ class UserProfileRepository(BaseRepository):
         orm_models = result.scalars().all()
         return UserProfileDTO.from_model_list(orm_models)
 
-    async def get_or_create(self, user_id: int) -> UserProfileDTO:
+    async def get_or_create(self, user_id: int) -> Created[UserProfileDTO]:
         stmt = (
             insert(UserProfile)
             .values(bot_id=self.bot.id, user_id=user_id)
@@ -72,9 +72,9 @@ class UserProfileRepository(BaseRepository):
         result = await self._session.execute(stmt)
         orm_model = result.scalar_one_or_none()
         if orm_model is None:
-            return await self.get_by_id(user_id)
+            return Created(await self.get_by_id(user_id), created=False)
 
-        return UserProfileDTO.model_validate(orm_model)
+        return Created(UserProfileDTO.model_validate(orm_model), created=True)
 
     async def create(self, user_id: int) -> UserProfileDTO:
         orm = UserProfile(bot_id=self.bot.id, user_id=user_id)

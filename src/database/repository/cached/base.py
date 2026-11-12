@@ -40,7 +40,6 @@ class CachedRepository(BotMixin):
         loader,
         *,
         redis_repo: BaseRedisRepository | None = None,
-        populate=True,
     ):
         redis = redis_repo or self._redis
 
@@ -52,9 +51,6 @@ class CachedRepository(BotMixin):
         if result is None:
             return None
 
-        if populate:
-            await self._journal.set(redis, key, result)
-        else:
-            await self._journal.invalidate(redis, key)
+        await self._journal.set(redis, key, result)
 
         return result

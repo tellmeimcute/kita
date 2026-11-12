@@ -7,6 +7,7 @@ from aiogram_dialog import DialogManager
 
 from core.schemas.objects import UserStats
 from database.dto import (
+    Created,
     SuggestionBaseDTO,
     SuggestionFullDTO,
     UserBotDTO,
@@ -21,7 +22,7 @@ class UserServiceProtocol(Protocol):
 
     async def create(self, prep_user_dto: UserDTO) -> UserDTO: ...
 
-    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO: ...
+    async def get_or_create(self, prep_user_dto: UserDTO) -> Created[UserDTO]: ...
 
     async def update(self, user_id: int, **data: Any) -> None: ...
 
@@ -29,7 +30,7 @@ class UserServiceProtocol(Protocol):
 
 
 class UserProfileServiceProtocol(Protocol):
-    async def get_or_create(self, user_id: int) -> UserProfileDTO: ...
+    async def get_or_create(self, user_id: int) -> Created[UserProfileDTO]: ...
 
     async def create(self, user_id: int) -> UserProfileDTO: ...
 

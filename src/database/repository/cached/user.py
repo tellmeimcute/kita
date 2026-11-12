@@ -1,6 +1,6 @@
 from typing import Any
 
-from database.dto import UserDTO
+from database.dto import Created, UserDTO
 from database.redis import CacheJournal, KitaKeyBuilder, UserRedis
 from interfaces import BotContextProtocol
 
@@ -30,12 +30,15 @@ class CachedUserRepository(CachedRepository):
             lambda: self.repo.get_by_id(user_id),
         )
 
-    async def get_or_create(self, prep_user_dto: UserDTO) -> UserDTO:
-        return await self._cache_or_load(
-            self._get_key(prep_user_dto.user_id),
-            lambda: self.repo.get_or_create(prep_user_dto),
-            populate=False,
-        )
+    async def get_or_create(self, prep_user_dto: UserDTO) -> Created[UserDTO]:
+        key = self._get_key(prep_user_dto.user_id)
+
+        if (cached := await self._redis.get(key)) is not None:
+            return Created(cached, created=False)
+
+        result = await self.repo.get_or_create(prep_user_dto)
+        await self._journal.invalidate(self._redis, key)
+        return result
 
     async def update(self, user_id: int, **data: Any):
         result = await self.repo.update(user_id, **data)

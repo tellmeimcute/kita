@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from database.dto import UserProfileDTO
+from database.dto import Created, UserProfileDTO
 from database.enums import UserRole
 from database.redis import CacheJournal, IntRedis, KitaKeyBuilder, RedisKey, UserProfileRedis
 from interfaces import BotContextProtocol
@@ -39,12 +39,15 @@ class CachedUserProfileRepository(CachedRepository):
             lambda: self.repo.get_by_id(user_id),
         )
 
-    async def get_or_create(self, user_id: int) -> UserProfileDTO:
-        return await self._cache_or_load(
-            self._get_key(user_id),
-            lambda: self.repo.get_or_create(user_id),
-            populate=False,
-        )
+    async def get_or_create(self, user_id: int) -> Created[UserProfileDTO]:
+        key = self._get_key(user_id)
+
+        if (cached := await self._redis.get(key)) is not None:
+            return Created(cached, created=False)
+
+        result = await self.repo.get_or_create(user_id)
+        await self._journal.invalidate(self._redis, key)
+        return result
 
     async def update(self, user_id: int, **data: Any):
         result = await self.repo.update(user_id, **data)

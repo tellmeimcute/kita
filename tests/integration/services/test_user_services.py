@@ -11,12 +11,14 @@ async def test_register_user(user_test_context: UserTestContext):
     ctx = user_test_context
 
     async with ctx.uow.transaction():
-        user_dto = await ctx.user_service.get_or_create(ctx.test_user_dto)
-        profile_dto = await ctx.profile_service.get_or_create(ctx.test_user_dto.user_id)
+        user = await ctx.user_service.get_or_create(ctx.test_user_dto)
+        profile = await ctx.profile_service.get_or_create(ctx.test_user_dto.user_id)
 
-    assert isinstance(user_dto, UserDTO)
-    assert isinstance(profile_dto, UserProfileDTO)
-    assert user_dto.user_id == profile_dto.user_id
+    assert user.created is True
+    assert profile.created is True
+    assert isinstance(user.dto, UserDTO)
+    assert isinstance(profile.dto, UserProfileDTO)
+    assert user.dto.user_id == profile.dto.user_id
 
 
 async def test_rollback_dont_write_cache(user_test_context: UserTestContext):

@@ -2,7 +2,7 @@ from typing import Any
 
 from loguru import logger
 
-from database.dto import UserProfileDTO
+from database.dto import Created, UserProfileDTO
 from database.enums import UserRole
 from interfaces import BotContextProtocol, UserProfileRepositoryProtocol
 
@@ -20,9 +20,9 @@ class UserProfileService(BaseService):
         super().__init__(bot_context)
         self.repo = repo
 
-    async def get_or_create(self, user_id: int) -> UserProfileDTO:
+    async def get_or_create(self, user_id: int) -> Created[UserProfileDTO]:
         if existed := await self.repo.get_by_id(user_id):
-            return existed
+            return Created(existed, created=False)
 
         return await self.repo.get_or_create(user_id)
 

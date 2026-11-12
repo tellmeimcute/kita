@@ -67,9 +67,10 @@ async def test_get_or_create(repository_context: RepositoryContext):
     async with ctx.uow.transaction():
         created = await ctx.user_repo.get_or_create(other_user)
 
-    assert isinstance(created, UserDTO)
-    assert created.user_id == other_user.user_id
-    assert created.username == other_user.username
+    assert created.created is True
+    assert isinstance(created.dto, UserDTO)
+    assert created.dto.user_id == other_user.user_id
+    assert created.dto.username == other_user.username
 
 
 async def test_get_or_create_2times(repository_context: RepositoryContext):
@@ -78,10 +79,12 @@ async def test_get_or_create_2times(repository_context: RepositoryContext):
 
     async with ctx.uow.transaction():
         first = await ctx.user_repo.get_or_create(other_user)
-        two = await ctx.user_repo.get_or_create(other_user)
+        second = await ctx.user_repo.get_or_create(other_user)
 
-    assert first.user_id == two.user_id == other_user.user_id
-    assert first.created_at == two.created_at
+    assert first.created is True
+    assert second.created is False
+    assert first.dto.user_id == second.dto.user_id == other_user.user_id
+    assert first.dto.created_at == second.dto.created_at
 
 
 async def test_update(repository_context: RepositoryContext):
