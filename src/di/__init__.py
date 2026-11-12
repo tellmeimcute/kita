@@ -1,6 +1,7 @@
 from .bot import BotProvider
 from .config import ConfigProvider
 from .database import DatabaseProvider
+from .event import EventProvider
 from .middleware import MiddlewareProvider
 from .providers import FSMProvider, UtilsProvider, ViewerProvider
 from .rate_limit import RateLimitProvider
@@ -13,6 +14,7 @@ __all__ = (
     "BotProvider",
     "ConfigProvider",
     "DatabaseProvider",
+    "EventProvider",
     "MiddlewareProvider",
     "FSMProvider",
     "RateLimitProvider",

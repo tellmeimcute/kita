@@ -6,24 +6,36 @@ from core.exceptions import (
     ChannelNotFoundError,
     UserbotAlreadyExistsError,
 )
-from interfaces import BotResolverProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
+from events import UserbotRegistered
+from interfaces import (
+    BotContextProtocol,
+    BotResolverProtocol,
+    EventBusProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+)
+from interfaces.mixins import BotMixin
 from utils.userbot_probe import probe_userbot, validate_channel_id
 
 
-class UserBotRegisterUseCase:
-    __slots__ = ("_resolver", "_uow", "_userbot_service", "_crypto")
+class UserBotRegisterUseCase(BotMixin):
+    __slots__ = ("_resolver", "_uow", "_userbot_service", "_crypto", "_events")
 
     def __init__(
         self,
+        bot_context: BotContextProtocol,
         resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
         crypto: Cryptographer,
+        events: EventBusProtocol,
     ):
+        super().__init__(bot_context)
         self._resolver = resolver
         self._uow = uow
         self._userbot_service = userbot_service
         self._crypto = crypto
+        self._events = events
 
     async def execute(self, raw_token: str | None, text_id: str | None, owner_id: int):
         if not raw_token or not text_id:
@@ -53,6 +65,13 @@ class UserBotRegisterUseCase:
                 owner_id=owner_id,
                 channel_id=probe.channel.id,
                 channel_name=probe.channel.full_name,
+            )
+            await self._events.publish(
+                UserbotRegistered(
+                    bot_id=self.bot.id,
+                    userbot_id=probe.bot_info.id,
+                    owner_id=owner_id,
+                )
             )
 
         self._resolver.remove(probe.bot_info.id)

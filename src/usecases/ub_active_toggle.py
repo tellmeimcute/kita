@@ -3,37 +3,46 @@ from aiogram.types import User as AiogramUser
 
 from core.userbot_dispatcher import UserbotDispatcherState
 from database.dto import UserBotDTO, UserDTO
+from events import UserbotActivated, UserbotDeactivated
 from interfaces import (
+    BotContextProtocol,
     BotResolverProtocol,
+    EventBusProtocol,
     UnitOfWorkProtocol,
     UserBotServiceProtocol,
     WebhookServiceProtocol,
 )
+from interfaces.mixins import BotMixin
 from utils.userbot_probe import probe_userbot, userbot_action_auth
 
 
-class UserbotActiveToggleUseCase:
+class UserbotActiveToggleUseCase(BotMixin):
     __slots__ = (
         "_resolver",
         "_uow",
         "_userbot_service",
         "_webhook_service",
         "_userbot_dispatcher",
+        "_events",
     )
 
     def __init__(
         self,
+        bot_context: BotContextProtocol,
         resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
         webhook_service: WebhookServiceProtocol,
         userbot_dispatcher: UserbotDispatcherState,
+        events: EventBusProtocol,
     ):
+        super().__init__(bot_context)
         self._resolver = resolver
         self._uow = uow
         self._userbot_service = userbot_service
         self._webhook_service = webhook_service
         self._userbot_dispatcher = userbot_dispatcher
+        self._events = events
 
     async def userbot_deactivate(
         self, bot: Bot, bot_user: AiogramUser | None, userbot: UserBotDTO
@@ -43,6 +52,13 @@ class UserbotActiveToggleUseCase:
             await self._webhook_service.remove_webhook(bot)
         async with self._uow.transaction():
             await self._userbot_service.save(userbot)
+            await self._events.publish(
+                UserbotDeactivated(
+                    bot_id=self.bot.id,
+                    userbot_id=userbot.bot_id,
+                    owner_id=userbot.owner_id,
+                )
+            )
         self._resolver.remove(bot.id)
 
     async def execute(self, caller_dto: UserDTO, userbot_id: int):
@@ -69,5 +85,12 @@ class UserbotActiveToggleUseCase:
             )
             async with self._uow.transaction():
                 await self._userbot_service.save(userbot)
+                await self._events.publish(
+                    UserbotActivated(
+                        bot_id=self.bot.id,
+                        userbot_id=userbot.bot_id,
+                        owner_id=userbot.owner_id,
+                    )
+                )
 
         return userbot

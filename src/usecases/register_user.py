@@ -4,8 +4,10 @@ from aiogram.types import User as AiogramUser
 from aiogram.utils.i18n import I18n
 
 from database.dto import UserDTO, UserProfileDTO
+from events import UserProfileCreated, UserRegistered
 from interfaces import (
     BotContextProtocol,
+    EventBusProtocol,
     UserProfileServiceProtocol,
     UserServiceProtocol,
 )
@@ -23,6 +25,7 @@ class UserRegisterOrUpdateUseCase(BotMixin):
         "_i18n",
         "_user_service",
         "_profile_service",
+        "_events",
     )
 
     def __init__(
@@ -31,18 +34,42 @@ class UserRegisterOrUpdateUseCase(BotMixin):
         i18n: I18n,
         user_service: UserServiceProtocol,
         profile_service: UserProfileServiceProtocol,
+        events: EventBusProtocol,
     ):
         super().__init__(bot_context)
         self._i18n = i18n
         self._user_service = user_service
         self._profile_service = profile_service
+        self._events = events
 
     async def execute(self, from_user: AiogramUser):
+        user_is_new = await self._user_service.get(from_user.id) is None
+        profile_is_new = await self._profile_service.get(from_user.id) is None
+
         user_dto = await self._user_service.get_or_create(self.dto_from_tg(from_user))
         profile_dto = await self._profile_service.get_or_create(from_user.id)
         await self.update_user_data(from_user, user_dto, profile_dto)
 
+        await self._publish_registration(user_dto, profile_dto, user_is_new, profile_is_new)
+
         return RegisterResult(user_dto, profile_dto)
+
+    async def _publish_registration(
+        self,
+        user_dto: UserDTO,
+        profile_dto: UserProfileDTO,
+        user_is_new: bool,
+        profile_is_new: bool,
+    ) -> None:
+        if user_is_new:
+            await self._events.publish(
+                UserRegistered(bot_id=self.bot.id, user_id=user_dto.user_id)
+            )
+
+        if profile_is_new:
+            await self._events.publish(
+                UserProfileCreated(bot_id=self.bot.id, user_id=profile_dto.user_id)
+            )
 
     async def update_user_data(
         self,

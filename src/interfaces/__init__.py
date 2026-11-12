@@ -3,7 +3,7 @@ from .bot import (
     BotResolverProtocol,
     BotSessionProtocol,
 )
-from .dispatcher import SuggestionTaskDispatcherProtocol
+from .events import EventBusProtocol, EventListenerProtocol
 from .notifier import MessageNotifierProtocol, SuggestionNotifierProtocol
 from .repository import (
     MediaRepositoryProtocol,
@@ -28,6 +28,8 @@ __all__ = (
     "BotContextProtocol",
     "BotResolverProtocol",
     "BotSessionProtocol",
+    "EventBusProtocol",
+    "EventListenerProtocol",
     "MessageNotifierProtocol",
     "MediaRepositoryProtocol",
     "SuggestionNotifierProtocol",
@@ -43,6 +45,5 @@ __all__ = (
     "SuggestionQueueProtocol",
     "SuggestionViewerProtocol",
     "UnitOfWorkProtocol",
-    "SuggestionTaskDispatcherProtocol",
     "WebhookServiceProtocol",
 )

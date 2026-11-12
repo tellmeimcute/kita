@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.redis import CacheJournal
 from interfaces import (
     BotContextProtocol,
+    EventBusProtocol,
     MediaRepositoryProtocol,
     SuggestionRepositoryProtocol,
     UserProfileRepositoryProtocol,
@@ -18,6 +19,7 @@ class UnitOfWork:
         "_session",
         "_bot_context",
         "_journal",
+        "_events",
         "_in_transaction",
         "users",
         "profiles",
@@ -30,6 +32,7 @@ class UnitOfWork:
         session: AsyncSession,
         bot_context: BotContextProtocol,
         journal: CacheJournal,
+        events: EventBusProtocol,
         user_repo: UserRepositoryProtocol,
         user_profile_repo: UserProfileRepositoryProtocol,
         suggestion_repo: SuggestionRepositoryProtocol,
@@ -38,6 +41,7 @@ class UnitOfWork:
         self._session = session
         self._bot_context = bot_context
         self._journal = journal
+        self._events = events
         self._in_transaction = False
 
         self.users = user_repo
@@ -55,6 +59,7 @@ class UnitOfWork:
         logger.debug("Transaction begin")
         self._in_transaction = True
         self._journal.begin()
+        self._events.begin()
         try:
             yield
             await self.commit()
@@ -64,6 +69,9 @@ class UnitOfWork:
         finally:
             self._in_transaction = False
             self._journal.end()
+            self._events.end()
+
+        await self._events.flush()
 
         logger.debug("Transaction close")
 
@@ -75,4 +83,5 @@ class UnitOfWork:
     async def rollback(self):
         await self._session.rollback()
         self._journal.discard()
+        self._events.discard()
         logger.warning("Transaction rollback")

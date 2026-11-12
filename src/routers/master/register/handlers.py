@@ -11,7 +11,6 @@ from core.config import Config
 from core.cryptographer import Cryptographer
 from core.exceptions import UserbotAlreadyExistsError, UserbotError
 from core.i18n_translator import Translator
-from core.userbot_dispatcher import UserbotDispatcherState
 from database.dto import UserDTO
 from interfaces import (
     BotResolverProtocol,
@@ -19,7 +18,6 @@ from interfaces import (
     UnitOfWorkProtocol,
     UserBotServiceProtocol,
 )
-from task_queue.tasks import new_userbot
 from ui.state_groups import RegistrarMenuSG, UserBotRegisterSG
 from usecases import UserBotRegisterUseCase
 from utils.userbot_probe import parse_token, probe_token
@@ -77,13 +75,12 @@ async def channel_id_handler(
     manager: DialogManager,
     notifier: FromDishka[MessageNotifierProtocol],
     register: FromDishka[UserBotRegisterUseCase],
-    userbot_dispatcher: FromDishka[UserbotDispatcherState],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     raw_token = manager.dialog_data.get("new_userbot_token")
 
     try:
-        bot_info = await register.execute(
+        await register.execute(
             raw_token,
             message.text,
             owner_id=user_dto.user_id,
@@ -93,13 +90,6 @@ async def channel_id_handler(
         await manager.start(
             RegistrarMenuSG.menu,
             show_mode=ShowMode.DELETE_AND_SEND,
-        )
-
-        await new_userbot.kiq(
-            bot_id=message.bot.id,
-            userbot_id=bot_info.id,
-            owner_id=user_dto.user_id,
-            allowed_updates=userbot_dispatcher.allowed_updates,
         )
     except UserbotAlreadyExistsError as e:
         await notifier.send_text(user_dto, e.error_key)
