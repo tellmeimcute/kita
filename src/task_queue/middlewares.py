@@ -7,7 +7,7 @@ from taskiq.message import TaskiqMessage
 from di.event import register_listeners
 from events import ListenerRegistry
 from interfaces import BotContextProtocol, BotResolverProtocol
-from usecases.ub_token_resolver import UserBotTokenResolver
+from usecases.userbot.token_resolver import UserBotTokenResolver
 
 
 class BotContextMiddleware(TaskiqMiddleware):

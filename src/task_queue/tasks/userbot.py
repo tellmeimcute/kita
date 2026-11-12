@@ -9,7 +9,7 @@ from interfaces import (
     WebhookServiceProtocol,
 )
 from task_queue.broker import get_broker
-from usecases.ub_token_resolver import UserBotTokenResolver
+from usecases.userbot.token_resolver import UserBotTokenResolver
 
 broker = get_broker()
 

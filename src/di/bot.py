@@ -13,7 +13,7 @@ from interfaces import (
     UserBotServiceProtocol,
 )
 from services.bots import BotCache, BotContext, BotResolver, BotSessionFactory
-from usecases.ub_token_resolver import UserBotTokenResolver
+from usecases.userbot.token_resolver import UserBotTokenResolver
 
 
 class BotProvider(Provider):
