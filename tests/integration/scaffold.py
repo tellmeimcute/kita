@@ -8,6 +8,8 @@ from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatFullInfo
 from aiogram.types import User as AiogramUser
 
+from events import Event
+from events import definitions as events_definitions
 from interfaces import BotContextProtocol, BotResolverProtocol
 from services.bots import BotCache
 
@@ -105,3 +107,31 @@ class FakeWebhookService:
     def reset(self) -> None:
         self.set_webhook.reset_mock()
         self.remove_webhook.reset_mock()
+
+
+def event_types() -> list[type[Event]]:
+    return [
+        value
+        for value in vars(events_definitions).values()
+        if isinstance(value, type) and issubclass(value, Event) and value is not Event
+    ]
+
+
+class RecordingListener:
+    def __init__(self, sink: "EventRecorder", event_type: type[Event]):
+        self._sink = sink
+        self.event_type = event_type
+
+    async def handle(self, event: Event) -> None:
+        self._sink.events.append(event)
+
+
+class EventRecorder:
+    def __init__(self) -> None:
+        self.events: list[Event] = []
+
+    def listeners(self) -> list[RecordingListener]:
+        return [RecordingListener(self, event_type) for event_type in event_types()]
+
+    def reset(self) -> None:
+        self.events.clear()

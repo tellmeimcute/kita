@@ -19,6 +19,7 @@ from di import (
     BotProvider,
     ConfigProvider,
     DatabaseProvider,
+    EventProvider,
     RateLimitProvider,
     RedisProvider,
     RepositoryProvider,
@@ -30,13 +31,14 @@ from interfaces import (
     BotContextProtocol,
     BotResolverProtocol,
     BotSessionProtocol,
+    EventListenerProtocol,
     UnitOfWorkProtocol,
     WebhookServiceProtocol,
 )
 from services.bots import BotCache
 
 from .factories import make_tg_message as build_tg_message
-from .scaffold import BotStack, FakeBotSessions, FakeWebhookService
+from .scaffold import BotStack, EventRecorder, FakeBotSessions, FakeWebhookService
 
 
 class TestProvider(Provider):
@@ -49,6 +51,14 @@ class TestProvider(Provider):
     @provide
     def webhook_service_mock(self) -> WebhookServiceProtocol:
         return FakeWebhookService()
+
+    @provide(scope=Scope.REQUEST)
+    def event_recorder(self) -> EventRecorder:
+        return EventRecorder()
+
+    @provide(scope=Scope.REQUEST, override=True)
+    def event_listeners(self, recorder: EventRecorder) -> list[EventListenerProtocol]:
+        return recorder.listeners()
 
     @provide
     def postgres_docker(self) -> Generator[PostgresContainer]:
@@ -109,6 +119,7 @@ async def dishka_container():
         BotProvider(),
         UtilsProvider(),
         DatabaseProvider(),
+        EventProvider(),
         RedisProvider(),
         RateLimitProvider(pace=False),
         TestProvider(),
@@ -141,6 +152,11 @@ async def bots(request_container: AsyncContainer) -> AsyncIterator[BotStack]:
         yield stack
     finally:
         stack.context.reset_current(token)
+
+
+@pytest.fixture
+async def event_recorder(request_container: AsyncContainer) -> EventRecorder:
+    return await request_container.get(EventRecorder)
 
 
 @pytest.fixture
