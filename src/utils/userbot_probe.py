@@ -14,11 +14,8 @@ from core.exceptions import (
     InvalidTokenError,
     NotAChannelError,
     TokenFromAnotherBotError,
-    UserbotBanned,
     UserbotError,
-    UserbotNotFoundError,
 )
-from database.dto import UserBotDTO, UserDTO
 
 
 @dataclass(frozen=True)
@@ -106,10 +103,3 @@ async def probe_userbot(bot: Bot, channel_id: int | str) -> UserbotProbe:
         )
 
     return UserbotProbe(bot_info=bot_info, channel=channel, member=member)
-
-
-def userbot_action_auth(user_dto: UserDTO, userbot: UserBotDTO | None) -> None:
-    if not userbot or userbot.owner_id != user_dto.user_id:
-        raise UserbotNotFoundError()
-    if userbot.banned:
-        raise UserbotBanned()
