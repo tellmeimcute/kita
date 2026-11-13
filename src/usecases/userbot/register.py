@@ -51,9 +51,6 @@ class UserBotRegisterUseCase(BotMixin):
         async with self._resolver.temp_bot(token) as tmp_bot:
             probe = await probe_userbot(tmp_bot, channel_id)
 
-        if not probe.ok:
-            raise probe.error
-
         async with self._uow.transaction():
             if await self._userbot_service.get(probe.bot_info.id):
                 raise UserbotAlreadyExistsError()

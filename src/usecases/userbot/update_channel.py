@@ -39,8 +39,6 @@ class UserbotUpdateChannelUseCase(UserbotUseCase):
         bot = self._resolver.get_or_create(userbot_id, userbot.token.get_secret_value())
 
         probe = await probe_userbot(bot, channel_id)
-        if not probe.ok:
-            raise probe.error
 
         async with self._uow.transaction():
             userbot.channel_id = probe.channel.id

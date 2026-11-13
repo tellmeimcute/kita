@@ -69,7 +69,7 @@ async def on_userbot_demoted(
         return
 
     async with uow.transaction():
-        await userbot_service.update(bot.id, active=False)
+        await userbot_service.deactivate(bot.id)
         owner_dto = await user_service.get(userbot_dto.owner_id)
 
     await webhook_service.remove_webhook(bot)
@@ -128,7 +128,7 @@ async def userbot_token_invalid(
     bot = bot_context.get_current()
 
     async with uow.transaction():
-        await userbot_service.update(bot.id, active=False)
+        await userbot_service.deactivate(bot.id)
 
     bot_resolver.remove(bot.id)
 

@@ -1,6 +1,6 @@
 from aiogram import Bot
-from aiogram.types import User as AiogramUser
 
+from core.exceptions import UserbotBanned, UserbotError
 from core.userbot_dispatcher import UserbotDispatcherState
 from database.dto import UserBotDTO, UserDTO
 from events import UserbotActivated, UserbotDeactivated
@@ -36,22 +36,34 @@ class UserbotActiveToggleUseCase(UserbotUseCase):
         self._userbot_dispatcher = userbot_dispatcher
         self._events = events
 
-    async def userbot_deactivate(
-        self, bot: Bot, bot_user: AiogramUser | None, userbot: UserBotDTO
-    ):
-        userbot.active = False
-        if bot_user:
-            await self._webhook_service.remove_webhook(bot)
+    async def deactivate(self, bot: Bot, userbot: UserBotDTO):
+        await self._webhook_service.remove_webhook(bot)
+
         async with self._uow.transaction():
-            await self._userbot_service.save(userbot)
-            await self._events.publish(
-                UserbotDeactivated(
-                    bot_id=self.bot.id,
-                    userbot_id=userbot.bot_id,
-                    owner_id=userbot.owner_id,
+            if await self._userbot_service.deactivate(userbot.bot_id):
+                await self._events.publish(
+                    UserbotDeactivated(
+                        bot_id=self.bot.id,
+                        userbot_id=userbot.bot_id,
+                        owner_id=userbot.owner_id,
+                    )
                 )
-            )
+
         self._resolver.remove(bot.id)
+
+    async def activate(self, bot: Bot, userbot: UserBotDTO):
+        await self._webhook_service.set_webhook(
+            bot,
+            allowed_updates=self._userbot_dispatcher.allowed_updates,
+        )
+
+        await self._events.publish(
+            UserbotActivated(
+                bot_id=self.bot.id,
+                userbot_id=userbot.bot_id,
+                owner_id=userbot.owner_id,
+            )
+        )
 
     async def execute(self, caller_dto: UserDTO, userbot_id: int) -> UserBotDTO:
         userbot = await super().execute(caller_dto, userbot_id)
@@ -59,27 +71,21 @@ class UserbotActiveToggleUseCase(UserbotUseCase):
         token = userbot.token.get_secret_value()
         bot = self._resolver.get_or_create(userbot_id, token)
 
-        probe = await probe_userbot(bot, userbot.channel_id)
-        if not probe.ok:
-            await self.userbot_deactivate(bot, probe.bot_info, userbot)
-            raise probe.error
+        try:
+            await probe_userbot(bot, userbot.channel_id)
+        except UserbotError:
+            await self.deactivate(bot, userbot)
+            raise
 
-        userbot.active = not userbot.active
+        async with self._uow.transaction():
+            toggled = await self._userbot_service.toggle_active(userbot_id)
 
-        if not userbot.active:
-            await self.userbot_deactivate(bot, probe.bot_info, userbot)
-        if userbot.active:
-            await self._webhook_service.set_webhook(
-                bot, allowed_updates=self._userbot_dispatcher.allowed_updates
-            )
-            async with self._uow.transaction():
-                await self._userbot_service.save(userbot)
-                await self._events.publish(
-                    UserbotActivated(
-                        bot_id=self.bot.id,
-                        userbot_id=userbot.bot_id,
-                        owner_id=userbot.owner_id,
-                    )
-                )
+        if toggled is None:
+            raise UserbotBanned()
 
-        return userbot
+        if not toggled.active:
+            await self.deactivate(bot, toggled)
+        else:
+            await self.activate(bot, toggled)
+
+        return toggled

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from aiogram import Bot
 from aiogram.enums import ChatMemberStatus
 from aiogram.exceptions import TelegramBadRequest, TelegramUnauthorizedError
-from aiogram.types import ChatFullInfo, ChatMemberAdministrator
+from aiogram.types import ChatFullInfo
 from aiogram.types import User as AiogramUser
 from aiogram.utils.token import TokenValidationError, extract_bot_id
 from loguru import logger
@@ -14,20 +14,13 @@ from core.exceptions import (
     InvalidTokenError,
     NotAChannelError,
     TokenFromAnotherBotError,
-    UserbotError,
 )
 
 
 @dataclass(frozen=True)
 class UserbotProbe:
-    bot_info: AiogramUser | None = None
-    channel: ChatFullInfo | None = None
-    member: ChatMemberAdministrator | None = None
-    error: UserbotError | None = None
-
-    @property
-    def ok(self) -> bool:
-        return self.error is None
+    bot_info: AiogramUser
+    channel: ChatFullInfo
 
 
 def validate_channel_id(input_str: str | None):
@@ -75,31 +68,25 @@ async def probe_token(bot: Bot) -> AiogramUser:
 
 
 async def probe_userbot(bot: Bot, channel_id: int | str) -> UserbotProbe:
-    """Single Telegram probe: bot is alive, channel exists, can post messages."""
-    bot_info = None
+    """Bot is alive, the chat is a channel and the bot may post there.
+
+    Raises ``UserbotError`` on the first failed check.
+    """
+    bot_info = await probe_token(bot)
+
     try:
-        bot_info = await bot.get_me()
         channel = await bot.get_chat(channel_id)
         member = await bot.get_chat_member(channel.id, bot.id)
-    except TelegramUnauthorizedError:
-        logger.info("Userbot probe failed: invalid token")
-        return UserbotProbe(bot_info=bot_info, error=InvalidTokenError())
     except TelegramBadRequest as e:
         logger.info("Userbot probe failed: {}", e.message)
-        return UserbotProbe(bot_info=bot_info, error=BadRequestError())
+        raise BadRequestError() from None
 
     if channel.type != "channel":
         logger.info("Userbot probe failed: provided channel_id is not a channel")
-        return UserbotProbe(bot_info=bot_info, channel=channel, error=NotAChannelError())
+        raise NotAChannelError()
 
-    is_admin = member.status == ChatMemberStatus.ADMINISTRATOR
-    if not is_admin or not member.can_post_messages:
+    if member.status != ChatMemberStatus.ADMINISTRATOR or not member.can_post_messages:
         logger.info("Userbot probe failed: not enough post message permission")
-        return UserbotProbe(
-            bot_info=bot_info,
-            channel=channel,
-            member=member,
-            error=InsufficientPermissionsError(),
-        )
+        raise InsufficientPermissionsError()
 
-    return UserbotProbe(bot_info=bot_info, channel=channel, member=member)
+    return UserbotProbe(bot_info=bot_info, channel=channel)
