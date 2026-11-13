@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.dto import UserDTO
 from database.repository import SuggestionRepository, UserProfileRepository, UserRepository
-from interfaces import UnitOfWorkProtocol, UserBotServiceProtocol
+from interfaces import UnitOfWorkProtocol, UserBotRepositoryProtocol, UserBotServiceProtocol
 
 from ..scaffold import BOT_ID, BotStack, make_tg_bot, make_tg_channel, seed_userbot
 
@@ -18,6 +18,7 @@ class RepositoryContext:
     user_repo: UserRepository
     suggestion_repo: SuggestionRepository
     profile_repo: UserProfileRepository
+    userbot_repo: UserBotRepositoryProtocol
     userbot_service: UserBotServiceProtocol
     session_maker: async_sessionmaker[AsyncSession]
     test_user_dto: UserDTO
@@ -37,6 +38,7 @@ async def repository_context(
         user_repo=await request_container.get(UserRepository),
         suggestion_repo=await request_container.get(SuggestionRepository),
         profile_repo=await request_container.get(UserProfileRepository),
+        userbot_repo=await request_container.get(UserBotRepositoryProtocol),
         userbot_service=userbot_service,
         session_maker=await request_container.get(async_sessionmaker[AsyncSession]),
         test_user_dto=test_user_dto,
