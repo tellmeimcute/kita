@@ -113,6 +113,8 @@ class UserBotServiceProtocol(Protocol):
 
     async def save(self, userbot_dto: UserBotDTO) -> None: ...
 
+    async def toggle_active(self, bot_id: int) -> UserBotDTO | None: ...
+
 
 class WebhookServiceProtocol(Protocol):
     async def set_webhook(

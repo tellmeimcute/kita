@@ -70,3 +70,8 @@ class CachedUserBotRepository(CachedRepository):
         result = await self.repo.save(dto)
         await self._journal.invalidate(self._redis, self._get_key(dto.bot_id))
         return result
+
+    async def toggle_active(self, bot_id: int) -> UserBotDTO | None:
+        result = await self.repo.toggle_active(bot_id)
+        await self._journal.invalidate(self._redis, self._get_key(bot_id))
+        return result

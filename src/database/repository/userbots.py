@@ -61,3 +61,17 @@ class UserBotRepository(BaseRepository):
     async def save(self, dto: UserBotDTO):
         if changed := dto.prepare_changed_data():
             await self.update(dto.bot_id, **changed)
+
+    async def toggle_active(self, bot_id: int) -> UserBotDTO | None:
+        stmt = (
+            update(UserBot)
+            .where(UserBot.bot_id == bot_id, UserBot.banned.is_(False))
+            .values(active=~UserBot.active)
+            .returning(UserBot)
+        )
+
+        result = await self._session.execute(stmt)
+        orm_model = result.scalar_one_or_none()
+        if not orm_model:
+            return None
+        return UserBotDTO.model_validate(orm_model)
