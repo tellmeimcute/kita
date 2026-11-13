@@ -9,15 +9,15 @@ from loguru import logger
 from core.exceptions import UserbotBanned, UserbotError, UserbotNotFoundError
 from core.i18n_translator import Translator
 from database.dto import UserDTO
-from interfaces import MessageNotifierProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
+from interfaces import MessageNotifierProtocol
 from ui.state_groups import UserBotSelectSG
 from usecases import (
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
+    UserbotSelectUseCase,
     UserbotUpdateChannelUseCase,
     UserbotUpdateTokenUseCase,
 )
-from utils.userbot_probe import userbot_action_auth
 
 
 @inject
@@ -26,18 +26,14 @@ async def on_bot_selected(
     widget: Select,
     manager: DialogManager,
     item_id: str,
-    uow: FromDishka[UnitOfWorkProtocol],
-    userbot_service: FromDishka[UserBotServiceProtocol],
     tl: FromDishka[Translator],
+    select_userbot: FromDishka[UserbotSelectUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = int(item_id)
 
-    async with uow.transaction():
-        userbot = await userbot_service.get(bot_id)
-
     try:
-        userbot_action_auth(user_dto, userbot)
+        await select_userbot.execute(user_dto, bot_id)
     except UserbotError as e:
         return await callback.answer(tl.translate(e.error_key))
 
