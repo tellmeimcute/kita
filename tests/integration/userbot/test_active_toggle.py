@@ -76,7 +76,7 @@ async def test_probe_failure_deactivates_userbot(
     assert ctx.cache.get(BOT_ID) is None
 
 
-async def test_invalid_token_deactivates_without_webhook_removal(
+async def test_invalid_token_deactivates_userbot(
     management_context: ManagementContext,
     tg_bot: MagicMock,
 ):
@@ -91,7 +91,7 @@ async def test_invalid_token_deactivates_without_webhook_removal(
     async with ctx.session_maker() as session:
         row = await session.scalar(select(UserBot).where(UserBot.bot_id == BOT_ID))
     assert row.active is False
-    ctx.remove_webhook.assert_not_awaited()
+    ctx.remove_webhook.assert_awaited_once_with(tg_bot)
     assert ctx.cache.get(BOT_ID) is None
 
 

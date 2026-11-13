@@ -88,41 +88,32 @@ class TestProbeUserbot:
     async def test_success(self, mock_bot, mock_channel):
         mock_channel.type = "channel"
 
-        result = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
+        probe = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
 
-        assert result.ok is True
-        assert result.error is None
-        assert result.bot_info == mock_bot.get_me.return_value
-        assert result.channel is mock_channel
+        assert probe.bot_info == mock_bot.get_me.return_value
+        assert probe.channel is mock_channel
 
     async def test_invalid_token(self, mock_bot):
         mock_bot.get_me = AsyncMock(
             side_effect=TelegramUnauthorizedError(method="getMe", message="Unauthorized")
         )
 
-        result = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
-
-        assert result.ok is False
-        assert isinstance(result.error, InvalidTokenError)
-        assert result.bot_info is None
+        with pytest.raises(InvalidTokenError):
+            await probe_userbot(mock_bot, TEST_CHANNEL_ID)
 
     async def test_bad_request(self, mock_bot):
         mock_bot.get_chat = AsyncMock(
             side_effect=TelegramBadRequest(method="getChat", message="Chat not found")
         )
 
-        result = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
-
-        assert result.ok is False
-        assert isinstance(result.error, BadRequestError)
+        with pytest.raises(BadRequestError):
+            await probe_userbot(mock_bot, TEST_CHANNEL_ID)
 
     async def test_not_a_channel(self, mock_bot, mock_channel):
         mock_channel.type = "group"
 
-        result = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
-
-        assert result.ok is False
-        assert isinstance(result.error, NotAChannelError)
+        with pytest.raises(NotAChannelError):
+            await probe_userbot(mock_bot, TEST_CHANNEL_ID)
 
     async def test_no_post_permission(self, mock_bot, mock_channel):
         mock_channel.type = "channel"
@@ -130,7 +121,5 @@ class TestProbeUserbot:
             return_value=MagicMock(status=ChatMemberStatus.ADMINISTRATOR, can_post_messages=False)
         )
 
-        result = await probe_userbot(mock_bot, TEST_CHANNEL_ID)
-
-        assert result.ok is False
-        assert isinstance(result.error, InsufficientPermissionsError)
+        with pytest.raises(InsufficientPermissionsError):
+            await probe_userbot(mock_bot, TEST_CHANNEL_ID)
