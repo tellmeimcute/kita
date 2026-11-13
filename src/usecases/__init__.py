@@ -7,6 +7,7 @@ from .userbot import (
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
+    UserbotSelectUseCase,
     UserbotUpdateChannelUseCase,
     UserbotUpdateTokenUseCase,
 )
@@ -22,6 +23,7 @@ __all__ = (
     "UserBotRegisterUseCase",
     "UserbotActiveToggleUseCase",
     "UserbotDemoteAdminsUseCase",
+    "UserbotSelectUseCase",
     "UserbotUpdateChannelUseCase",
     "UserbotUpdateTokenUseCase",
 )

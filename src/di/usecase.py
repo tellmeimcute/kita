@@ -10,6 +10,7 @@ from usecases import (
     UserbotActiveToggleUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
+    UserbotSelectUseCase,
     UserbotUpdateChannelUseCase,
     UserbotUpdateTokenUseCase,
     UserRegisterOrUpdateUseCase,
@@ -27,6 +28,7 @@ class UseCaseProvider(Provider):
     message_user = provide(MessageUserUseCase)
     register_or_update_user = provide(UserRegisterOrUpdateUseCase)
     ub_register = provide(UserBotRegisterUseCase)
+    ub_select = provide(UserbotSelectUseCase)
     ub_active_toggle = provide(UserbotActiveToggleUseCase)
     ub_update_token = provide(UserbotUpdateTokenUseCase)
     ub_update_channel = provide(UserbotUpdateChannelUseCase)

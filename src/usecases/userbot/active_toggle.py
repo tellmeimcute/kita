@@ -12,19 +12,13 @@ from interfaces import (
     UserBotServiceProtocol,
     WebhookServiceProtocol,
 )
-from interfaces.mixins import BotMixin
-from utils.userbot_probe import probe_userbot, userbot_action_auth
+from utils.userbot_probe import probe_userbot
+
+from .userbot_usecase import UserbotUseCase
 
 
-class UserbotActiveToggleUseCase(BotMixin):
-    __slots__ = (
-        "_resolver",
-        "_uow",
-        "_userbot_service",
-        "_webhook_service",
-        "_userbot_dispatcher",
-        "_events",
-    )
+class UserbotActiveToggleUseCase(UserbotUseCase):
+    __slots__ = ("_events", "_resolver", "_userbot_dispatcher", "_webhook_service")
 
     def __init__(
         self,
@@ -36,10 +30,8 @@ class UserbotActiveToggleUseCase(BotMixin):
         userbot_dispatcher: UserbotDispatcherState,
         events: EventBusProtocol,
     ):
-        super().__init__(bot_context)
+        super().__init__(bot_context, uow, userbot_service)
         self._resolver = resolver
-        self._uow = uow
-        self._userbot_service = userbot_service
         self._webhook_service = webhook_service
         self._userbot_dispatcher = userbot_dispatcher
         self._events = events
@@ -61,11 +53,8 @@ class UserbotActiveToggleUseCase(BotMixin):
             )
         self._resolver.remove(bot.id)
 
-    async def execute(self, caller_dto: UserDTO, userbot_id: int):
-        async with self._uow.transaction():
-            userbot = await self._userbot_service.get(userbot_id)
-
-        userbot_action_auth(caller_dto, userbot)
+    async def execute(self, caller_dto: UserDTO, userbot_id: int) -> UserBotDTO:
+        userbot = await super().execute(caller_dto, userbot_id)
 
         token = userbot.token.get_secret_value()
         bot = self._resolver.get_or_create(userbot_id, token)

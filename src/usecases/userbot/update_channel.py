@@ -2,30 +2,34 @@ from loguru import logger
 
 from core.exceptions import ChannelNotFoundError
 from database.dto import UserBotDTO, UserDTO
-from interfaces import BotResolverProtocol, UnitOfWorkProtocol, UserBotServiceProtocol
-from utils.userbot_probe import probe_userbot, userbot_action_auth, validate_channel_id
+from interfaces import (
+    BotContextProtocol,
+    BotResolverProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+)
+from utils.userbot_probe import probe_userbot, validate_channel_id
+
+from .userbot_usecase import UserbotUseCase
 
 
-class UserbotUpdateChannelUseCase:
-    __slots__ = ("_resolver", "_uow", "_userbot_service")
+class UserbotUpdateChannelUseCase(UserbotUseCase):
+    __slots__ = ("_resolver",)
 
     def __init__(
         self,
+        bot_context: BotContextProtocol,
         resolver: BotResolverProtocol,
         uow: UnitOfWorkProtocol,
         userbot_service: UserBotServiceProtocol,
     ):
+        super().__init__(bot_context, uow, userbot_service)
         self._resolver = resolver
-        self._uow = uow
-        self._userbot_service = userbot_service
 
     async def execute(
         self, caller_dto: UserDTO, userbot_id: int, raw_channel: str | None
     ) -> UserBotDTO:
-        async with self._uow.transaction():
-            userbot = await self._userbot_service.get(userbot_id)
-
-        userbot_action_auth(caller_dto, userbot)
+        userbot = await super().execute(caller_dto, userbot_id)
 
         channel_id = validate_channel_id(raw_channel)
         if not channel_id:
