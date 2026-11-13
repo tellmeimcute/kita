@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramUnauthorizedError
 from aiogram.methods import SetWebhook
 from aiogram.types import WebhookInfo
 from loguru import logger
@@ -49,5 +50,10 @@ class WebhookService:
         return await bot.get_webhook_info()
 
     async def remove_webhook(self, bot: Bot):
-        await bot.delete_webhook(drop_pending_updates=True)
+        try:
+            await bot.delete_webhook(drop_pending_updates=True)
+        except TelegramUnauthorizedError:
+            logger.warning("Webhook of bot {} left as is: token is invalid", bot.id)
+            return
+
         logger.info("Webhook removed for bot {}", bot.id)
