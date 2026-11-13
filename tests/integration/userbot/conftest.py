@@ -27,14 +27,11 @@ from usecases import (
 )
 
 from ..scaffold import (
-    BOT_ID,
     BOT_TOKEN,
-    BOT_USERNAME,
-    CHANNEL_ID,
-    CHANNEL_NAME,
     USERBOT_ALLOWED_UPDATES,
     BotStack,
     FakeWebhookService,
+    seed_userbot,
 )
 
 
@@ -118,15 +115,7 @@ async def management_context(
         await user_repo.create(owner)
         await user_repo.create(stranger)
 
-    async with uow.transaction():
-        await userbot_service.create(
-            token=BOT_TOKEN,
-            bot_id=BOT_ID,
-            username=BOT_USERNAME,
-            owner_id=owner.user_id,
-            channel_id=CHANNEL_ID,
-            channel_name=CHANNEL_NAME,
-        )
+    await seed_userbot(uow, userbot_service, owner_id=owner.user_id)
 
     return ManagementContext(
         uow=uow,

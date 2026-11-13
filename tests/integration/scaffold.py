@@ -12,7 +12,12 @@ from pydantic import SecretStr
 from database.dto import UserBotDTO
 from events import Event
 from events import definitions as events_definitions
-from interfaces import BotContextProtocol, BotResolverProtocol
+from interfaces import (
+    BotContextProtocol,
+    BotResolverProtocol,
+    UnitOfWorkProtocol,
+    UserBotServiceProtocol,
+)
 from services.bots import BotCache
 
 BOT_TOKEN = "123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw"
@@ -34,6 +39,23 @@ def make_userbot_dto(owner_id: int) -> UserBotDTO:
         active=True,
         banned=False,
     )
+
+
+async def seed_userbot(
+    uow: UnitOfWorkProtocol,
+    userbot_service: UserBotServiceProtocol,
+    owner_id: int,
+    bot_id: int = BOT_ID,
+) -> None:
+    async with uow.transaction():
+        await userbot_service.create(
+            token=BOT_TOKEN,
+            bot_id=bot_id,
+            username=BOT_USERNAME,
+            owner_id=owner_id,
+            channel_id=CHANNEL_ID,
+            channel_name=CHANNEL_NAME,
+        )
 
 
 def make_tg_channel() -> MagicMock:

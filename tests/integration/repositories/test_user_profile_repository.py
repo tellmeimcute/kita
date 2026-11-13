@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock
 
+from sqlalchemy import delete
+
 from database.enums import UserRole
+from database.models import UserBot
 
 from ..readers import load_profile
 from ..scaffold import BOT_ID, BotStack
@@ -225,17 +228,38 @@ async def test_get_banned(repository_context: RepositoryContext):
 
 async def test_demote_admins_keeps_owner(repository_context: RepositoryContext):
     ctx = repository_context
-    owner_id = await create_profile(ctx, offset=1, role=UserRole.ADMIN)
-    admin_id = await create_profile(ctx, offset=2, role=UserRole.ADMIN)
-    user_id = await create_profile(ctx, offset=3)
 
     async with ctx.uow.transaction():
-        demoted = await ctx.profile_repo.demote_admins(owner_id)
+        await ctx.profile_repo.create(ctx.owner_id)
+        await ctx.profile_repo.update(ctx.owner_id, role=UserRole.ADMIN)
+
+    admin_id = await create_profile(ctx, offset=1, role=UserRole.ADMIN)
+    user_id = await create_profile(ctx, offset=2)
+
+    async with ctx.uow.transaction():
+        demoted = await ctx.profile_repo.demote_admins()
 
     assert list(demoted) == [admin_id]
-    assert (await load_profile(ctx, owner_id)).role is UserRole.ADMIN
+    assert (await load_profile(ctx, ctx.owner_id)).role is UserRole.ADMIN
     assert (await load_profile(ctx, admin_id)).role is UserRole.USER
     assert (await load_profile(ctx, user_id)).role is UserRole.USER
+
+
+async def test_demote_admins_without_userbot_row_demotes_nobody(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+    admin_id = await create_profile(ctx, offset=1, role=UserRole.ADMIN)
+
+    async with ctx.session_maker() as session:
+        await session.execute(delete(UserBot))
+        await session.commit()
+
+    async with ctx.uow.transaction():
+        demoted = await ctx.profile_repo.demote_admins()
+
+    assert list(demoted) == []
+    assert (await load_profile(ctx, admin_id)).role is UserRole.ADMIN
 
 
 async def test_counts_report_only_current_bot(repository_context: RepositoryContext):
