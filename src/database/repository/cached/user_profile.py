@@ -75,8 +75,8 @@ class CachedUserProfileRepository(CachedRepository):
     async def get_admins(self) -> Sequence[UserProfileDTO]:
         return await self.repo.get_admins()
 
-    async def demote_admins(self, owner_id: int) -> int:
-        user_ids = await self.repo.demote_admins(owner_id)
+    async def demote_admins(self) -> int:
+        user_ids = await self.repo.demote_admins()
         for user_id in user_ids:
             await self._journal.invalidate(self._redis, self._get_key(user_id))
         return len(user_ids)

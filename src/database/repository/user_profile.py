@@ -7,7 +7,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from database.dto import Created, UserProfileDTO
 from database.enums import UserRole
-from database.models import UserProfile
+from database.models import UserBot, UserProfile
 
 from .base import BaseRepository
 
@@ -122,7 +122,11 @@ class UserProfileRepository(BaseRepository):
         orm_models = result.scalars().all()
         return UserProfileDTO.from_model_list(orm_models)
 
-    async def demote_admins(self, owner_id: int) -> Sequence[int]:
+    async def demote_admins(self) -> Sequence[int]:
+        owner_id = (
+            select(UserBot.owner_id).where(UserBot.bot_id == UserProfile.bot_id).scalar_subquery()
+        )
+
         stmt = (
             update(UserProfile)
             .where(
