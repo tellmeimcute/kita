@@ -19,7 +19,8 @@ from interfaces import (
 )
 from services.bots import BotCache
 from usecases import (
-    UserbotActiveToggleUseCase,
+    UserbotActivateUseCase,
+    UserbotDeactivateUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
     UserbotUpdateChannelUseCase,
@@ -57,7 +58,8 @@ class ManagementContext(BaseContext):
     update_token: UserbotUpdateTokenUseCase
     update_channel: UserbotUpdateChannelUseCase
     demote_admins: UserbotDemoteAdminsUseCase
-    active_toggle: UserbotActiveToggleUseCase
+    activate: UserbotActivateUseCase
+    deactivate: UserbotDeactivateUseCase
     user_repo: UserRepository
     profile_service: UserProfileServiceProtocol
     set_webhook: AsyncMock
@@ -122,7 +124,8 @@ async def management_context(
         update_token=await request_container.get(UserbotUpdateTokenUseCase),
         update_channel=await request_container.get(UserbotUpdateChannelUseCase),
         demote_admins=await request_container.get(UserbotDemoteAdminsUseCase),
-        active_toggle=await request_container.get(UserbotActiveToggleUseCase),
+        activate=await request_container.get(UserbotActivateUseCase),
+        deactivate=await request_container.get(UserbotDeactivateUseCase),
         userbot_service=userbot_service,
         user_repo=user_repo,
         profile_service=profile_service,
