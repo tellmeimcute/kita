@@ -119,6 +119,8 @@ class UserBotServiceProtocol(Protocol):
 
     async def deactivate(self, bot_id: int) -> UserBotDTO | None: ...
 
+    async def activate(self, bot_id: int) -> UserBotDTO | None: ...
+
 
 class WebhookServiceProtocol(Protocol):
     async def set_webhook(

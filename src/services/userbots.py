@@ -75,3 +75,8 @@ class UserBotService(BaseService):
         userbot_dto = await self.repo.deactivate(bot_id)
         logger.info("Deactivate userbot {}", bot_id)
         return userbot_dto
+
+    async def activate(self, bot_id: int) -> UserBotDTO | None:
+        userbot_dto = await self.repo.activate(bot_id)
+        logger.info("Activate userbot {}", bot_id)
+        return userbot_dto

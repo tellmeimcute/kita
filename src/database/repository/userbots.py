@@ -122,3 +122,21 @@ class UserBotRepository(BaseRepository):
         if not orm_model:
             return None
         return UserBotDTO.model_validate(orm_model)
+
+    async def activate(self, bot_id: int) -> UserBotDTO | None:
+        stmt = (
+            update(UserBot)
+            .where(
+                UserBot.bot_id == bot_id,
+                UserBot.active.is_(False),
+                UserBot.banned.is_(False),
+            )
+            .values(active=True)
+            .returning(UserBot)
+        )
+
+        result = await self._session.execute(stmt)
+        orm_model = result.scalar_one_or_none()
+        if not orm_model:
+            return None
+        return UserBotDTO.model_validate(orm_model)
