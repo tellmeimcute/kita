@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import select, update
+from sqlalchemy import func, literal, select, update
 from sqlalchemy.dialects.postgresql import insert
 
 from database.dto import UserBotDTO
@@ -34,6 +34,11 @@ class UserBotRepository(BaseRepository):
         orm_models = result.scalars().all()
         return UserBotDTO.from_model_list(orm_models)
 
+    async def count_by_owner_id(self, owner_id: int) -> int:
+        stmt = select(func.count(UserBot.id)).where(UserBot.owner_id == owner_id)
+        count = await self._session.scalar(stmt)
+        return count or 0
+
     async def create(
         self,
         token: str,
@@ -42,17 +47,36 @@ class UserBotRepository(BaseRepository):
         owner_id: int,
         channel_id: int,
         channel_name: str,
+        *,
+        max_per_owner: int | None = None,
     ) -> UserBotDTO | None:
+        columns = UserBot.__table__.c
+        values = {
+            "token": token,
+            "bot_id": bot_id,
+            "username": username,
+            "owner_id": owner_id,
+            "channel_id": channel_id,
+            "channel_name": channel_name,
+        }
+
+        source = select(
+            *[literal(value, type_=columns[name].type) for name, value in values.items()]
+        )
+
+        if max_per_owner is not None:
+            await self._session.execute(select(func.pg_advisory_xact_lock(owner_id)))
+
+            owner_count = (
+                select(func.count(UserBot.id))
+                .where(UserBot.owner_id == owner_id)
+                .scalar_subquery()
+            )
+            source = source.where(owner_count < max_per_owner)
+
         stmt = (
             insert(UserBot)
-            .values(
-                token=token,
-                bot_id=bot_id,
-                username=username,
-                owner_id=owner_id,
-                channel_id=channel_id,
-                channel_name=channel_name,
-            )
+            .from_select(list(values), source)
             .on_conflict_do_nothing(index_elements=[UserBot.bot_id])
             .returning(UserBot)
         )

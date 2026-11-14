@@ -48,7 +48,7 @@ async def seed_userbot(
     bot_id: int = BOT_ID,
 ) -> None:
     async with uow.transaction():
-        await userbot_service.create(
+        created = await userbot_service.create(
             token=BOT_TOKEN,
             bot_id=bot_id,
             username=BOT_USERNAME,
@@ -56,6 +56,9 @@ async def seed_userbot(
             channel_id=CHANNEL_ID,
             channel_name=CHANNEL_NAME,
         )
+
+    if created is None:
+        raise AssertionError(f"userbot {bot_id} is not seeded: owner {owner_id} is at the limit")
 
 
 def make_tg_channel() -> MagicMock:

@@ -36,9 +36,9 @@ async def start_registration(
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
 
     async with uow.transaction():
-        userbots = await userbot_service.get_by_owner_id(user_dto.user_id)
+        owned = await userbot_service.count_by_owner_id(user_dto.user_id)
 
-    if len(userbots) >= config.max_userbots_per_user:
+    if owned >= config.max_userbots_per_user:
         return await callback.answer(tl.translate("reg_bot_limit_exceeded"))
 
     await manager.start(UserBotRegisterSG.wait_token)

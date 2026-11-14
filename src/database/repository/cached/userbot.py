@@ -41,6 +41,9 @@ class CachedUserBotRepository(CachedRepository):
     async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]:
         return await self.repo.get_by_owner_id(owner_id)
 
+    async def count_by_owner_id(self, owner_id: int) -> int:
+        return await self.repo.count_by_owner_id(owner_id)
+
     async def create(
         self,
         token: str,
@@ -49,6 +52,8 @@ class CachedUserBotRepository(CachedRepository):
         owner_id: int,
         channel_id: int,
         channel_name: str,
+        *,
+        max_per_owner: int | None = None,
     ) -> UserBotDTO | None:
         result = await self.repo.create(
             token,
@@ -57,6 +62,7 @@ class CachedUserBotRepository(CachedRepository):
             owner_id,
             channel_id,
             channel_name,
+            max_per_owner=max_per_owner,
         )
         await self._journal.invalidate(self._redis, self._get_key(bot_id))
         return result

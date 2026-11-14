@@ -11,6 +11,7 @@ from .userbot import (
     UserbotAlreadyExistsError,
     UserbotBanned,
     UserbotError,
+    UserbotLimitExceededError,
     UserbotNotFoundError,
 )
 
@@ -27,5 +28,6 @@ __all__ = (
     "BadRequestError",
     "UserbotNotFoundError",
     "UserbotBanned",
+    "UserbotLimitExceededError",
     "TokenFromAnotherBotError",
 )

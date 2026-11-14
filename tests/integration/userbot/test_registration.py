@@ -11,6 +11,7 @@ from core.exceptions import (
     InvalidTokenError,
     NotAChannelError,
     UserbotAlreadyExistsError,
+    UserbotLimitExceededError,
 )
 from database.dto import UserBotDTO
 
@@ -21,6 +22,7 @@ from ..scaffold import (
     CHANNEL_ID,
     CHANNEL_INPUT,
     CHANNEL_NAME,
+    seed_userbot,
 )
 from .conftest import UserBotTestContext
 
@@ -80,6 +82,19 @@ async def test_register_userbot_already_exists(
 
     with pytest.raises(UserbotAlreadyExistsError):
         await ctx.register.execute(ctx.raw_token, str(CHANNEL_ID), owner_id=ctx.owner_id)
+
+
+async def test_register_userbot_over_the_owner_limit(
+    userbot_test_context: UserBotTestContext,
+):
+    ctx = userbot_test_context
+    await seed_userbot(ctx.uow, ctx.userbot_service, owner_id=ctx.owner_id, bot_id=BOT_ID + 1)
+    await seed_userbot(ctx.uow, ctx.userbot_service, owner_id=ctx.owner_id, bot_id=BOT_ID + 2)
+
+    with pytest.raises(UserbotLimitExceededError):
+        await ctx.register.execute(ctx.raw_token, str(CHANNEL_ID), owner_id=ctx.owner_id)
+
+    assert await ctx.userbot_repo.get(BOT_ID) is None
 
 
 async def test_register_userbot_without_token(userbot_test_context: UserBotTestContext):

@@ -106,7 +106,7 @@ class TestProvider(Provider):
         postgres_docker: PostgresContainer,
         redis_docker: AsyncRedisContainer,
     ) -> Config:
-        return Config()
+        return Config(max_userbots_per_user=2)
 
 
 @pytest.fixture(scope="session", autouse=True)

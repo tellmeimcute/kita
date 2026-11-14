@@ -5,6 +5,7 @@ from core.exceptions import (
     BadRequestError,
     ChannelNotFoundError,
     UserbotAlreadyExistsError,
+    UserbotLimitExceededError,
 )
 from events import UserbotRegistered
 from interfaces import (
@@ -52,15 +53,20 @@ class UserBotRegisterUseCase(BotMixin):
             probe = await probe_userbot(tmp_bot, channel_id)
 
         async with self._uow.transaction():
-            if not await self._userbot_service.create(
+            created = await self._userbot_service.create(
                 token=token,
                 bot_id=probe.bot_info.id,
                 username=probe.bot_info.username,
                 owner_id=owner_id,
                 channel_id=probe.channel.id,
                 channel_name=probe.channel.full_name,
-            ):
-                raise UserbotAlreadyExistsError()
+            )
+            if created is None:
+                if await self._userbot_service.get(probe.bot_info.id):
+                    raise UserbotAlreadyExistsError()
+
+                logger.info("Userbot registration failed: owner {} reached the limit", owner_id)
+                raise UserbotLimitExceededError()
 
             await self._events.publish(
                 UserbotRegistered(

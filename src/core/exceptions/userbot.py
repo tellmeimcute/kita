@@ -29,6 +29,10 @@ class UserbotAlreadyExistsError(UserbotError):
     error_key = "reg_bot_alredy_exist"
 
 
+class UserbotLimitExceededError(UserbotError):
+    error_key = "reg_bot_limit_exceeded"
+
+
 class BadRequestError(UserbotError):
     error_key = "reg_bot_bad_request"
 

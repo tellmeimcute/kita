@@ -115,6 +115,8 @@ class UserBotRepositoryProtocol(Protocol):
 
     async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]: ...
 
+    async def count_by_owner_id(self, owner_id: int) -> int: ...
+
     async def create(
         self,
         token: str,
@@ -123,6 +125,8 @@ class UserBotRepositoryProtocol(Protocol):
         owner_id: int,
         channel_id: int,
         channel_name: str,
+        *,
+        max_per_owner: int | None = None,
     ) -> UserBotDTO | None: ...
 
     async def update(self, bot_id: int, **data: Any): ...

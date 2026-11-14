@@ -99,6 +99,8 @@ class UserBotServiceProtocol(Protocol):
 
     async def get_by_owner_id(self, owner_id: int) -> Sequence[UserBotDTO]: ...
 
+    async def count_by_owner_id(self, owner_id: int) -> int: ...
+
     async def create(
         self,
         token: str,
