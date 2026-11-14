@@ -49,7 +49,7 @@ class CachedUserBotRepository(CachedRepository):
         owner_id: int,
         channel_id: int,
         channel_name: str,
-    ):
+    ) -> UserBotDTO | None:
         result = await self.repo.create(
             token,
             bot_id,

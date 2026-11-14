@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert
 
 from database.dto import UserBotDTO
 from database.models import UserBot
@@ -41,18 +42,26 @@ class UserBotRepository(BaseRepository):
         owner_id: int,
         channel_id: int,
         channel_name: str,
-    ):
-        orm_model = UserBot(
-            token=token,
-            bot_id=bot_id,
-            username=username,
-            owner_id=owner_id,
-            channel_id=channel_id,
-            channel_name=channel_name,
+    ) -> UserBotDTO | None:
+        stmt = (
+            insert(UserBot)
+            .values(
+                token=token,
+                bot_id=bot_id,
+                username=username,
+                owner_id=owner_id,
+                channel_id=channel_id,
+                channel_name=channel_name,
+            )
+            .on_conflict_do_nothing(index_elements=[UserBot.bot_id])
+            .returning(UserBot)
         )
 
-        self._session.add(orm_model)
-        await self._session.flush()
+        result = await self._session.execute(stmt)
+        orm_model = result.scalar_one_or_none()
+        if not orm_model:
+            return None
+        return UserBotDTO.model_validate(orm_model)
 
     async def update(self, bot_id: int, **data: Any):
         stmt = update(UserBot).where(UserBot.bot_id == bot_id).values(**data)

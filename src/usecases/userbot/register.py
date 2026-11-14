@@ -52,17 +52,16 @@ class UserBotRegisterUseCase(BotMixin):
             probe = await probe_userbot(tmp_bot, channel_id)
 
         async with self._uow.transaction():
-            if await self._userbot_service.get(probe.bot_info.id):
-                raise UserbotAlreadyExistsError()
-
-            await self._userbot_service.create(
+            if not await self._userbot_service.create(
                 token=token,
                 bot_id=probe.bot_info.id,
                 username=probe.bot_info.username,
                 owner_id=owner_id,
                 channel_id=probe.channel.id,
                 channel_name=probe.channel.full_name,
-            )
+            ):
+                raise UserbotAlreadyExistsError()
+
             await self._events.publish(
                 UserbotRegistered(
                     bot_id=self.bot.id,

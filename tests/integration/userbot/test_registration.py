@@ -186,7 +186,7 @@ async def test_userbot_service_create_persists(userbot_test_context: UserBotTest
     ctx = userbot_test_context
 
     async with ctx.uow.transaction():
-        await ctx.userbot_service.create(
+        created = await ctx.userbot_service.create(
             token=BOT_TOKEN,
             bot_id=BOT_ID,
             username=BOT_USERNAME,
@@ -195,10 +195,25 @@ async def test_userbot_service_create_persists(userbot_test_context: UserBotTest
             channel_name=CHANNEL_NAME,
         )
 
+    assert isinstance(created, UserBotDTO)
+
+    async with ctx.uow.transaction():
+        duplicate = await ctx.userbot_service.create(
+            token=f"{BOT_TOKEN}0",
+            bot_id=BOT_ID,
+            username="another_username",
+            owner_id=ctx.owner_id,
+            channel_id=CHANNEL_ID,
+            channel_name=CHANNEL_NAME,
+        )
+
+    assert duplicate is None
+
     async with ctx.uow.transaction():
         stored = await ctx.userbot_repo.get(BOT_ID)
 
     assert isinstance(stored, UserBotDTO)
     assert stored.bot_id == BOT_ID
     assert stored.token.get_secret_value() == BOT_TOKEN
+    assert stored.username == BOT_USERNAME
     assert stored.owner_id == ctx.owner_id

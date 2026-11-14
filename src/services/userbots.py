@@ -36,9 +36,16 @@ class UserBotService(BaseService):
         owner_id: int,
         channel_id: int,
         channel_name: str,
-    ):
-        await self.repo.create(token, bot_id, username, owner_id, channel_id, channel_name)
+    ) -> UserBotDTO | None:
+        userbot_dto = await self.repo.create(
+            token, bot_id, username, owner_id, channel_id, channel_name
+        )
+        if userbot_dto is None:
+            logger.info("Userbot {} is already registered", bot_id)
+            return None
+
         logger.info("Create new userbot {}", bot_id)
+        return userbot_dto
 
     async def update(self, bot_id: int, **data: Any):
         await self.repo.update(bot_id, **data)
