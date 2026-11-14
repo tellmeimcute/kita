@@ -4,7 +4,8 @@ from .moderate_suggestion import ModerateSuggestionUseCase
 from .register_user import UserRegisterOrUpdateUseCase
 from .role_changers import BanUserUseCase, DemoteUserUseCase, PromoteUserUseCase
 from .userbot import (
-    UserbotActiveToggleUseCase,
+    UserbotActivateUseCase,
+    UserbotDeactivateUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
     UserbotSelectUseCase,
@@ -21,7 +22,8 @@ __all__ = (
     "PromoteUserUseCase",
     "UserRegisterOrUpdateUseCase",
     "UserBotRegisterUseCase",
-    "UserbotActiveToggleUseCase",
+    "UserbotActivateUseCase",
+    "UserbotDeactivateUseCase",
     "UserbotDemoteAdminsUseCase",
     "UserbotSelectUseCase",
     "UserbotUpdateChannelUseCase",

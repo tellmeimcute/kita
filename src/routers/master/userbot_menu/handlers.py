@@ -12,7 +12,8 @@ from database.dto import UserDTO
 from interfaces import MessageNotifierProtocol
 from ui.state_groups import UserBotSelectSG
 from usecases import (
-    UserbotActiveToggleUseCase,
+    UserbotActivateUseCase,
+    UserbotDeactivateUseCase,
     UserbotDemoteAdminsUseCase,
     UserbotSelectUseCase,
     UserbotUpdateChannelUseCase,
@@ -42,18 +43,37 @@ async def on_bot_selected(
 
 
 @inject
-async def userbot_active_toggle(
+async def userbot_set_active(
     callback: CallbackQuery,
     widget: Button,
     manager: DialogManager,
     tl: FromDishka[Translator],
-    active_toggle: FromDishka[UserbotActiveToggleUseCase],
+    activate: FromDishka[UserbotActivateUseCase],
 ):
     user_dto: UserDTO = manager.middleware_data.get("user_dto")
     bot_id = manager.dialog_data.get("selected_bot_id")
 
     try:
-        await active_toggle.execute(user_dto, int(bot_id))
+        await activate.execute(user_dto, int(bot_id))
+    except UserbotError as e:
+        await callback.answer(tl.translate(e.error_key))
+
+    return await manager.switch_to(UserBotSelectSG.moderation)
+
+
+@inject
+async def userbot_set_inactive(
+    callback: CallbackQuery,
+    widget: Button,
+    manager: DialogManager,
+    tl: FromDishka[Translator],
+    deactivate: FromDishka[UserbotDeactivateUseCase],
+):
+    user_dto: UserDTO = manager.middleware_data.get("user_dto")
+    bot_id = manager.dialog_data.get("selected_bot_id")
+
+    try:
+        await deactivate.execute(user_dto, int(bot_id))
     except UserbotError as e:
         await callback.answer(tl.translate(e.error_key))
 

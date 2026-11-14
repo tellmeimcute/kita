@@ -7,7 +7,8 @@ from usecases import (
     MessageUserUseCase,
     ModerateSuggestionUseCase,
     PromoteUserUseCase,
-    UserbotActiveToggleUseCase,
+    UserbotActivateUseCase,
+    UserbotDeactivateUseCase,
     UserbotDemoteAdminsUseCase,
     UserBotRegisterUseCase,
     UserbotSelectUseCase,
@@ -29,7 +30,8 @@ class UseCaseProvider(Provider):
     register_or_update_user = provide(UserRegisterOrUpdateUseCase)
     ub_register = provide(UserBotRegisterUseCase)
     ub_select = provide(UserbotSelectUseCase)
-    ub_active_toggle = provide(UserbotActiveToggleUseCase)
+    ub_activate = provide(UserbotActivateUseCase)
+    ub_deactivate = provide(UserbotDeactivateUseCase)
     ub_update_token = provide(UserbotUpdateTokenUseCase)
     ub_update_channel = provide(UserbotUpdateChannelUseCase)
     ub_demote_admins = provide(UserbotDemoteAdminsUseCase)

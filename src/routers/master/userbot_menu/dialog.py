@@ -11,8 +11,9 @@ from ui.widgets.i18n_text import I18nFormat, I18nText
 from .getters import get_selected_userbot, owned_userbots
 from .handlers import (
     on_bot_selected,
-    userbot_active_toggle,
     userbot_demote_admins,
+    userbot_set_active,
+    userbot_set_inactive,
     userbot_update_channel,
     userbot_update_token,
 )
@@ -52,13 +53,13 @@ userbot_moderation_window = Window(
     Button(
         I18nText("userbot_set_inactive_btn"),
         id="userbot_set_inactive",
-        on_click=userbot_active_toggle,
+        on_click=userbot_set_inactive,
         when=F["selected_userbot"].active,
     ),
     Button(
         I18nText("userbot_set_active_btn"),
         id="userbot_set_active",
-        on_click=userbot_active_toggle,
+        on_click=userbot_set_active,
         when=F["selected_userbot"].active.is_(False),
     ),
     Row(
