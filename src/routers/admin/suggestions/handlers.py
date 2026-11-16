@@ -41,15 +41,15 @@ async def enter_suggestion_viewer(
     state: FSMContext = manager.middleware_data.get("state")
 
     async with uow.transaction():
-        new_suggestions = await suggestion_service.get_active()
+        new_ids = await suggestion_service.get_active_ids()
 
-    if not new_suggestions:
+    if not new_ids:
         return await callback.answer(tl.translate("suggestion_no_active"))
 
     await manager.reset_stack()
     await state.set_state(SuggestionViewerSG.in_viewer)
 
-    await suggestion_queue.seed_queue(new_suggestions)
+    await suggestion_queue.seed_queue(new_ids)
     await suggestion_viewer.advance(user_dto)
 
 

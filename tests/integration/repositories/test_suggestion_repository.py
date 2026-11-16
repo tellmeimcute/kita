@@ -212,7 +212,9 @@ async def test_apply_verdict_ignores_foreign_bot(
     assert (await load_suggestion(ctx, created.id)).status is SuggestionStatus.PENDING
 
 
-async def test_get_active_returns_only_pending_in_id_order(repository_context: RepositoryContext):
+async def test_get_active_ids_returns_only_pending_in_id_order(
+    repository_context: RepositoryContext,
+):
     ctx = repository_context
 
     first = await create_suggestion(ctx, caption="first")
@@ -223,25 +225,23 @@ async def test_get_active_returns_only_pending_in_id_order(repository_context: R
         await ctx.suggestion_repo.update(second.id, status=SuggestionStatus.ACCEPTED)
 
     async with ctx.uow.transaction():
-        active = await ctx.suggestion_repo.get_active()
+        active_ids = await ctx.suggestion_repo.get_active_ids()
 
-    assert [suggestion.id for suggestion in active] == [first.id, third.id]
-    assert [suggestion.caption for suggestion in active] == ["first", "third"]
-    assert active[0].author.user_id == ctx.test_user_dto.user_id
+    assert list(active_ids) == [first.id, third.id]
 
 
-async def test_get_active_respects_limit_and_offset(repository_context: RepositoryContext):
+async def test_get_active_ids_respects_limit_and_offset(repository_context: RepositoryContext):
     ctx = repository_context
 
     suggestions = [await create_suggestion(ctx, caption=f"s{index}") for index in range(3)]
 
     async with ctx.uow.transaction():
-        page = await ctx.suggestion_repo.get_active(limit=1, offset=1)
+        page = await ctx.suggestion_repo.get_active_ids(limit=1, offset=1)
 
-    assert [suggestion.id for suggestion in page] == [suggestions[1].id]
+    assert list(page) == [suggestions[1].id]
 
 
-async def test_get_active_ignores_foreign_bot(
+async def test_get_active_ids_ignores_foreign_bot(
     repository_context: RepositoryContext,
     bots: BotStack,
     foreign_bot: MagicMock,
@@ -251,7 +251,58 @@ async def test_get_active_ignores_foreign_bot(
     await create_suggestion(ctx)
 
     async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
-        assert await ctx.suggestion_repo.get_active() == []
+        assert await ctx.suggestion_repo.get_active_ids() == []
+
+
+async def test_get_active_by_id_returns_pending_with_author_and_media(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx, caption="hello")
+
+    async with ctx.uow.transaction():
+        found = await ctx.suggestion_repo.get_active_by_id(created.id)
+
+    assert isinstance(found, SuggestionFullDTO)
+    assert found.id == created.id
+    assert found.caption == "hello"
+    assert found.author.user_id == ctx.test_user_dto.user_id
+    assert [media.filetype for media in found.media] == ["photo"]
+
+
+async def test_get_active_by_id_returns_none_when_verdict_exists(
+    repository_context: RepositoryContext,
+):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx)
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_repo.apply_verdict(created.id, SuggestionStatus.ACCEPTED)
+
+    async with ctx.uow.transaction():
+        assert await ctx.suggestion_repo.get_active_by_id(created.id) is None
+
+
+async def test_get_active_by_id_returns_none_for_unknown_id(repository_context: RepositoryContext):
+    ctx = repository_context
+
+    async with ctx.uow.transaction():
+        assert await ctx.suggestion_repo.get_active_by_id(999_999) is None
+
+
+async def test_get_active_by_id_ignores_foreign_bot(
+    repository_context: RepositoryContext,
+    bots: BotStack,
+    foreign_bot: MagicMock,
+):
+    ctx = repository_context
+
+    created = await create_suggestion(ctx)
+
+    async with bots.resolver.with_bot(foreign_bot.id), ctx.uow.transaction():
+        assert await ctx.suggestion_repo.get_active_by_id(created.id) is None
 
 
 async def test_user_stats_counts_by_status(repository_context: RepositoryContext):

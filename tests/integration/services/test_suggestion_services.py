@@ -157,7 +157,7 @@ async def test_get_returns_created_suggestion(
     assert found.author.user_id == ctx.author.user_id
 
 
-async def test_get_active_excludes_moderated(
+async def test_get_active_ids_excludes_moderated(
     suggestion_context: SuggestionServiceContext,
     make_tg_message: Callable[..., Message],
 ):
@@ -170,9 +170,30 @@ async def test_get_active_excludes_moderated(
         await ctx.suggestion_service.update_by_id(accepted.id, status=SuggestionStatus.ACCEPTED)
 
     async with ctx.uow.transaction():
-        active = await ctx.suggestion_service.get_active()
+        active_ids = await ctx.suggestion_service.get_active_ids()
 
-    assert [suggestion.id for suggestion in active] == [pending.id]
+    assert list(active_ids) == [pending.id]
+
+
+async def test_get_active_by_id_returns_none_after_verdict(
+    suggestion_context: SuggestionServiceContext,
+    make_tg_message: Callable[..., Message],
+):
+    ctx = suggestion_context
+
+    created = await create_suggestion(ctx, make_tg_message(text="moderate me"))
+
+    async with ctx.uow.transaction():
+        found = await ctx.suggestion_service.get_active_by_id(created.id)
+
+    assert found is not None
+    assert found.id == created.id
+
+    async with ctx.uow.transaction():
+        await ctx.suggestion_service.apply_verdict(created.id, SuggestionStatus.DECLINED)
+
+    async with ctx.uow.transaction():
+        assert await ctx.suggestion_service.get_active_by_id(created.id) is None
 
 
 async def test_update_persists_status_change(

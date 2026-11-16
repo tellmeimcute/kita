@@ -49,8 +49,11 @@ class SuggestionService(BaseService):
     async def get(self, suggestion_id: int):
         return await self.repo.get_by_id(suggestion_id)
 
-    async def get_active(self) -> list[SuggestionFullDTO]:
-        return await self.repo.get_active()
+    async def get_active_ids(self, limit: int = 10, offset: int = 0) -> Sequence[int]:
+        return await self.repo.get_active_ids(limit, offset)
+
+    async def get_active_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
+        return await self.repo.get_active_by_id(suggestion_id)
 
     async def update(self, suggestion_dto: SuggestionBaseDTO):
         await self.repo.save(suggestion_dto)

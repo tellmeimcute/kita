@@ -67,12 +67,15 @@ class CachedSuggestionRepository(CachedRepository):
         await self._journal.invalidate(self._redis, self._get_user_stats_key(author_id))
         return result
 
-    async def get_active(
+    async def get_active_ids(
         self,
         limit: int = 10,
         offset: int = 0,
-    ) -> Sequence[SuggestionFullDTO]:
-        return await self.repo.get_active(limit, offset)
+    ) -> Sequence[int]:
+        return await self.repo.get_active_ids(limit, offset)
+
+    async def get_active_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
+        return await self.repo.get_active_by_id(suggestion_id)
 
     async def decline_pending_by_author(self, author_id: int) -> Sequence[int]:
         declined = await self.repo.decline_pending_by_author(author_id)

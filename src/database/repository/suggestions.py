@@ -88,26 +88,42 @@ class SuggestionRepository(BaseRepository):
         await self._session.refresh(suggestion_orm, attribute_names=["media", "author"])
         return SuggestionFullDTO.model_validate(suggestion_orm)
 
-    async def get_active(
+    async def get_active_ids(
         self,
-        limit=10,
-        offset=0,
-    ) -> Sequence[SuggestionFullDTO]:
+        limit: int = 10,
+        offset: int = 0,
+    ) -> Sequence[int]:
         stmt = (
-            select(Suggestion)
+            select(Suggestion.id)
             .where(
                 Suggestion.status == SuggestionStatus.PENDING,
                 Suggestion.bot_id == self.bot.id,
             )
-            .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
+            .order_by(Suggestion.id.asc())
             .offset(offset)
             .limit(limit)
-            .order_by(Suggestion.id.asc())
+        )
+
+        result = await self._session.scalars(stmt)
+        return result.all()
+
+    async def get_active_by_id(self, suggestion_id: int) -> SuggestionFullDTO | None:
+        """Returns the suggestion only while it is pending, None → missing or verdict exists."""
+        stmt = (
+            select(Suggestion)
+            .where(
+                Suggestion.id == suggestion_id,
+                Suggestion.bot_id == self.bot.id,
+                Suggestion.status == SuggestionStatus.PENDING,
+            )
+            .options(selectinload(Suggestion.media), selectinload(Suggestion.author))
         )
 
         result = await self._session.execute(stmt)
-        orm_models = result.scalars().all()
-        return SuggestionFullDTO.from_model_list(orm_models)
+        orm_model = result.scalar_one_or_none()
+        if not orm_model:
+            return None
+        return SuggestionFullDTO.model_validate(orm_model)
 
     async def decline_pending_by_author(self, author_id: int) -> Sequence[int]:
         stmt = (
