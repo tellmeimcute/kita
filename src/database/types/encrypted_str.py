@@ -1,7 +1,7 @@
-from cryptography.fernet import Fernet
 from sqlalchemy import String, TypeDecorator
 
 from core.config import Config
+from core.cryptographer import Cryptographer
 
 
 class EncryptedString(TypeDecorator):
@@ -10,21 +10,20 @@ class EncryptedString(TypeDecorator):
 
     def __init__(self, length: int = 255, *args, **kwargs):
         super().__init__(length, *args, **kwargs)
-        self._fernet: Fernet | None = None
+        self._crypto: Cryptographer | None = None
 
     @property
-    def fernet(self) -> Fernet:
-        if self._fernet is None:
-            key_bytes = Config.get().encryption_key.get_secret_value().encode("utf-8")
-            self._fernet = Fernet(key_bytes)
-        return self._fernet
+    def crypto(self) -> Cryptographer:
+        if self._crypto is None:
+            self._crypto = Cryptographer(Config.get())
+        return self._crypto
 
     def process_bind_param(self, value: str, dialect):
         if value is None:
             return value
-        return self.fernet.encrypt(value.encode("utf-8")).decode("utf-8")
+        return self.crypto.encrypt(value)
 
     def process_result_value(self, value: str, dialect):
         if value is None:
             return value
-        return self.fernet.decrypt(value.encode("utf-8")).decode("utf-8")
+        return self.crypto.decrypt(value)

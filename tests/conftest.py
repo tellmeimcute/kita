@@ -13,7 +13,7 @@ from database.enums import SuggestionStatus
 def pytest_configure(config: pytest.Config):
     os.environ["TG_TOKEN"] = "0000000000:test"
     os.environ["WEBHOOK_SECRET"] = "test-secret"
-    os.environ["ENCRYPTION_KEY"] = Fernet.generate_key().decode()
+    os.environ["ENCRYPTION_KEYS"] = Fernet.generate_key().decode()
     os.environ["WEBHOOK_DOMAIN"] = "www.example.com"
     os.environ["POSTGRES_PASSWORD"] = "test-postgres-pwd"
 

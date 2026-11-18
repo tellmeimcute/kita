@@ -32,7 +32,7 @@
 ## 🚀 Быстрый старт (Docker)
 
 > [!WARNING]
-> На проде все секреты (`TG_TOKEN`, `WEBHOOK_SECRET`, `ENCRYPTION_KEY`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD`) должны находится **только** в `secrets/`, ни в коем случае не указывайте их в `.env`.
+> На проде все секреты (`TG_TOKEN`, `WEBHOOK_SECRET`, `ENCRYPTION_KEYS`, `POSTGRES_PASSWORD`, `REDIS_PASSWORD`) должны находится **только** в `secrets/`, ни в коем случае не указывайте их в `.env`.
 
 
 ### Предварительные требования
@@ -73,29 +73,26 @@ mkdir -p secrets
 echo YOUR_TOKEN > secrets/.tg_token
 ```
 
-5. **Сгенерируйте секреты (ключ шифрования, secret_token вебхука, пароли Postgres и Redis)**
+5. **Сгенерируйте секреты (ключ шифрования, secret_token вебхука, пароли Postgres и Redis)**:
 ```sh
-openssl rand -base64 32 > secrets/.encryption_key
+./scripts/generate_encryption_key.sh
+./scripts/generate_redis_secrets.sh
 openssl rand -hex 32 > secrets/.webhook_secret
 openssl rand -hex 32 > secrets/.postgres_password
-openssl rand -hex 32 > secrets/.redis_password
-printf 'user default on >%s ~* &* +@all\n' "$(cat secrets/.redis_password)" > secrets/.redis_acl
 ```
 
 > [!NOTE]
 > Postgres читает пароль из `secrets/.postgres_password` (через `POSTGRES_PASSWORD_FILE`), Redis — ACL-файл `secrets/.redis_acl` (директива `aclfile`), а приложение — пароль из `secrets/.redis_password`.
 > 
 > Если том Postgres уже инициализирован, значение в `secrets/.postgres_password` должно совпадать с текущим паролем БД.
-> 
-> При смене `secrets/.redis_password` перегенерируйте и `secrets/.redis_acl` (командой выше), иначе пароли разойдутся.
 
-6. **Создайте docker network и запустите**
+1. **Создайте docker network и запустите**
 ```sh
 docker network create kita-proxy
 docker compose up -d
 ```
 
-7. **Запуск Caddy реверс прокси**
+1. **Запуск Caddy реверс прокси**
 > [!NOTE]
 > Можно использовать любой реверс прокси. Главное чтобы был валидный TLS-сертификат и webhook-трафик принимался только с подсетей Telegram.
 
@@ -103,6 +100,40 @@ docker compose up -d
 cd caddy
 ln -s ../.env .env
 docker compose up -d
+```
+
+### Ротация ключей шифрования
+
+> [!WARNING]
+> Перед ротацией рекомендуется сделать бекап БД и текущих ключей шифрования.
+
+Ключи хранятся в `secrets/.encryption_keys`: **первая строка — актуальный ключ**, им шифруются новые данные, остальные строки — старые ключи, ими только расшифровываются уже сохранённые токены.
+Ключ и зашифрованный токен могут иметь префикс версии (`v1:`, `v2:`, `vN:`); без префикса считается версией `v1`.
+
+1. **Сгенерируйте новый ключ и поставьте его первым в файле с ключами.**
+
+Префикс версии обязателен — без него ключ будет считаться `v1`. Старые ключи нужно оставить как минимум до полной ротации БД — они нужны для расшифровки существующих токенов. Скрипт сам определит следующую версию по текущему первому ключу и допишет старые ключи следом:
+```sh
+./scripts/generate_encryption_key.sh
+```
+
+1. **Перезапустите контейнеры**, чтобы подхватился новый ключ:
+
+```sh
+docker compose up -d --force-recreate bot worker
+```
+
+1. **Дождитесь запуска контейнеров и запустите ротацию** — скрипт батчами перешифрует зашифрованные данные новым ключем:
+
+```sh
+docker compose run --rm -e PYTHONPATH=/app/src --entrypoint uv bot run python -m scripts.rotate_encryption
+```
+
+4. **После полной ротации удалите старые ключи**, оставив только актуальный. Убедиться, что ротация завершена, можно повторным запуском скрипта из шага 3 — он должен вывести `Rotated 0 tokens`.
+
+```sh
+./scripts/remove_old_encryption_keys.sh
+docker compose up -d --force-recreate bot worker
 ```
 
 ## 🧪 Тестирование

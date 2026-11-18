@@ -1,6 +1,8 @@
 from functools import lru_cache
+from typing import Annotated
 
-from pydantic import Field, SecretStr
+from pydantic import BeforeValidator, Field, SecretStr
+from pydantic_settings import NoDecode
 
 from .api_rate_limit import ApiRateLimitConfig
 from .base import BaseConfig
@@ -8,6 +10,18 @@ from .database import DatabaseConfig
 from .redis import RedisConfig
 from .user_rate_limit import UserRateLimitConfig
 from .webhook import WebhookConfig
+
+
+def _parse_encryption_keys(value):
+    if not isinstance(value, str):
+        return value
+
+    keys = []
+    for line in value.splitlines():
+        key = line.split("#", 1)[0].strip()
+        if key:
+            keys.append(SecretStr(key))
+    return keys
 
 
 class Config(BaseConfig):
@@ -24,7 +38,7 @@ class Config(BaseConfig):
 
     tg_token: SecretStr
     webhook_secret: SecretStr
-    encryption_key: SecretStr
+    encryption_keys: Annotated[list[SecretStr], NoDecode, BeforeValidator(_parse_encryption_keys)]
 
     proxy: str | None = None
 

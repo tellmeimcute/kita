@@ -62,7 +62,7 @@ services:
       POSTGRES_HOST: postgres
     secrets:
       - tg_token
-      - encryption_key
+      - encryption_keys
       - webhook_secret
       - postgres_password
     restart: "no"
@@ -86,7 +86,7 @@ services:
       REDIS_HOST: redis
     secrets:
       - tg_token
-      - encryption_key
+      - encryption_keys
       - webhook_secret
       - postgres_password
       - redis_password
@@ -116,7 +116,7 @@ services:
       REDIS_HOST: redis
     secrets:
       - tg_token
-      - encryption_key
+      - encryption_keys
       - webhook_secret
       - postgres_password
       - redis_password
@@ -127,8 +127,8 @@ secrets:
     file: ./secrets/.tg_token
   webhook_secret:
     file: ./secrets/.webhook_secret
-  encryption_key:
-    file: ./secrets/.encryption_key
+  encryption_keys:
+    file: ./secrets/.encryption_keys
   postgres_password:
     file: ./secrets/.postgres_password
   redis_password:

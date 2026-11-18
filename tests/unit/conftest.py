@@ -8,6 +8,7 @@ from aiogram.enums import ChatMemberStatus
 from aiogram.types import ChatFullInfo, User
 from aiogram.utils.i18n import I18n
 from cryptography.fernet import Fernet
+from pydantic import SecretStr
 
 from core.cryptographer import Cryptographer
 from core.i18n_translator import Translator
@@ -67,7 +68,7 @@ def mock_config():
     config.bot_cache_max_size = 10
 
     config.webhook_secret.get_secret_value.return_value = "test-master-secret"
-    config.encryption_key.get_secret_value.return_value = Fernet.generate_key().decode()
+    config.encryption_keys = [SecretStr(Fernet.generate_key().decode())]
 
     # SimpleNamespace on purpose: a typo'd attribute raises AttributeError
     # instead of silently returning a MagicMock that leaks into the Lua ARGV.
