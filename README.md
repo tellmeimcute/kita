@@ -86,13 +86,13 @@ openssl rand -hex 32 > secrets/.postgres_password
 > 
 > Если том Postgres уже инициализирован, значение в `secrets/.postgres_password` должно совпадать с текущим паролем БД.
 
-1. **Создайте docker network и запустите**
+6. **Создайте docker network и запустите**
 ```sh
 docker network create kita-proxy
 docker compose up -d
 ```
 
-1. **Запуск Caddy реверс прокси**
+7. **Запуск Caddy реверс прокси**
 > [!NOTE]
 > Можно использовать любой реверс прокси. Главное чтобы был валидный TLS-сертификат и webhook-трафик принимался только с подсетей Telegram.
 
@@ -102,7 +102,7 @@ ln -s ../.env .env
 docker compose up -d
 ```
 
-### Ротация ключей шифрования
+## Ротация ключей шифрования
 
 > [!WARNING]
 > Перед ротацией рекомендуется сделать бекап БД и текущих ключей шифрования.
@@ -117,13 +117,13 @@ docker compose up -d
 ./scripts/generate_encryption_key.sh
 ```
 
-1. **Перезапустите контейнеры**, чтобы подхватился новый ключ:
+2. **Перезапустите контейнеры**, чтобы подхватился новый ключ:
 
 ```sh
 docker compose up -d --force-recreate bot worker
 ```
 
-1. **Дождитесь запуска контейнеров и запустите ротацию** — скрипт батчами перешифрует зашифрованные данные новым ключем:
+3. **Дождитесь запуска контейнеров и запустите ротацию** — скрипт батчами перешифрует зашифрованные данные новым ключем:
 
 ```sh
 docker compose run --rm -e PYTHONPATH=/app/src --entrypoint uv bot run python -m scripts.rotate_encryption
